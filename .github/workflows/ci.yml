@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# This workflow only ever reads the repository. Release signing lives in its own
+# workflow with its own, narrower permissions (CLAUDE.md section 9).
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_TERM_COLOR: never
+
+jobs:
+  rust:
+    name: rust
+    runs-on: ubuntu-24.04
+    env:
+      # Job-scoped rather than workflow-scoped: the deps job builds third-party
+      # tools, and those are not ours to keep warning-free.
+      RUSTFLAGS: -D warnings
+    steps:
+      # Third-party actions are pinned to a commit, not a tag. A tag is a
+      # mutable pointer, and this workflow is a step in the chain that is
+      # supposed to prove which bytes were built.
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # The checkout token is of no use to any later step, and a leaked one
+          # would be a push token for this repository.
+          persist-credentials: false
+
+      - name: Install the pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache the cargo registry and the target directory
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --all-features
+
+  deps:
+    name: deps
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install the pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      # The tool version is pinned for the same reason the dependencies are: a
+      # gate that changes on its own is a gate that fails on its own.
+      - name: Cache the cargo-deny binary
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ~/.cargo/bin/cargo-deny
+          key: cargo-deny-0.20.2-${{ runner.os }}
+
+      - name: Install cargo-deny
+        run: command -v cargo-deny || cargo install --locked cargo-deny@0.20.2
+
+      # Covers advisories, licences, banned crates and source registries.
+      # cargo-audit is not run alongside it: both read the same RustSec
+      # database, and cargo-deny's advisories check subsumes it.
+      - name: Check advisories, licences, bans and sources
+        run: cargo deny --all-features check
