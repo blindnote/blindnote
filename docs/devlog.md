@@ -116,3 +116,160 @@ Step 2, the SQLite layer. It is where the product's central claim lives, so it g
 anything is built on top: the two files, the PRAGMAs, the `user_version` migration runner, the
 atomic burn, the expiry sweeper, and the §12.2 test that byte-scans `keys.db` after a burn to check
 the 32 bytes are actually gone from the raw file.
+
+## 2026-10-29 — steps 2 and 3: the crypto crate, the store, and two SQLite surprises
+
+This is the session's substantial work: the layer where the product's central claim lives, built
+before anything was put on top of it. Two crates, 65 tests, and two places where the design in
+`CLAUDE.md` turned out to be wrong when checked against SQLite's documentation.
+
+### Built
+
+- `crates/crypto` — `Id` (128-bit), `NoteKey` (32 bytes), `Nonce` (96-bit), and the at-rest
+  `seal`/`open` pair. 22 tests.
+- `crates/store` — the two SQLite files, verified PRAGMAs, a `user_version` migration runner, the
+  burn, the abuse-report path and `sweep()`. 37 tests across six integration test files.
+- `crates/store/examples/fsync.rs` — the §12.1 measurement, as a committed tool rather than a
+  one-off, because the interesting half of it has to be run on the VPS.
+
+### Two things `CLAUDE.md` had wrong
+
+**A burn cannot be one transaction.** §7.7 said the `note_keys` row was "deleted in the same
+transaction" as the note row. SQLite's WAL page says the opposite, verbatim: "Transactions that
+involve changes against multiple ATTACHed databases are atomic for each individual database, but
+are not atomic across all databases as a set." So the design as written was not slow or
+inelegant — it was impossible.
+
+The replacement is two atomic steps in an order chosen so the window between them is harmless:
+
+| | Step 1 | Step 2 | A crash in between leaves |
+|---|---|---|---|
+| **Create** | write the key | write the note | a key with nothing to open — useless, expires on its own |
+| **Burn** | take the note row | take the key | the same thing |
+
+Both directions converge on "an orphan key", which is the one leftover that costs nothing. The
+other orderings both produce a note whose key is missing: a note that exists and cannot be opened,
+which for a user who was told their note was created is data loss.
+
+This is also why `note_keys` gained an `expires_at` column that duplicates the note's deadline.
+With it, each file expires its own rows and there is no orphan concept at all: a key written by a
+crashed create is destroyed on time without anybody consulting the note file, with no cross-file
+join and no race against a note row that has not landed yet. The cost is that the key file now
+knows when its rows expire. Both files sit on the same volume, so there is no threat model in which
+an attacker holds one and not the other, and the independence is worth more than the secrecy of a
+timestamp.
+
+**An abandoned `RETURNING` statement may not commit.** The burn SQL is `DELETE ... RETURNING`,
+stepped exactly once because it returns at most one row. SQLite's RETURNING page says the database
+changes all happen "during the first invocation of sqlite3_step()" — which is reassuring — but also
+that "The commit does not occur until the statement finishes." Relying on autocommit around a
+statement nobody steps to exhaustion would be relying on something undocumented, so every take and
+every delete is wrapped in an explicit `IMMEDIATE` transaction that is committed by hand.
+
+### The measurement that changed a decision
+
+`synchronous = FULL` on local APFS/NVMe, 4 KB payload, 300 iterations:
+
+| | create (2 commits) | burn (2 commits + WAL truncate) |
+|---|---|---|
+| as first written | p50 **130 µs** | p50 **179 µs** |
+| with `fullfsync = ON` | p50 **16.0 ms** | p50 **16.0 ms**, p99 ~25 ms |
+
+A factor of 120. macOS `fsync()` returns once the write has reached the drive, not once the drive
+has committed it; only `F_FULLFSYNC` waits for the latter, and SQLite only issues it when
+`PRAGMA fullfsync` is on. So the first row is not a durability number at all — it is what
+`synchronous = FULL` quietly means on a Mac without that pragma.
+
+`fullfsync` and `checkpoint_fullfsync` are now on. Production is Linux, where `fsync()` is expected
+to wait for the device and the pragma should be inert — *expected* and *should*, because that is
+not yet measured, and the way to settle it is to run the committed example on the box both ways.
+The test suite went from 0.02 s to 0.3 s, which is the right price for measuring the real thing.
+
+Worth keeping in view: if the Hetzner Volume lands anywhere near 16 ms, one writer connection per
+file caps creates at roughly 30 per second. That is almost certainly fine for this service, but it
+is the number that would change the storage design, which is exactly why §16 puts the measurement
+before the HTTP layer.
+
+### A bug the tests caught, which is the point of writing them first
+
+The last-view condition started as `views_left <= 1`. It reads as "one view or fewer, so this is
+the final read" and it is wrong: a row with `views_left = 0` matches it, so a note that was already
+spent would be served again. It is now `views_left = 1`, `create` refuses a zero-view note outright,
+and two tests hold both halves — one that the API refuses it, one that a hand-written zero-view row
+is still not served. The second test writes the row with raw SQL, because `create` will not produce
+it; that is the only way to test a guard against a future bug.
+
+### Decisions taken while writing this
+
+**The key's bytes live behind a `Box`.** Moving a `[u8; 32]` held inline copies it and leaves the
+old copy unscrubbed, because Rust runs no destructor on a moved-from value — so a `Drop` that
+zeroizes would scrub one copy and miss every intermediate. Behind a `Box`, a move copies the
+pointer, there is exactly one copy to scrub, and the constructors write randomness straight into the
+allocation without it ever appearing on the stack. `Drop` is hand-written rather than derived so a
+reader auditing the central claim can see the scrub without expanding a macro.
+
+**`Debug` is redacted on `Id`, `NoteKey` and `Nonce`.** A note id is half of the secret in a link, a
+key is the whole secret, and a nonce is a per-note correlation handle. All three print a
+placeholder, which turns "never log a note id" from a rule every author has to remember into a
+property of the type: a later `tracing::debug!(?id)` prints `Id(redacted)`.
+
+**One `StoreError::Unavailable` for three states.** Missing, expired and already-read come out of
+one branch of one function. Not three errors that happen to be formatted alike today — the caller
+is given no way to tell them apart, so no caller can leak the difference. A test asserts the three
+render identically, which is cheap and would catch a well-meaning split.
+
+**The associated data binds a blob to its row.** `AAD = version byte ‖ note_id ‖ key_id`, so a blob
+cannot be moved to another note's row and cannot be paired with another row's key: either
+substitution stops the tag verifying. Without it, write access to the database would allow swapping
+rows around undetectably. Five tests cover the substitutions.
+
+**`getrandom` directly, with no userspace PRNG.** A reseeding generator is state that would have to
+be kept, protected and zeroized, and at this call volume it buys nothing over asking the kernel.
+
+**PRAGMAs are read back after being applied.** A `secure_delete` that silently stayed off would make
+a documented guarantee false with nothing in the logs to say so, so `Store::open` fails with
+`StoreError::Pragma` if `journal_mode`, `synchronous`, `fullfsync`, `secure_delete` or `temp_store`
+did not take. `temp_store = MEMORY` is in that list because a temporary b-tree spilled to a file
+would put row content somewhere nothing in this project ever deletes.
+
+**`auto_vacuum = FULL` on the key file only**, and it has to be set before the first table exists —
+it cannot be changed afterwards, so a regression here would be permanent for every existing
+deployment. That is why there is a test asserting the key file auto-vacuums and the note file does
+not.
+
+**An older binary refuses a newer schema.** Carrying on would mean writing rows the newer schema
+does not describe, into a file holding users' notes. Refusing to start is the lesser failure and it
+is loud.
+
+**The reader pool was not built.** §7.4 calls for one writer plus N readers. Creating, reading and
+reporting a note are all writes, so there is no read-only code path for readers to serve; building
+the pool now would be building something unused. It goes in the moment a read-only path appears.
+
+**A poisoned mutex is recovered from, not propagated.** A poisoned connection mutex means a previous
+holder panicked; the connection is still usable, because any transaction it held was rolled back
+when the guard dropped. Refusing to serve from then on would turn one panic into an outage, and
+these are users' notes.
+
+**A busy checkpoint is logged, not returned.** By the time the `TRUNCATE` checkpoint runs, the key
+row is already deleted and committed — failing the request would not bring the key back, and it
+would show a user an error for an operation that succeeded. What must not happen is silence: a
+checkpoint that gave up leaves key bytes in the log, so it warns, and the next sweep cleans up.
+
+**Reporting an unknown id succeeds.** Every other endpoint is careful not to be an existence oracle;
+a report endpoint that answered "no such note" would be the easiest one in the API, being
+unauthenticated and destructive only when it hits.
+
+### Not done, deliberately
+
+- The disk threshold (§7.11). It needs a free-space syscall and therefore a new dependency, and it
+  is listed separately from step 2. It goes in with the HTTP layer that has to refuse new notes.
+- Periodic `VACUUM`. Its cadence belongs with the disk-threshold work, and an unused method is worse
+  than a missing one.
+- The sweeper's interval timer. The store exposes `sweep(now)`; owning a `tokio` interval is the
+  server's job and lands with step 4.
+
+### Next
+
+Step 4, the HTTP API: create, reveal by `POST`, report, one shared error path, ids in the body and
+never in a path, `405` on `GET` to the burn endpoint, and the rate limiter with `X-Forwarded-For`
+trusted only from the proxy's own address.
