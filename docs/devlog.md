@@ -273,3 +273,141 @@ unauthenticated and destructive only when it hits.
 Step 4, the HTTP API: create, reveal by `POST`, report, one shared error path, ids in the body and
 never in a path, `405` on `GET` to the burn endpoint, and the rate limiter with `X-Forwarded-For`
 trusted only from the proxy's own address.
+
+## 2026-10-29 — step 4: the HTTP API, and three things the tests found
+
+The contract the client will be wired to. Four routes, six layers, 45 tests over a real TCP socket.
+Total across the workspace: 110 tests, `clippy -D warnings` clean, `cargo deny` clean.
+
+### The API
+
+| Route | Method | Answer |
+|---|---|---|
+| `/api/notes` | `POST` | `{"id": "<22 chars>"}` |
+| `/api/reveal` | `POST` | `{"ciphertext": "<base64url>"}`, and the note is gone |
+| `/api/report` | `POST` | `204`, whether or not there was a note |
+| `/healthz` | `GET` | `ok` |
+
+Anything else on those paths is `405`. Nothing is `GET`-able except the probe.
+
+### Three bugs the tests found, which is the argument for writing them
+
+**Successful responses had no `Cache-Control`.** The error path sets `no-store` itself, and
+`/healthz` sets its own, so every test of an error or a probe passed — and the responses carrying a
+note id or a note's ciphertext were cacheable. Caught by a test that checked *every* API answer
+rather than the interesting ones. Fixed with a `no-store` layer scoped to the `/api` routes, scoped
+rather than global because the embedded assets will want the opposite value.
+
+**The body limit was being downgraded to a `400`.** Mapping every `JsonRejection` to one fixed
+`400` — which is right, because axum's own message quotes the request body back and the body is a
+note — also swallowed the `413` for an oversized body. "Send something else" and "send less" are
+different instructions, and a client that cannot tell them apart retries the same oversized body
+forever. The status is now kept when the rejection was about size; the *message* is still replaced,
+because a status code quotes nothing.
+
+**A test constant was not a valid id.** `"Z" * 22` looks like a 22-character base64url id and is
+not one: 22 characters encode 16 bytes plus four spare bits, so the final character's low two bits
+must be zero, and `Z` is `011001`. The decoder was right to refuse it and the test was wrong. Worth
+recording because the strictness is deliberate — one canonical encoding per id — and the next person
+to hand-write a test id will hit the same wall.
+
+### The detail that is easy to get backwards
+
+`X-Forwarded-For` reads `client, proxy1, proxy2`, and each hop appends the address it accepted the
+connection from. So the proxy appends the only entry it observed itself: **the last one**.
+Everything before it came from further out, and the first entry came from the client.
+
+The obvious reading — "the client is first, so take the first" — is precisely the bypass. A client
+that sends `X-Forwarded-For: 1.2.3.4` is then attributed to 1.2.3.4, and a fresh value per request
+is a fresh bucket per request, which is no rate limit at all. Taking the last entry is correct
+whether the proxy appends to a client's header or replaces it.
+
+`BLINDNOTE_TRUSTED_PROXY` is unset by default, and unset means believe nobody. That direction is
+safe against spoofing and has a trap of its own: behind a proxy, with nothing trusted, every request
+is attributed to the proxy and the whole internet shares one bucket. The server now warns about this
+at startup, because the failure is quiet and looks like the limiter working.
+
+### Decisions taken while writing this
+
+**Lifetimes are named on the wire, not counted.** `{"ttl": "10m" | "1h" | "24h"}` rather than a
+number of seconds, so the permitted set is stated once in the server and cannot be widened by a
+request. A client asking for a year gets a `400`, not a year.
+
+**`404` for an unavailable note, not `410`.** "Gone" would be an admission that it once existed,
+which is exactly the distinction the response exists to withhold. One `ApiError` variant produces
+it, so a later "helpful" split between missing and burned would have to change that type — which is
+a conversation rather than an accident. A test compares the two answers on status, body and the
+headers a client can see.
+
+**Report answers `204` either way.** An endpoint that said "no such note" would be the easiest
+oracle in the API: unauthenticated, and destructive only when it hits.
+
+**A malformed id is a `400`, an unavailable note is a `404`.** The shape of an id is public and no
+note is consulted to decide it, so the distinction leaks nothing — and a client bug that looked
+identical to "already read" would be miserable to debug.
+
+**Two limiters, not one.** A flood and a slow drip are different threats: one would exhaust the
+server, the other would fill the disk over a day. The burst limit sits on every API route; the
+hourly create quota sits only on create, expressed as one token every `3600/N` seconds with `N`
+available at once — so a person can make a handful of notes in a row, as people do.
+
+**The limiters' state is pruned on an interval.** Governor's keyed state grows by one entry per
+distinct source address and never shrinks on its own. A limiter meant to bound memory that can
+instead be made to exhaust it is worse than no limiter, because it looks like protection.
+
+**`/healthz` is outside the rate limiter and the body limit.** A throttled probe makes an
+orchestrator believe the service is down, and restarting a healthy process is a worse outcome than
+answering one extra probe.
+
+**Layer order, outermost first:** security headers, caught panics, timeout, rate limit, concurrency
+limit, body limit. The headers go outside the panic catcher so even the `500` it produces leaves
+with them on it. The rate limit goes outside the concurrency limit so a client being throttled does
+not occupy one of the slots it is being throttled for.
+
+**`run` was split into `run` and `serve`.** `serve` takes an already-bound listener, so the caller
+can learn the address first. The tests bind port zero and read back what the kernel chose; a future
+deployment could be handed a socket by `systemd`. This started as something the tests needed and is
+a better shape regardless — which is the only kind of test-driven API change worth making.
+
+**Every configuration default now lives in one `Default` impl** that `from_env` reads and overrides.
+Two lists of defaults would eventually disagree, and the one that mattered would be whichever the
+reader did not open. It also makes `Config` constructible in a test, which matters because
+`std::env::set_var` is `unsafe` in edition 2024 and these crates forbid `unsafe`.
+
+**The permissions policy is written out in full.** There is no wildcard meaning "and anything added
+later", so a feature absent from the list is one that stays enabled when the browser gains it. The
+list is long on purpose; revisit it when the client changes, not when it looks long.
+
+**`tower_governor`'s default features are off.** They include `tonic`, which would drag a whole gRPC
+stack into a binary that serves four routes. `governor` is named directly only to spell out the
+configuration type, which is generic over that crate's middleware and has no default for it.
+
+**The HTTP tests go over TCP.** Not thoroughness for its own sake: the rate limiter keys on the peer
+address, which only exists when there is a connection, and the layers are wired in an order a direct
+router call would not exercise. The client is `hyper` plus `hyper-util`, both already in the graph
+through axum, so the tests speak HTTP without adding a client library to the tree.
+
+### A measurement, and a small fix that came out of it
+
+The end-to-end run left `keys.db-wal` at 8 KB after a burn, which contradicted the comment saying
+the log is truncated. It turned out the burn *does* truncate it to zero — a test now asserts that
+directly — and the 8 KB came from the sweep that ran afterwards with nothing to delete. A statement
+that matches no rows still commits, and that commit still writes frames.
+
+Those frames carry no key material, so this was tidiness rather than a leak. But "the key log is
+empty" is a claim worth being able to check at any moment rather than only in the instant after a
+burn, so the sweeper now truncates unconditionally, and a test covers the empty-sweep case too.
+
+### Not done, deliberately
+
+- The disk threshold (§7.11). It needs a free-space syscall and a new dependency, and refusing new
+  notes is a decision that belongs next to the `VACUUM` cadence.
+- The CSP. It pins script hashes, so it cannot be written before there is a bundle to hash (step 7).
+- Submitting the domain to the HSTS preload list. The header says `preload`; the submission needs a
+  domain, and there is not one yet.
+
+### Next
+
+Step 5: import the designer's components, delete `src/demo/`, build with Vite, embed through
+`rust-embed` with Brotli. `rust-embed` 8.13.0 has a `deterministic-timestamps` feature that the
+reproducible build in step 9 will want switched on.
