@@ -1,0 +1,51 @@
+[workspace]
+members = ["crates/server"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license-file = "LICENSE.md"
+repository = "https://github.com/blindnote/blindnote"
+# Nothing here is published to crates.io. The artifact is a container image
+# whose digest is signed; a crate release would be a second, unsigned channel.
+publish = false
+
+# Every version is exact. Dependency drift between a published artifact hash and
+# a later rebuild is the one thing a reproducible build cannot tolerate.
+[workspace.dependencies]
+axum = { version = "0.8.9", default-features = false, features = ["http1", "json", "tokio"] }
+thiserror = { version = "2.0.21", default-features = false, features = ["std"] }
+tokio = { version = "1.54.1", default-features = false, features = ["macros", "net", "rt-multi-thread", "signal", "time"] }
+tower = { version = "0.5.3", default-features = false }
+tracing = { version = "0.1.44", default-features = false, features = ["attributes", "std"] }
+tracing-subscriber = { version = "0.3.23", default-features = false, features = ["env-filter", "fmt"] }
+
+[workspace.lints.rust]
+# Stated twice on purpose: once here as the backstop, and once at the top of
+# every crate root where a reader of the source can see it.
+unsafe_code = "forbid"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+dbg_macro = "deny"
+# "BlindNote" is a product name, not an identifier, and backticking it in prose
+# would make every doc comment read like code.
+doc_markdown = "allow"
+todo = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+# Wrapping arithmetic in release is a silent bug class, and none of this binary's
+# hot paths are arithmetic: the expensive work is AES in the client and fsync in
+# SQLite.
+overflow-checks = true
+# Nothing reads symbols from the shipped binary: core dumps are off on the host
+# (CLAUDE.md section 9.5), so there is no crash to symbolise.
+strip = "symbols"
