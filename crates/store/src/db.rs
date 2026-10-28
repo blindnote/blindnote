@@ -61,6 +61,8 @@ pub(crate) fn open(path: &Path, policy: WalPolicy, fresh: bool) -> Result<Connec
     conn.execute_batch(&format!(
         "PRAGMA journal_mode = WAL;
          PRAGMA synchronous = FULL;
+         PRAGMA fullfsync = ON;
+         PRAGMA checkpoint_fullfsync = ON;
          PRAGMA secure_delete = ON;
          PRAGMA temp_store = MEMORY;
          PRAGMA trusted_schema = OFF;
@@ -84,6 +86,16 @@ fn verify(conn: &Connection) -> Result<(), StoreError> {
     // SQLite reports synchronous as an integer: 2 is FULL.
     let synchronous: i64 = conn.query_row("PRAGMA synchronous", [], |row| row.get(0))?;
     expect(&synchronous.to_string(), "2", "synchronous")?;
+
+    // Only macOS honours this, and without it `synchronous = FULL` is a weaker
+    // promise there than it reads as: Darwin's fsync() returns once the write
+    // reaches the drive, not once the drive has committed it, and only
+    // F_FULLFSYNC waits for the latter. Production is Linux, where fsync()
+    // already does the right thing and this pragma is inert -- but a
+    // durability measurement taken on a developer's Mac without it is
+    // measuring something else, and would be published as if it were not.
+    let fullfsync: i64 = conn.query_row("PRAGMA fullfsync", [], |row| row.get(0))?;
+    expect(&fullfsync.to_string(), "1", "fullfsync")?;
 
     let secure_delete: i64 = conn.query_row("PRAGMA secure_delete", [], |row| row.get(0))?;
     expect(&secure_delete.to_string(), "1", "secure_delete")?;
