@@ -1,0 +1,5 @@
+# Teach git where a section starts, so that diff hunks are attributed to the
+# heading or function they belong to. This is what makes hunk-level commit
+# splitting accurate; see CLAUDE.md rule 14.3.
+*.md diff=markdown
+*.rs diff=rust
