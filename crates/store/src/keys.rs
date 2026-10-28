@@ -132,9 +132,13 @@ pub(crate) fn delete_expired(conn: &Connection, now: UnixTime) -> Result<usize, 
         params![now.as_seconds()],
     )?;
 
-    if removed > 0 {
-        truncate_log(conn, "sweep");
-    }
+    // Unconditionally, including when nothing matched. A statement that
+    // deletes no rows still commits, and that commit still leaves frames in
+    // the log -- measured: after a sweep with nothing to do, the key log held
+    // 8 KB. Those frames carry no key material, so this is tidiness rather
+    // than a fix; but "the key log is empty" is a claim worth being able to
+    // check at any moment rather than only just after a burn.
+    truncate_log(conn, "sweep");
 
     Ok(removed)
 }
