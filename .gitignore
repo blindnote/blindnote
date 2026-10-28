@@ -1,0 +1,14 @@
+# Build output
+/target
+**/node_modules
+/client/dist
+
+# Runtime state: pending notes and their keys live here. Never committed and
+# never copied anywhere else -- durability comes from block-level replication,
+# not from copies in time (CLAUDE.md rule 7).
+/data
+
+# Local tooling and editor leftovers
+codedb.snapshot
+*.bak
+.DS_Store
