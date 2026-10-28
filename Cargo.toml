@@ -24,15 +24,29 @@ blindnote-store = { path = "crates/store" }
 # reseeding PRNG is state that would have to be kept, protected and zeroized,
 # and at this call volume it buys nothing over asking the kernel.
 getrandom = { version = "0.4.3", default-features = false }
+http-body-util = { version = "0.1.5", default-features = false }
+hyper = { version = "1.12.0", default-features = false }
+hyper-util = { version = "0.1.21", default-features = false }
+# Named only to spell out tower_governor's configuration type, which is
+# generic over this crate's middleware and has no default for it.
+governor = { version = "0.10.4", default-features = false, features = ["std"] }
 # Bundled SQLite, so the build does not depend on whatever the host has, and
 # the reproducible build has one fewer moving part. Default features are off to
 # leave out the WebAssembly FFI backend.
 rusqlite = { version = "0.41.1", default-features = false, features = ["bundled", "cache"] }
+serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
+serde_json = { version = "1.0.154", default-features = false, features = ["std"] }
 subtle = { version = "2.6.1", default-features = false }
 tempfile = { version = "3.27.0", default-features = false }
 thiserror = { version = "2.0.21", default-features = false, features = ["std"] }
 tokio = { version = "1.54.1", default-features = false, features = ["macros", "net", "rt-multi-thread", "signal", "time"] }
-tower = { version = "0.5.3", default-features = false }
+tower = { version = "0.5.3", default-features = false, features = ["limit"] }
+# 0.6, matching axum 0.8.9's own requirement of ^0.6.8. Taking 0.7 would
+# compile two copies of tower-http into the graph.
+tower-http = { version = "0.6.11", default-features = false, features = ["catch-panic", "set-header", "timeout"] }
+# Default features include tonic, which would drag a whole gRPC stack in for
+# nothing.
+tower_governor = { version = "0.8.0", default-features = false, features = ["axum", "tracing"] }
 tracing = { version = "0.1.44", default-features = false, features = ["attributes", "std"] }
 tracing-subscriber = { version = "0.3.23", default-features = false, features = ["env-filter", "fmt"] }
 zeroize = { version = "1.9.1", default-features = false }
