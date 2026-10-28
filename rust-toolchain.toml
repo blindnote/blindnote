@@ -1,0 +1,7 @@
+# Pinned exactly, not by channel. A reproducible build has to name the compiler
+# that produced it, and "stable" names a different compiler every six weeks
+# (CLAUDE.md section 9, the release chain).
+[toolchain]
+channel = "1.99.1"
+components = ["clippy", "rustfmt"]
+profile = "minimal"
