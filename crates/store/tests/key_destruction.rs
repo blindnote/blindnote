@@ -81,6 +81,51 @@ async fn burning_removes_the_key_bytes_from_every_file() {
     );
 }
 
+/// After a burn, the key file's write-ahead log holds nothing.
+///
+/// Separate from the byte scan above, and stricter. The scan asks "is this
+/// particular key still here"; this asks "is there any history here at all".
+/// It is the assertion behind the claim that the log is truncated rather than
+/// merely checkpointed, and the claim is what makes `secure_delete` -- which
+/// says nothing about the log -- sufficient.
+#[tokio::test]
+async fn burning_leaves_the_key_log_empty() {
+    let f = Fixture::new().await;
+    let now = UnixTime::now();
+    let id = f.store.create(note(now)).await.expect("stored");
+
+    f.store.burn(id, now).await.expect("burned");
+
+    let wal = f.path("keys.db-wal");
+    let size = wal.metadata().map_or(0, |metadata| metadata.len());
+    assert_eq!(size, 0, "the key log still holds {size} bytes after a burn");
+}
+
+/// A sweep with nothing to delete still leaves the log empty.
+///
+/// A statement that matches no rows still commits, and that commit still
+/// writes frames. They carry no key material, so this is about being able to
+/// check the "empty log" claim at any moment rather than only in the instant
+/// after a burn.
+#[tokio::test]
+async fn a_sweep_with_nothing_to_do_still_empties_the_key_log() {
+    let f = Fixture::new().await;
+    let now = UnixTime::now();
+    f.store.create(note(now)).await.expect("stored");
+
+    let report = f.store.sweep(now).await.expect("swept");
+    assert_eq!(report.keys, 0, "the note is not expired yet");
+
+    let size = f
+        .path("keys.db-wal")
+        .metadata()
+        .map_or(0, |metadata| metadata.len());
+    assert_eq!(
+        size, 0,
+        "the key log holds {size} bytes after an empty sweep"
+    );
+}
+
 #[tokio::test]
 async fn sweeping_removes_the_key_bytes_from_every_file() {
     let f = Fixture::new().await;
