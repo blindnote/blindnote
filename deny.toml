@@ -33,9 +33,17 @@ allow = [
 # Our own crates carry license-file rather than an SPDX expression, because
 # PolyForm Shield 1.0.0 has no SPDX identifier.
 private = { ignore = true }
+# The list above is what we are willing to accept, not an inventory of what we
+# currently depend on. An entry nothing matches yet is the point: it is there so
+# that a future dependency under that licence passes without a code change.
+unused-allowed-license = "allow"
 
 [bans]
 multiple-versions = "warn"
+# A `foo = "*"` from a registry is still refused. This only exempts the
+# path dependencies between our own crates, which carry no version because
+# they are never published and are always built from this checkout.
+allow-wildcard-paths = true
 wildcards = "deny"
 deny = [
     # TLS is terminated by Caddy, in its own container, and never in this
