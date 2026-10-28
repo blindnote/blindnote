@@ -12,9 +12,10 @@
 
 use std::env::{self, VarError};
 use std::fmt::Display;
-use std::net::{Ipv4Addr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Duration;
 
 /// Prefix shared by every environment variable this binary reads.
 const ENV_PREFIX: &str = "BLINDNOTE_";
@@ -34,10 +35,65 @@ pub struct Config {
     /// `docker compose down -v` deletes named volumes, and a single wrong flag
     /// must not be able to destroy every pending note.
     pub data_dir: PathBuf,
+
+    /// Address of the reverse proxy whose `X-Forwarded-For` may be believed.
+    ///
+    /// Unset by default, and unset means "believe nobody": every request is
+    /// attributed to the address it actually arrived from. That is the safe
+    /// direction. The unsafe direction -- trusting a header any client can
+    /// send -- gives you a rate limiter that is bypassed by setting it.
+    pub trusted_proxy: Option<IpAddr>,
+
+    /// Sustained requests allowed per client address, per second.
+    pub requests_per_second: u64,
+
+    /// How far a single client may run ahead of its sustained rate.
+    pub request_burst: u32,
+
+    /// Notes one address may create per hour, on top of the rate limit.
+    ///
+    /// The rate limit stops a flood; this stops a slow drip that would fill
+    /// the disk over a day. Both are needed, and they are different numbers.
+    pub creates_per_hour: u32,
+
+    /// How often expired notes and their keys are deleted.
+    pub sweep_interval: Duration,
+
+    /// How long one request may take before it is cut off.
+    pub request_timeout: Duration,
+
+    /// How many requests may be in flight at once.
+    ///
+    /// Every note operation is a write that waits for an `fsync`, so the
+    /// useful ceiling is set by the disk rather than by the CPU. This bound
+    /// exists so that a flood queues rather than allocating without limit.
+    pub max_concurrent_requests: usize,
+}
+
+impl Default for Config {
+    /// The configuration of a server started with an empty environment.
+    ///
+    /// Every default lives here and nowhere else: [`Config::from_env`] reads
+    /// these values and overrides the ones the environment names. Two lists of
+    /// defaults would eventually disagree, and the one that matters would be
+    /// whichever the reader did not open.
+    fn default() -> Self {
+        Self {
+            bind: SocketAddr::from((Ipv4Addr::LOCALHOST, 8080)),
+            data_dir: PathBuf::from("data"),
+            trusted_proxy: None,
+            requests_per_second: 5,
+            request_burst: 20,
+            creates_per_hour: 60,
+            sweep_interval: Duration::from_secs(60),
+            request_timeout: Duration::from_secs(15),
+            max_concurrent_requests: 256,
+        }
+    }
 }
 
 impl Config {
-    /// Reads the configuration from the environment, applying defaults.
+    /// Reads the configuration from the environment, over the defaults.
     ///
     /// An empty value counts as unset, so that a compose file can leave a
     /// variable in place without having to delete the line to get the default.
@@ -48,15 +104,50 @@ impl Config {
     /// UTF-8, or cannot be parsed into the type the field expects. A variable
     /// that is simply absent is not an error; its default applies.
     pub fn from_env() -> Result<Self, ConfigError> {
+        let defaults = Self::default();
+
         Ok(Self {
-            bind: from_env_parsed(
-                "BIND",
-                "socket address",
-                SocketAddr::from((Ipv4Addr::LOCALHOST, 8080)),
+            bind: from_env_parsed("BIND", "socket address", defaults.bind)?,
+            data_dir: from_env_raw("DATA_DIR")?.map_or(defaults.data_dir, PathBuf::from),
+            trusted_proxy: match from_env_raw("TRUSTED_PROXY")? {
+                None => defaults.trusted_proxy,
+                Some(value) => Some(parse("TRUSTED_PROXY", "IP address", &value)?),
+            },
+            requests_per_second: from_env_parsed(
+                "REQUESTS_PER_SECOND",
+                "positive integer",
+                defaults.requests_per_second,
             )?,
-            data_dir: from_env_raw("DATA_DIR")?
-                .map_or_else(|| PathBuf::from("data"), PathBuf::from),
+            request_burst: from_env_parsed(
+                "REQUEST_BURST",
+                "positive integer",
+                defaults.request_burst,
+            )?,
+            creates_per_hour: from_env_parsed(
+                "CREATES_PER_HOUR",
+                "positive integer",
+                defaults.creates_per_hour,
+            )?,
+            sweep_interval: from_env_seconds("SWEEP_INTERVAL_SECONDS", defaults.sweep_interval)?,
+            request_timeout: from_env_seconds("REQUEST_TIMEOUT_SECONDS", defaults.request_timeout)?,
+            max_concurrent_requests: from_env_parsed(
+                "MAX_CONCURRENT_REQUESTS",
+                "positive integer",
+                defaults.max_concurrent_requests,
+            )?,
         })
+    }
+}
+
+/// Reads `BLINDNOTE_<name>` as a number of whole seconds.
+fn from_env_seconds(name: &str, default: Duration) -> Result<Duration, ConfigError> {
+    match from_env_raw(name)? {
+        None => Ok(default),
+        Some(value) => Ok(Duration::from_secs(parse(
+            name,
+            "positive integer",
+            &value,
+        )?)),
     }
 }
 
