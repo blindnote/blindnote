@@ -37,8 +37,13 @@ async fn main() {
     let scratch = given_directory
         .is_none()
         .then(|| tempfile::tempdir().expect("a temporary directory"));
-    let directory = given_directory
-        .unwrap_or_else(|| scratch.as_ref().expect("a scratch directory").path().to_path_buf());
+    let directory = given_directory.unwrap_or_else(|| {
+        scratch
+            .as_ref()
+            .expect("a scratch directory")
+            .path()
+            .to_path_buf()
+    });
 
     let store = Store::open(&directory).await.expect("the store opens");
     let payload = vec![0xAB; PAYLOAD_BYTES];
