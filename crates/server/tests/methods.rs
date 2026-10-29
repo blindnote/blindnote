@@ -54,15 +54,18 @@ async fn head_and_delete_are_also_refused() {
     }
 }
 
-/// No route's path contains a note id.
+/// No handler ever reads a note id out of a path.
 ///
 /// `POST /api/notes/<id>/burn` is the shape this API would have had if nobody
 /// had thought about it, and a path id lands in any access log, any proxy, any
-/// future error report, and in `Referer`. There is no such route, and this
-/// test is what keeps it that way: a 404 here means no handler was matched,
-/// whereas a 405 would mean the path exists.
+/// future error report, and in `Referer`.
+///
+/// The assertion is behavioural rather than a status code. Since the interface
+/// is served from a catch-all route, an unmatched path answers 405 rather than
+/// 404, and neither code proves anything on its own. What does prove it: after
+/// asking for every plausible path-shaped burn, the note is still there.
 #[tokio::test]
-async fn there_is_no_route_whose_path_carries_a_note_id() {
+async fn no_handler_reads_a_note_id_from_a_path() {
     let server = Server::start().await;
     let id = server.create(SMALLEST_CIPHERTEXT).await;
 
@@ -70,16 +73,26 @@ async fn there_is_no_route_whose_path_carries_a_note_id() {
         format!("/api/notes/{id}"),
         format!("/api/notes/{id}/burn"),
         format!("/api/reveal/{id}"),
+        format!("/api/burn/{id}"),
         format!("/{id}"),
     ] {
         let answer = server.send(Method::POST, &path).await;
 
-        assert_eq!(
+        assert_ne!(
             answer.status,
-            StatusCode::NOT_FOUND,
-            "{path} matched a route, so a note id can reach a request line"
+            StatusCode::OK,
+            "{path} was answered, so something is reading the id from the path"
         );
     }
+
+    let answer = server
+        .post_json("/api/reveal", &format!(r#"{{"id":"{id}"}}"#))
+        .await;
+    assert_eq!(
+        answer.status,
+        StatusCode::OK,
+        "a path-shaped request burned the note"
+    );
 }
 
 #[tokio::test]
