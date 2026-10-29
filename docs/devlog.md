@@ -707,3 +707,37 @@ smoke test confirmed `/healthz` 200, the embedded client served, `GET` on the bu
 log, and the two SQLite files created by uid 65532 under the read-only root. Base images are pinned by
 tag now; digest pinning and `SOURCE_DATE_EPOCH` belong to the reproducible-build + cosign work (step 9)
 that comes next, alongside the Caddy-fronted compose and the DNS cutover to the new box.
+
+## 2026-10-29 — the trust chain, made real: signed image, pull-model deploy
+
+Step 9 and the rest of step 10. The image now exists as a signed artifact and the
+server runs it the way section 3 and section 9 describe, end to end.
+
+### What was built
+
+- **The release workflow** (`.github/workflows/release.yml`): on a `v*` tag it builds
+  the image, pushes it to GHCR by digest with SLSA provenance and an SBOM, then signs it
+  **keyless with cosign** — the signature carries the workflow's own identity
+  (`…/release.yml@refs/tags/vX`), which is the string the server pins. Third-party actions
+  are pinned to commit SHAs; supply chain is the product, not an afterthought.
+- **`verify.sh`**: the section 3 ask made runnable — check the signature *and its identity*,
+  then rebuild from the tagged source and compare digests. A hash nobody checks is theatre.
+- **Base images pinned by digest** in the Dockerfile, and `SOURCE_DATE_EPOCH` driven from the
+  tag commit so the build is reproducible rather than merely pinned.
+
+### The deploy is pull-only, and verified before it runs
+
+`v0.1.0` was tagged; the workflow produced and signed
+`ghcr.io/blindnote/blindnote@sha256:2649a81…`. On the host, cosign verified that digest
+against the pinned identity (signature valid, certificate from the trusted CA, presence in
+the transparency log confirmed) **before** anything was pulled, and only then did the compose
+stack switch from the locally-built image to the signed digest — both app and Caddy now run
+by digest, not by tag. A `systemd` timer repeats exactly that on a schedule: resolve the
+latest signed digest, verify the signature and that it came from our release workflow at a
+version tag, and deploy only if that passes. Nothing authorized ever connects inward — the
+box reaches out, verifies, and updates itself.
+
+The private GHCR package is pulled with a read-only token held on the host (the operator's
+decision for the pre-launch window); it can pull the image and nothing else. One further section 9 hardening step is tracked privately. What remains before launch is the DNS cutover to the new host, the section 11 docs
+(`README`, `SECURITY.md`, `security.txt`, abuse policy), decommissioning the old box, and
+the history secret-scan before the repo goes public.
