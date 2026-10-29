@@ -2,7 +2,7 @@
 
 mod common;
 
-use blindnote_store::{Store, StoreError, UnixTime};
+use blindnote_store::{FreeSpaceFloor, Store, StoreError, UnixTime};
 use common::{CIPHERTEXT, Fixture, note};
 use rusqlite::Connection;
 
@@ -23,7 +23,9 @@ async fn the_data_directory_is_created_if_missing() {
     let parent = tempfile::tempdir().expect("a temporary directory");
     let nested = parent.path().join("does").join("not").join("exist");
 
-    let store = Store::open(&nested).await.expect("the store creates it");
+    let store = Store::open(&nested, FreeSpaceFloor::NONE)
+        .await
+        .expect("the store creates it");
 
     let now = UnixTime::now();
     store.create(note(now)).await.expect("stored");
@@ -59,7 +61,9 @@ async fn a_newer_schema_is_refused_rather_than_used() {
         .expect("bumped");
     drop(conn);
 
-    let error = Store::open(f.directory()).await.expect_err("refused");
+    let error = Store::open(f.directory(), FreeSpaceFloor::NONE)
+        .await
+        .expect_err("refused");
 
     let StoreError::SchemaTooNew {
         database,
