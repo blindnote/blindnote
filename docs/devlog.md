@@ -411,3 +411,117 @@ burn, so the sweeper now truncates unconditionally, and a test covers the empty-
 Step 5: import the designer's components, delete `src/demo/`, build with Vite, embed through
 `rust-embed` with Brotli. `rust-embed` 8.13.0 has a `deterministic-timestamps` feature that the
 reproducible build in step 9 will want switched on.
+
+## 2026-10-29 — steps 5 and 6: the interface, and the measurement that checks rule 1
+
+The designer's interface is in, wired to the API, encrypted in the browser, and baked into the
+binary. 121 tests, `clippy -D warnings` clean, `cargo deny` clean, and a read path of **86,232
+bytes brotli** against a 90 KB budget that is now a hard CI gate.
+
+The one that matters most is not a test: a HAR recording of the whole flow in a real Chrome,
+scanned for the key, the plaintext and the fragment. **None of the three appears in any request
+url, header or body across all 17 requests.** That is hard rule 1 checked rather than trusted.
+
+### What the two API calls carried
+
+| Call | Body |
+|---|---|
+| `POST /api/notes` | `{"ciphertext":"EZpC_dhqMbp0…"}` — 91 bytes |
+| `POST /api/reveal` | `{"id":"O3eomCxyF-Y-rWCbTAdUDA"}` — 31 bytes |
+
+No key. No note id in any url. No `GET` anywhere near a note.
+
+### Three bugs the browser found, which no unit test could
+
+**A note link arriving without a reload did nothing.** Opening `#ID/KEY` in a tab already on the
+site is a same-document navigation: the fragment changes, nothing reloads, and React's state
+initializer never runs again. The address bar showed the note and the screen showed the previous
+one. The app now listens for `hashchange` — but acts only on a fragment that parses as a note
+link, because the site's own menu uses `#nedir`, `#sifreleme` and `#sss`, and reacting to an
+anchor would throw away a note the reader had not opened yet.
+
+**The not-found headline claimed the note never existed.** "Bu mesaj hiç olmadı." The server
+cannot distinguish a note that never existed from one already read — deliberately, since that
+distinction is the existence oracle every endpoint avoids — and the common case is the second.
+The headline is neutral now, and the subtitle carries the thing the project's own notes ask for:
+a recipient who finds an expected note already burned has learned that somebody got there first.
+That is tamper evidence and a feature, so the interface says it.
+
+**The server's payload ceiling refused a full-size note.** It was 64 KB of plaintext plus a
+16-byte tag; the browser also prepends a 12-byte nonce, so the largest note the composer accepts
+arrives as 64 KB + 28 bytes. A user would have been told their note was too large when it was not.
+The bound is now 64 KB plus 512 bytes of framing headroom, expressed as headroom rather than a
+sum: the client's exact format is not the server's business, and the bound should not need
+correcting every time it changes.
+
+One thing that looked like a bug and was not: the reveal button sat below the fold in the
+automation's short viewport, so the first click landed on nothing. Worth knowing the next time a
+browser run looks broken.
+
+### Decisions taken while writing this
+
+**`rust-embed` was dropped for a build script.** The crate embeds bytes and stops there, which
+leaves Brotli compression, content types, ETags and the content security policy's script hashes
+to be arranged elsewhere. One build script is less code and more reproducible: the table it
+generates is sorted, and carries no timestamps and no paths from the building machine. It also
+means `rust-embed`'s `deterministic-timestamps` feature is moot — there are no timestamps to make
+deterministic.
+
+**Compression is decided per file, not per extension.** A woff2 is already Brotli inside, so a
+second pass gains a fraction of a percent for a doubled footprint. The build script keeps the
+compressed copy only when it comes out under 95% of the original, which is one fewer list of
+extensions to keep correct. Measured: the fonts keep no compressed copy, the JS and CSS do.
+
+**Three caching rules, not one.** Content-hashed `/assets/*` are immutable for a year, because the
+bytes behind one of those names never change. `index.html` is `no-store`: it names those files and
+the policy that will pin their hashes is served with it, so a stale copy would reference scripts
+the current policy does not allow — and it is a few hundred bytes compressed. Fonts sit in
+between: stable in practice, but their names carry no hash, so they revalidate.
+
+**The fragment is forgotten after a read and never before.** Before the read it is the only copy
+of the link that survives a reload, and an in-app browser inside a chat application reloads more
+often than you would think — losing the note there would look exactly like data loss. Afterwards
+the key opens nothing, and leaving it in the address bar leaves it in screenshots, in a shared
+screen and in whatever the browser syncs.
+
+**A link is validated before it is used.** `parseNoteLink` checks both lengths and that both halves
+decode, before any request. Reading destroys, so a truncated link has to fail *before* the burn: a
+bad link should cost a trip back to wherever it came from, not the note.
+
+**Lifetimes are named on the wire, not counted.** `{"ttl": "10m" | "1h" | "24h"}`. The permitted
+set is stated once, in the server, and cannot be widened by a request.
+
+**No console logging anywhere in the client.** Not even for a decryption failure. A browser
+extension can read the console, and this is a client whose whole job is to hold a secret the
+server never sees.
+
+**A missing `client/dist` is a warning, not a build failure.** The generated table comes out empty,
+`build.rs` prints a cargo warning, the server logs an error at startup, and the tests that cover
+serving the interface skip themselves. A Rust change should not need a Node toolchain to prove
+itself — but a binary that serves an API and no interface looks healthy from every angle except a
+browser's, so it says so twice.
+
+**`run` was split into `run` and `serve`.** `serve` takes an already-bound listener so the caller
+can learn the address first; the tests bind port zero and read back what the kernel chose. It
+started as something the tests needed and is a better shape regardless, which is the only kind of
+test-driven API change worth making.
+
+### Still open
+
+- **The content security policy.** Verified against MDN during this session: a CSP hash matches an
+  external script **only if the element repeats it in an `integrity` attribute**. So step 7 is not
+  just a header — `build.rs` has to stamp `integrity` onto the `<script>` and `<link>` tags in
+  `index.html` as well. The hashes are already computed and emitted; they are unused for now and
+  marked as such.
+- The interface reaches neither the `10m`/`1h` lifetimes nor the report endpoint. Both exist in
+  the API and have no control in the design.
+- HSTS preload submission, which needs a domain.
+
+### Next
+
+Step 7: the policy. `script-src 'sha256-…'` and `style-src 'sha256-…'` from the hashes the build
+already has, plus the matching `integrity` attributes, plus `connect-src 'self'`,
+`object-src 'none'`, `base-uri 'none'`, `form-action 'self'`, `frame-ancestors 'none'` and
+`require-trusted-types-for 'script'`. Then a test that loads the page in a real browser with the
+policy on and asserts the console is free of policy violations — because a policy that silently
+blocks the application's own script is the failure mode here.
