@@ -159,8 +159,16 @@ mod tests {
         assert!(serde_json::from_str::<Ttl>("\"365d\"").is_err());
     }
 
+    /// The ceiling has to clear the client's framing, not just the tag.
+    ///
+    /// The browser prepends a 12-byte nonce and AES-GCM appends a 16-byte tag,
+    /// so a full-size note arrives as 64 KB + 28 bytes. A bound of plaintext +
+    /// tag would have refused the largest note the composer accepts, and the
+    /// user would have seen "too large" for a note that was not.
     #[test]
-    fn the_ciphertext_ceiling_allows_a_full_size_note() {
-        assert_eq!(MAX_CIPHERTEXT_BYTES, MAX_PLAINTEXT_BYTES + 16);
+    fn the_payload_ceiling_clears_a_full_size_note_and_its_framing() {
+        let nonce_and_tag = 12 + 16;
+
+        assert!(MAX_PAYLOAD_BYTES > MAX_PLAINTEXT_BYTES + nonce_and_tag);
     }
 }

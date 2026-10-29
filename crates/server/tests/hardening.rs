@@ -108,28 +108,34 @@ async fn the_three_offered_lifetimes_are_accepted() {
 }
 
 #[tokio::test]
-async fn a_note_over_64_kb_is_refused() {
+async fn a_payload_over_the_ceiling_is_refused() {
     let server = Server::start().await;
 
-    // One byte past the ceiling: 64 KB of plaintext plus the 16-byte tag.
+    // One byte past 64 KB plus the framing headroom.
     let answer = server
         .post_json(
             "/api/notes",
-            &format!(r#"{{"ciphertext":"{}"}}"#, ciphertext_of(64 * 1024 + 17)),
+            &format!(r#"{{"ciphertext":"{}"}}"#, ciphertext_of(64 * 1024 + 513)),
         )
         .await;
 
     assert_eq!(answer.status, StatusCode::BAD_REQUEST);
 }
 
+/// A full-size note plus the browser's framing has to fit.
+///
+/// The browser prepends a 12-byte nonce and AES-GCM appends a 16-byte tag, so
+/// the largest note the composer accepts arrives as 64 KB + 28 bytes. A ceiling
+/// set at plaintext plus tag would have refused it, and the user would have
+/// been told their note was too large when it was not.
 #[tokio::test]
-async fn a_note_of_exactly_64_kb_is_accepted() {
+async fn a_full_size_note_with_its_framing_is_accepted() {
     let server = Server::start().await;
 
     let answer = server
         .post_json(
             "/api/notes",
-            &format!(r#"{{"ciphertext":"{}"}}"#, ciphertext_of(64 * 1024 + 16)),
+            &format!(r#"{{"ciphertext":"{}"}}"#, ciphertext_of(64 * 1024 + 28)),
         )
         .await;
 
