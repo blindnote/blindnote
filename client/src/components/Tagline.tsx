@@ -22,8 +22,8 @@ export function Tagline(props: TaglineProps) {
   const style = useContext(TaglineStyleContext)
   const justify = props.align === 'right' ? 'justify-center md:justify-end' : 'justify-center'
   const items: ReadonlyArray<{ icon: IconName; text: string }> = [
-    { icon: 'eye-off', text: t.tagline.noTrace },
-    { icon: 'shield-cross', text: t.tagline.swiss },
+    { icon: 'eye-off', text: t.tagline.oneTime },
+    { icon: 'shield-cross', text: t.tagline.zeroKnowledge },
     { icon: 'lock', text: t.tagline.e2e },
   ]
 
@@ -64,7 +64,7 @@ export function Tagline(props: TaglineProps) {
         props.className,
       )}
     >
-      {`${t.tagline.noTrace} - ${t.tagline.swiss} - ${t.tagline.e2e}`}
+      {`${t.tagline.oneTime} - ${t.tagline.zeroKnowledge} - ${t.tagline.e2e}`}
     </p>
   )
 }
