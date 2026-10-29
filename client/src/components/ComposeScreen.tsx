@@ -1,3 +1,4 @@
+import { useCopy } from '../lib/i18n'
 import { Hero } from './Hero'
 import { NoteComposer } from './NoteComposer'
 
@@ -12,10 +13,11 @@ type ComposeScreenProps = {
 
 /** Ekran (a) Yaz — Figma: Anasayfa */
 export function ComposeScreen(props: ComposeScreenProps) {
+  const t = useCopy()
   return (
     <Hero
-      title="Özgürce Paylaş"
-      subtitle="Açıldığında kendini yok edecek bağlantı oluşturun."
+      title={t.compose.title}
+      subtitle={t.compose.subtitle}
       monkey={{ pose: 'eyes', placement: 'peek' }}
       card={
         <NoteComposer

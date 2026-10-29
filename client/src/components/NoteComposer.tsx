@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from 'react'
+import { useCopy } from '../lib/i18n'
 import { Button } from './Button'
 import { Panel } from './Panel'
 import { Tagline } from './Tagline'
@@ -12,7 +13,7 @@ type NoteComposerProps = {
   status: 'idle' | 'submitting'
   /** Gösterilecek hata metni (boş mesaj, ağ hatası vb.). Metni çağıran belirler. */
   error?: string
-  /** Gönder butonunu kapatmak için. Boş metinde buton açık kalır; basılınca "önce mesaj yaz" uyarısı çıkar. */
+  /** Gönder butonunu kapatmak için. Boş metinde buton açık kalır; basılınca uyarı çıkar. */
   canSubmit?: boolean
   /** Boş gönderimde gösterilecek uyarı */
   emptyMessage?: string
@@ -24,6 +25,7 @@ type NoteComposerProps = {
  * mobilde kutunun altında tam genişlikte.
  */
 export function NoteComposer(props: NoteComposerProps) {
+  const t = useCopy()
   const id = useId()
   const errorId = `${id}-error`
   const submitting = props.status === 'submitting'
@@ -35,12 +37,12 @@ export function NoteComposer(props: NoteComposerProps) {
   // Her başarısız denemede balon yeniden "patlar" (key ile yeniden çizilir)
   const [attempt, setAttempt] = useState(0)
   const showEmpty = emptyTried && isEmpty
-  const error = props.error ?? (showEmpty ? (props.emptyMessage ?? 'Önce mesajını yaz.') : undefined)
+  const error = props.error ?? (showEmpty ? (props.emptyMessage ?? t.composer.empty) : undefined)
 
   const actions = (block: boolean) => (
     <>
-      <Button type="submit" blockOnMobile={block} disabled={!canSubmit} loading={submitting} loadingLabel="Şifreleniyor…">
-        Gizli Mesaj Oluştur
+      <Button type="submit" blockOnMobile={block} disabled={!canSubmit} loading={submitting} loadingLabel={t.composer.loading}>
+        {t.composer.button}
       </Button>
       <Tagline align="right" />
     </>
@@ -81,7 +83,7 @@ export function NoteComposer(props: NoteComposerProps) {
       <Panel>
         <div className="flex flex-col gap-2">
           <label htmlFor={id} className="sr-only">
-            Gizli mesajın
+            {t.composer.label}
           </label>
           <textarea
             id={id}
@@ -96,7 +98,7 @@ export function NoteComposer(props: NoteComposerProps) {
             }}
             readOnly={submitting}
             maxLength={props.maxLength}
-            placeholder="Wifi şifresi, özel notlar…"
+            placeholder={t.composer.placeholder}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? errorId : undefined}
             rows={4}

@@ -1,8 +1,10 @@
+import { useCopy } from '../lib/i18n'
 import { LinkAnatomy } from './LinkAnatomy'
 import { SectionHeading } from './SectionHeading'
 
 /** Figma: encryption-explainer — krem zemin, açıklama + bağlantı anatomisi. Statik içerik. */
 export function EncryptionExplainer() {
+  const t = useCopy()
   return (
     <section
       id="sifreleme"
@@ -15,8 +17,8 @@ export function EncryptionExplainer() {
       <div className="relative flex flex-col items-center gap-10 md:gap-[60px]">
         <SectionHeading
           id="sifreleme-baslik"
-          title="Uçtan Uca Şifreleme"
-          description="Şifreleme anahtarı hiçbir zaman sunucularda saklanmaz; yalnızca oluşturulan bağlantının bir parçası olarak çalışır. Bu bağlantı olmadan — biz dahil — hiç kimse paylaştığınız bilginin şifresini çözemez."
+          title={t.encryption.title}
+          description={t.encryption.description}
         />
         <LinkAnatomy />
       </div>

@@ -1,43 +1,44 @@
 import type { ReactNode } from 'react'
+import { useCopy } from '../lib/i18n'
 import { BackToTop } from './BackToTop'
 import { EncryptionExplainer } from './EncryptionExplainer'
-import { Faq, type FaqEntry } from './Faq'
+import { Faq } from './Faq'
 import { HowItWorks } from './HowItWorks'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
-import { FOOTER_LINKS, HEADER_LINKS, MENU_LINKS } from './siteLinks'
+import { footerLinks, headerLinks, menuLinks } from './siteLinks'
 import { useScrolledPast } from './useScrollY'
 
 type PageLayoutProps = {
   /** Ekrana özel hero (ComposeScreen, LinkReadyScreen, …) */
   children: ReactNode
   homeHref: string
-  /** Header'daki "Gizli Mesaj Oluştur". Anasayfa'nın en üstünde verilmez (Figma). */
+  /** Header'daki create butonu. Anasayfa'nın en üstünde verilmez (Figma). */
   onCreateNote?: () => void
   /**
-   * Yaz ekranı: header'daki "Gizli Mesaj Oluştur" yalnız mesaj kutusu ekrandan çıkınca görünür
+   * Yaz ekranı: header'daki create butonu yalnız mesaj kutusu ekrandan çıkınca görünür
    * (Figma: Anasayfa en üstte yok, Anasayfa_Scroll'da var).
    */
   ctaAfterScroll?: boolean
-  /** Mobilde header'daki kompakt "Oluştur" butonu kaydırmadan da görünsün (Yaz dışındaki tüm ekranlar) */
+  /** Mobilde header'daki kompakt create butonu kaydırmadan da görünsün (Yaz dışındaki tüm ekranlar) */
   ctaOnMobileAlways?: boolean
   menuOpen: boolean
   onMenuToggle: () => void
-  faqItems: ReadonlyArray<FaqEntry>
 }
 
 /** Tüm ekranlarda ortak iskelet: header → hero → 3 bilgi bölümü → footer (Figma'daki 5 ekranın hepsi). */
 export function PageLayout(props: PageLayoutProps) {
+  const t = useCopy()
   const scrolled = useScrolledPast(8)
   const pastHero = useScrolledPast(520)
   const showCta = props.onCreateNote && (!props.ctaAfterScroll || pastHero)
   return (
     <div className="min-h-dvh bg-page dark:bg-night">
       <SiteHeader
-        links={HEADER_LINKS}
-        menuLinks={MENU_LINKS}
+        links={headerLinks(t)}
+        menuLinks={menuLinks(t)}
         homeHref={props.homeHref}
-        cta={showCta && props.onCreateNote ? { label: 'Gizli Mesaj Oluştur', onClick: props.onCreateNote } : undefined}
+        cta={showCta && props.onCreateNote ? { label: t.nav.createSecret, onClick: props.onCreateNote } : undefined}
         elevated={scrolled}
         ctaOnMobile={props.ctaOnMobileAlways || pastHero}
         menuOpen={props.menuOpen}
@@ -47,9 +48,9 @@ export function PageLayout(props: PageLayoutProps) {
         {props.children}
         <HowItWorks />
         <EncryptionExplainer />
-        <Faq items={props.faqItems} />
+        <Faq />
       </main>
-      <SiteFooter links={FOOTER_LINKS} homeHref={props.homeHref} />
+      <SiteFooter links={footerLinks(t)} homeHref={props.homeHref} />
       <BackToTop />
     </div>
   )

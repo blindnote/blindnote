@@ -1,14 +1,16 @@
+import { useCopy } from '../lib/i18n'
 import { cx } from './cx'
 import { Icon } from './Icon'
 import { useScrolledPast } from './useScrollY'
 
 /** Yukarı çık butonu (Figma'da yok — türetildi). Bir ekran boyu kaydırınca sağ altta belirir. */
 export function BackToTop() {
+  const t = useCopy()
   const visible = useScrolledPast(600)
   return (
     <button
       type="button"
-      aria-label="Sayfanın başına dön"
+      aria-label={t.backToTop}
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible || undefined}
       onClick={() => {

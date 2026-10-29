@@ -1,5 +1,6 @@
-import { Hero } from './Hero'
 import { useContext } from 'react'
+import { useCopy } from '../lib/i18n'
+import { Hero } from './Hero'
 import { RevealCard, RevealStyleContext } from './RevealCard'
 
 type RevealScreenProps = {
@@ -10,20 +11,21 @@ type RevealScreenProps = {
 
 /** Ekran (c-1) Oku, ilk adım — Figma: Mesaj Aç. İçerik ancak butona basınca açılır. */
 export function RevealScreen(props: RevealScreenProps) {
+  const t = useCopy()
   const style = useContext(RevealStyleContext)
   return (
     <Hero
-      title="Tak Tak"
+      title={t.reveal.title}
       subtitle={
         style === 'envelope' ? (
           <>
-            Sana özel gizli bir mesaj var!
+            {t.reveal.subtitle}
             <span className="mt-2 block text-sm leading-5 text-fur md:text-base dark:text-sand-muted">
-              Mühür bir kez kırılır. Açtığın anda mesaj sunucudan silinir.
+              {t.reveal.envelopeExtra}
             </span>
           </>
         ) : (
-          'Sana özel gizli bir mesaj var!'
+          t.reveal.subtitle
         )
       }
       monkey={{ pose: 'eyes', placement: 'peek' }}

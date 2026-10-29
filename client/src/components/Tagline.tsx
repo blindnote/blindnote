@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { useCopy } from '../lib/i18n'
 import { cx } from './cx'
 import { Icon, type IconName } from './Icon'
 
@@ -10,26 +11,26 @@ import { Icon, type IconName } from './Icon'
 export type TaglineStyle = 'figma' | 'badges' | 'icons'
 export const TaglineStyleContext = createContext<TaglineStyle>('badges')
 
-const ITEMS: ReadonlyArray<{ icon: IconName; text: string }> = [
-  { icon: 'eye-off', text: 'İz Bırakmadan' },
-  { icon: 'shield-cross', text: 'İsviçre Korumalı' },
-  { icon: 'lock', text: 'Uçtan Uca Şifrelenmiş' },
-]
-
 type TaglineProps = {
   align?: 'center' | 'right'
   className?: string
 }
 
-/** "İz Bırakmadan - İsviçre Korumalı - Uçtan Uca Şifrelenmiş" — Figma'da butonların altında tekrar eden satır. */
+/** Güvenlik özellikleri satırı — Figma'da butonların altında tekrar eden satır. */
 export function Tagline(props: TaglineProps) {
+  const t = useCopy()
   const style = useContext(TaglineStyleContext)
   const justify = props.align === 'right' ? 'justify-center md:justify-end' : 'justify-center'
+  const items: ReadonlyArray<{ icon: IconName; text: string }> = [
+    { icon: 'eye-off', text: t.tagline.noTrace },
+    { icon: 'shield-cross', text: t.tagline.swiss },
+    { icon: 'lock', text: t.tagline.e2e },
+  ]
 
   if (style === 'badges') {
     return (
-      <ul aria-label="Güvenlik özellikleri" className={cx('flex flex-wrap gap-2', justify, props.className)}>
-        {ITEMS.map((item) => (
+      <ul aria-label={t.tagline.aria} className={cx('flex flex-wrap gap-2', justify, props.className)}>
+        {items.map((item) => (
           <li
             key={item.text}
             className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-cream px-2.5 py-1 text-xs leading-4 font-semibold whitespace-nowrap text-ink dark:border-accent/25 dark:bg-night-raised dark:text-sand"
@@ -44,8 +45,8 @@ export function Tagline(props: TaglineProps) {
 
   if (style === 'icons') {
     return (
-      <ul aria-label="Güvenlik özellikleri" className={cx('flex flex-wrap gap-x-3 gap-y-1', justify, props.className)}>
-        {ITEMS.map((item) => (
+      <ul aria-label={t.tagline.aria} className={cx('flex flex-wrap gap-x-3 gap-y-1', justify, props.className)}>
+        {items.map((item) => (
           <li key={item.text} className="inline-flex items-center gap-1 text-xs leading-4 font-medium whitespace-nowrap text-fur dark:text-sand-muted">
             <Icon name={item.icon} className="size-3.5 text-accent" />
             {item.text}
@@ -63,7 +64,7 @@ export function Tagline(props: TaglineProps) {
         props.className,
       )}
     >
-      İz Bırakmadan - İsviçre Korumalı - Uçtan Uca Şifrelenmiş
+      {`${t.tagline.noTrace} - ${t.tagline.swiss} - ${t.tagline.e2e}`}
     </p>
   )
 }

@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { useCopy } from '../lib/i18n'
 import { CreateNoteCta, ReplyCtaContext } from './CreateNoteCta'
 import { Hero } from './Hero'
 import { NoteViewer } from './NoteViewer'
@@ -14,31 +15,27 @@ type NoteOpenedScreenProps = {
   onReplyWithText?: (text: string) => void
 }
 
-/**
- * Ekran (c-2) Oku, içerik — Figma: Mesaj Açıldı.
- * Alt başlık masaüstü metninden alındı, yazım hataları düzeltildi
- * ("ihma" → "imha", "görüntülemeyecek" → "görüntülenemeyecek").
- * Mobil frame'de farklı bir metin var: "Sayfadan ayrıldığın anda mesaj kendini yokeder."
- */
+/** Ekran (c-2) Oku, içerik — Figma: Mesaj Açıldı. */
 export function NoteOpenedScreen(props: NoteOpenedScreenProps) {
+  const t = useCopy()
   const look = useContext(ReplyCtaContext)
   return (
     <Hero
-      title="Bu mesajı bir kez görüntüleyebilirsin!"
-      subtitle="Mesajı açtığın anda bağlantı imha edildi. Bu mesaj tekrar görüntülenemeyecek."
+      title={t.opened.title}
+      subtitle={t.opened.subtitle}
       monkey={{ pose: 'ears', placement: 'peek' }}
       space="compact"
       card={<NoteViewer text={props.text} onCopy={props.onCopyText} copied={props.textCopied} />}
       footer={
         <CreateNoteCta
-          heading="Cevap Gönder"
+          heading={t.openedCta.heading}
           onCreate={props.onReply}
           look={look}
           onCreateWithText={props.onReplyWithText}
-          bannerTitle="Cevap vermek ister misin?"
-          bannerText="Cevabın da aynı şekilde: tek kullanımlık, iz bırakmadan."
+          bannerTitle={t.openedCta.bannerTitle}
+          bannerText={t.openedCta.bannerText}
           bannerMonkey="eyes"
-          buttonLabel={look === 'banner' ? 'Gizli Cevap Oluştur' : undefined}
+          buttonLabel={look === 'banner' ? t.openedCta.button : undefined}
         />
       }
     />

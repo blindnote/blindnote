@@ -20,7 +20,7 @@ import { PageLayout } from './components/PageLayout'
 import { RevealScreen } from './components/RevealScreen'
 import { ApiError, createNote, revealNote } from './lib/api'
 import { decryptNote, encryptNote, exportKey, generateKey, importKey } from './lib/crypto'
-import { FAQ_ITEMS, MESSAGES } from './lib/content'
+import { useCopy, type Strings } from './lib/i18n'
 import { buildNoteLink, forgetFragment, parseNoteLink, type NoteLink } from './lib/link'
 
 /** Longest note the composer will let someone type, in characters. */
@@ -52,30 +52,32 @@ function screenForFragment(fragment: string): Screen {
 }
 
 /** Turns a failure into something a person can act on. */
-function messageFor(error: unknown): string {
+function messageFor(error: unknown, errors: Strings['errors']): string {
   if (error instanceof ApiError) {
     switch (error.failure.kind) {
       case 'offline':
-        return MESSAGES.offline
+        return errors.offline
       case 'throttled':
-        return MESSAGES.throttled
+        return errors.throttled
       case 'rejected':
-        return MESSAGES.rejected
+        return errors.rejected
       default:
-        return MESSAGES.server
+        return errors.server
     }
   }
 
-  if (error instanceof Error && error.message === 'note too large') return MESSAGES.tooLarge
+  if (error instanceof Error && error.message === 'note too large') return errors.tooLarge
   // Anything left is WebCrypto refusing, which on a current browser means it
   // is not there: the page is on plain HTTP, or the browser is very old.
-  return MESSAGES.noCrypto
+  return errors.noCrypto
 }
 
 export function App() {
   // Read once, on the first render. The fragment is deliberately not watched:
   // clicking "Sıkça Sorulan Sorular" replaces it, and that must not throw away
   // a note the reader has not opened yet.
+  const t = useCopy()
+
   const [screen, setScreen] = useState<Screen>(() => screenForFragment(window.location.hash))
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -142,7 +144,7 @@ export function App() {
 
       go({ name: 'link', url })
     } catch (error) {
-      setComposeError(messageFor(error))
+      setComposeError(messageFor(error, t.errors))
     } finally {
       setComposeStatus('idle')
     }
@@ -177,7 +179,7 @@ export function App() {
         return
       }
 
-      setRevealError(messageFor(error))
+      setRevealError(messageFor(error, t.errors))
     } finally {
       setRevealStatus('idle')
     }
@@ -189,7 +191,7 @@ export function App() {
       await navigator.clipboard.writeText(url)
       setCopied(true)
     } catch {
-      setCopyError(MESSAGES.copyFailed)
+      setCopyError(t.errors.copyFailed)
     }
   }
 
@@ -216,7 +218,6 @@ export function App() {
       ctaOnMobileAlways={screen.name !== 'compose'}
       menuOpen={menuOpen}
       onMenuToggle={() => setMenuOpen((open) => !open)}
-      faqItems={FAQ_ITEMS}
     >
       {screen.name === 'compose' && (
         <ComposeScreen
