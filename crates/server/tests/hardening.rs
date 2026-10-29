@@ -295,6 +295,51 @@ async fn the_create_quota_is_enforced_separately() {
     assert_eq!(second.status, StatusCode::TOO_MANY_REQUESTS);
 }
 
+/// A nearly-full disk refuses new notes and keeps serving old ones.
+///
+/// 503 rather than 500, because it is neither the client's fault nor a bug:
+/// reading an existing note still works, and a client told "internal error"
+/// has no reason to believe that.
+#[tokio::test]
+async fn a_full_disk_refuses_new_notes_but_still_serves_stored_ones() {
+    // Stored while the server believes it has room. Kept alive for the rest
+    // of the test, because it owns the temporary directory.
+    let roomy = Server::start().await;
+    let id = roomy.create(SMALLEST_CIPHERTEXT).await;
+    let directory = roomy.directory().to_path_buf();
+
+    // The same data directory, with a floor no filesystem can satisfy.
+    let cramped = Server::start_with(|config| {
+        config.data_dir = directory;
+        config.min_free_bytes = u64::MAX;
+    })
+    .await;
+
+    let refused = cramped
+        .post_json(
+            "/api/notes",
+            &format!(r#"{{"ciphertext":"{SMALLEST_CIPHERTEXT}"}}"#),
+        )
+        .await;
+    assert_eq!(
+        refused.status,
+        StatusCode::SERVICE_UNAVAILABLE,
+        "{}",
+        refused.body
+    );
+    assert_eq!(refused.json()["error"], "full");
+
+    let read = cramped
+        .post_json("/api/reveal", &format!(r#"{{"id":"{id}"}}"#))
+        .await;
+    assert_eq!(
+        read.status,
+        StatusCode::OK,
+        "a nearly-full disk must not make a stored note unreadable: {}",
+        read.body
+    );
+}
+
 /// The health probe is not rate limited.
 ///
 /// A throttled probe makes an orchestrator believe the service is down, and
