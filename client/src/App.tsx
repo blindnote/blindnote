@@ -95,6 +95,31 @@ export function App() {
     setMenuOpen(false)
   }, [screen.name])
 
+  // Opening a note link while the page is already loaded changes the fragment
+  // without reloading anything, which is what happens when somebody pastes a
+  // link into the address bar of a tab that is already here. Without this the
+  // address bar would show the note and the screen would show whatever was
+  // there before.
+  //
+  // Only a note link counts. The site's own navigation shares this fragment --
+  // `#nedir`, `#sifreleme`, `#sss` -- and reacting to an anchor would throw
+  // away a note the reader has not opened yet.
+  useEffect(() => {
+    const onFragmentChange = () => {
+      const next = screenForFragment(window.location.hash)
+      if (next.name === 'compose') return
+
+      setCopied(false)
+      setNoteCopied(false)
+      setComposeError(undefined)
+      setRevealError(undefined)
+      setScreen(next)
+    }
+
+    window.addEventListener('hashchange', onFragmentChange)
+    return () => window.removeEventListener('hashchange', onFragmentChange)
+  }, [])
+
   const go = (next: Screen) => {
     setCopied(false)
     setNoteCopied(false)
