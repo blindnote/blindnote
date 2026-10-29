@@ -106,7 +106,7 @@ export function NoteComposer(props: NoteComposerProps) {
             autoComplete="off"
             className="max-h-[50vh] min-h-[98px] w-full resize-none bg-transparent text-sm leading-6 break-words text-ink-strong outline-none [field-sizing:content] placeholder:text-muted placeholder:italic md:min-h-[87px] md:text-xl md:leading-6 md:placeholder:not-italic dark:text-sand dark:placeholder:text-muted"
           />
-          <div className="hidden flex-col items-end gap-3 pt-4 pb-2 md:flex">{actions(false)}</div>
+          <div className="hidden flex-col items-end gap-6 pt-4 pb-2 md:flex">{actions(false)}</div>
         </div>
       </Panel>
       <div className="mt-5 flex flex-col items-center gap-4 md:hidden">{actions(true)}</div>
