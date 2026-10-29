@@ -6,12 +6,12 @@
 # in a distroless runtime that carries nothing but the binary and glibc.
 #
 # Reproducibility (CLAUDE.md section 3, section 9) is the point of this project,
-# so every base image is pinned and nothing here reaches the network except the
-# package managers during build. Digests are pinned in a follow-up once the
-# first build is measured; the exact Rust is already fixed by rust-toolchain.toml.
+# so every base image is pinned by digest and nothing here reaches the network
+# except the package managers during build. The exact Rust is also fixed by
+# rust-toolchain.toml; SOURCE_DATE_EPOCH is set by the release workflow.
 
 # ---- 1. client: Vite build -> /client/dist ----------------------------------
-FROM node:22-bookworm-slim AS client
+FROM node:22-bookworm-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS client
 WORKDIR /client
 # Install deps from the lockfile alone first, so this layer caches across
 # source-only changes.
@@ -21,7 +21,7 @@ COPY client/ ./
 RUN npm run build
 
 # ---- 2. server: cargo build, embedding the client ---------------------------
-FROM rust:1.99.1-bookworm AS build
+FROM rust:1.99.1-bookworm@sha256:9181b56c2a21ab1d5e73cffe04fc762426d30aa7fac3c91141dd033f49a7fc8b AS build
 WORKDIR /src
 # The toolchain file pins the compiler; copy it first so a mismatch fails early.
 COPY rust-toolchain.toml ./
@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     && cp /src/target/release/blindnote /usr/local/bin/blindnote
 
 # ---- 3. runtime: distroless, non-root ---------------------------------------
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:9dac0a79194e45a7da0158a9c6da57b217585af0786db3845d1f0ec1a0dd182f
 LABEL org.opencontainers.image.source="https://github.com/blindnote/blindnote" \
       org.opencontainers.image.description="One-time-read, end-to-end encrypted, self-destructing notes." \
       org.opencontainers.image.licenses="PolyForm-Shield-1.0.0"
