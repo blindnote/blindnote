@@ -652,3 +652,58 @@ Periodic `VACUUM`. With `auto_vacuum = FULL` the key file already shrinks on eve
 note file reuses its freed pages with `secure_delete` zeroing them, so the cost of *not* vacuuming
 is disk that stays allocated rather than data that lingers. Deciding the cadence needs a measured
 answer to "how much does the note file grow under real traffic", which needs real traffic.
+
+## 2026-10-29 — the move to a real host: examining the old box, then provisioning and hardening the new one
+
+This session left the code and went to infrastructure (CLAUDE.md step 10). Server addresses, keys and
+the real deploy config stay out of this repo (section 10) and live with the operator; what follows is
+the narrative and the decisions, not the coordinates.
+
+### The old box, examined before it is destroyed
+
+The 2020-era machine from section 9 is still live and still serving the 2021 Laravel version — the one
+section 1 describes, which stored notes as plaintext. That claim was verified directly from its
+database this session: the `notes` table is `id, note (text), created_at` with no encryption anywhere,
+169 rows pending (ids run to ~1481, so the one-time-read deletes have been working), and the content is
+test strings and bot spam, no real user secret. The export was taken three ways (a `mysqldump`, JSON,
+and a readable listing) and handed to the operator before anything is torn down. The box has no
+provider backups and keeps its data on the root disk, matching section 9's intent.
+
+Getting in was its own lesson: the key the project SSH config names was still authorized but login
+failed, and a web console's keyboard layout had silently corrupted a pasted key (`+`→`=`, `@`→`2`).
+The reliable path was the provider's rescue system over the API — and even there, writing to the
+mounted root filesystem wedged in uninterruptible I/O while reads ran fine, which is one more reason
+the plan is to replace this disk, not nurse it.
+
+### The new box: provisioned, then hardened before it serves anything
+
+A fresh current-generation machine (the section 9 "CX22 class" successor), Ubuntu 24.04 LTS, built
+with key-only access. Hardening was applied in stages, testing login between each so a mistake could
+never lock the operator out:
+
+- **SSH.** An unprivileged admin user with its key and `NOPASSWD` sudo first, tested, *then* root login
+  disabled. `AllowUsers` pinned to that one account, passwords and keyboard-interactive off, X11 and
+  all forwarding off, `MaxAuthTries 3`. Crypto narrowed to AEAD ciphers, ETM MACs, and
+  curve25519 + `sntrup761x25519` key exchange; host and user keys limited to ed25519. The drop-in is
+  named to sort before cloud-init's so its values win (sshd takes the first occurrence of each
+  keyword).
+- **Core dumps off** (section 9, item 5 — a crash must never write a key to disk): `core_pattern` set
+  to `|/bin/false`, `suid_dumpable=0`, a `* hard core 0` limit, systemd coredump storage none, and
+  apport disabled. This is the host-side companion to the crypto-shredding guarantee.
+- **sysctl**: `kptr_restrict`, `dmesg_restrict`, `yama.ptrace_scope`, the `protected_*` fs settings,
+  reverse-path filtering, redirects and source-routing off, SYN cookies on. `ip_forward` is left
+  alone on purpose — Docker needs it, and setting it to 0 would break container networking.
+- **ufw** default-deny inbound with 22/80/443, SSH allowed before the firewall was enabled.
+  **fail2ban** on the sshd jail.
+
+A further section 9 network-hardening step is tracked privately.
+
+### Containerized, and the image proven to run
+
+The server is one binary that embeds the client, so the image is a two-step build (client, then the
+binary that bakes it in) landing in a distroless non-root runtime — 45 MB total. It builds from the
+pinned toolchain and runs read-only-rootfs with a tmpfs `/tmp` and the data on a mounted volume; a
+smoke test confirmed `/healthz` 200, the embedded client served, `GET` on the burn route 405, a clean
+log, and the two SQLite files created by uid 65532 under the read-only root. Base images are pinned by
+tag now; digest pinning and `SOURCE_DATE_EPOCH` belong to the reproducible-build + cosign work (step 9)
+that comes next, alongside the Caddy-fronted compose and the DNS cutover to the new box.
