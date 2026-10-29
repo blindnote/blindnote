@@ -28,6 +28,7 @@ use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::timeout::TimeoutLayer;
 
 use crate::api::{self, ApiState};
+use crate::assets;
 use crate::headers;
 use crate::rate_limit::Limiters;
 
@@ -66,6 +67,9 @@ pub(crate) fn router(state: ApiState, limiters: &Limiters, layers: Layers) -> Ro
     Router::new()
         .route("/healthz", get(healthz))
         .merge(api)
+        // Last, so that its catch-all cannot shadow a route above it. Axum
+        // prefers the more specific match, and a test holds that.
+        .merge(assets::router())
         .layer(
             ServiceBuilder::new()
                 // Outermost, so that even the 500 produced by a caught panic
