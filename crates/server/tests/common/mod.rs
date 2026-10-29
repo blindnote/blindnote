@@ -24,7 +24,7 @@ pub struct Server {
     address: SocketAddr,
     client: Client<hyper_util::client::legacy::connect::HttpConnector, String>,
     task: JoinHandle<()>,
-    _directory: TempDir,
+    data_dir: TempDir,
 }
 
 /// One answer, reduced to what the tests assert on.
@@ -58,6 +58,15 @@ impl Server {
         Self::start_with(|_| {}).await
     }
 
+    /// The data directory this server was given.
+    ///
+    /// Only useful for pointing a second server at the same files, which is
+    /// how the disk-floor test stores a note while there is room and then
+    /// reads it back from a server that believes there is none.
+    pub fn directory(&self) -> &std::path::Path {
+        self.data_dir.path()
+    }
+
     /// Starts a server, letting the caller adjust the configuration first.
     ///
     /// The listener is bound here, on port zero, and handed to
@@ -87,7 +96,7 @@ impl Server {
             address,
             client: Client::builder(TokioExecutor::new()).build_http(),
             task,
-            _directory: directory,
+            data_dir: directory,
         }
     }
 
