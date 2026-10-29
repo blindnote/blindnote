@@ -15,6 +15,7 @@
 //! comment above it says which rule asked for the omission.
 
 mod api;
+mod assets;
 mod config;
 mod error;
 mod headers;
@@ -136,6 +137,15 @@ pub async fn serve(config: Config, listener: TcpListener) -> Result<(), RunError
         tracing::warn!(
             "BLINDNOTE_TRUSTED_PROXY is unset: every request is attributed to the address it \
              arrived from, so behind a reverse proxy all clients share one rate-limit bucket"
+        );
+    }
+
+    if assets::is_empty() {
+        // Loud, because a binary that serves an API and no interface looks
+        // healthy from every angle except a browser's. It means this was built
+        // without `npm run build` in client/ first.
+        tracing::error!(
+            "no interface is embedded in this binary: only /api and /healthz will answer"
         );
     }
 
