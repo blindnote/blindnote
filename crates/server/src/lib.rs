@@ -17,6 +17,7 @@
 mod api;
 mod assets;
 mod config;
+mod csp;
 mod error;
 mod headers;
 mod rate_limit;

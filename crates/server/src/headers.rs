@@ -6,8 +6,8 @@
 //! -- has to be generated from the client bundle at build time, which only the
 //! application can do.
 //!
-//! The policy itself is not here yet: it pins script hashes, so it cannot be
-//! written before there is a bundle to hash. It joins this list in step 7.
+//! The content security policy is in its own module, because it is built from
+//! the embedded bundle's hashes rather than written out as a constant.
 //!
 //! `Cache-Control` is deliberately absent. Every response sets its own: API
 //! answers are `no-store`, and the embedded client assets will be `immutable`.
@@ -16,11 +16,14 @@
 use std::sync::LazyLock;
 
 use axum::extract::Request;
+use axum::http::header::CONTENT_SECURITY_POLICY;
 use axum::http::header::{
     HeaderName, HeaderValue, REFERRER_POLICY, STRICT_TRANSPORT_SECURITY, X_CONTENT_TYPE_OPTIONS,
 };
 use axum::middleware::Next;
 use axum::response::Response;
+
+use crate::csp;
 
 /// Every browser feature this application has no use for.
 ///
@@ -83,6 +86,7 @@ pub(crate) async fn apply(request: Request, next: Next) -> Response {
     for (name, value) in SECURITY_HEADERS.iter() {
         headers.insert(name, value.clone());
     }
+    headers.insert(CONTENT_SECURITY_POLICY, csp::header());
 
     response
 }
