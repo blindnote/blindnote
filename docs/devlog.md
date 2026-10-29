@@ -593,3 +593,62 @@ directive would have been the same thing by accident rather than on purpose.
 Step 8, password mode: Argon2id through `hash-wasm` and the route-scoped `'wasm-unsafe-eval'` that
 goes with it. After that what is left needs things this session does not have — Docker for the
 reproducible build, and the machine for steps 3, 9 and 10.
+
+## 2026-10-29 — the free-space floor: the other half of "notes are never lost"
+
+The last hard rule with an unwritten half. Rule 6 says notes are never lost and that a disk
+threshold refuses *new* notes; the refusal existed only as a sentence until now. 139 tests, all
+gates clean.
+
+A full disk is the one ordinary failure that can destroy a note somebody is waiting to read:
+SQLite cannot commit, the write-ahead log cannot grow, and the sweeper cannot delete. So creation
+stops while there is still room to finish serving what is already stored.
+
+### What is gated, and what is not
+
+| Operation | On a nearly-full disk | Why |
+|---|---|---|
+| create | **refused**, 503 | the only operation that consumes space |
+| reveal | allowed | makes room, and the note is already somebody's |
+| report | allowed | makes room |
+| sweep | allowed | makes room |
+
+Four of the seven new tests are about the second column rather than the first. A floor that also
+blocked reads would turn a nearly-full disk into data loss, which is the thing it exists to
+prevent — so that is the half worth asserting.
+
+### Decisions taken while writing this
+
+**An absolute floor, not a percentage.** What matters is whether there is room to finish serving
+what is stored, and that is an absolute quantity. Five percent of a 10 GB volume is 500 MB and of
+a 1 GB volume is 50 MB: a percentage is a small number exactly when it needs not to be. The
+default is 256 MiB, which is roughly four thousand full-size notes of headroom plus room for the
+logs and a sweep.
+
+**`f_bavail`, not `f_bfree`.** Most filesystems reserve a few percent for root. Counting that
+reserve as available would mean the refusal arrives only after the writes have already started
+failing, which is the opposite of the point.
+
+**One `statvfs` per create, uncached.** A few microseconds against the two `fsync`-backed commits
+a create already costs — around 16 ms each on the machine measured earlier. There is nothing to
+gain from caching it and a stale answer to lose.
+
+**A missing data directory is an error, not zero free bytes.** Zero would read as "the disk is
+full" and refuse every note, which is the wrong answer to "this path does not exist". There is a
+test for it, because the lazy version of this function returns zero on any failure and looks
+reasonable while doing so.
+
+**`rustix` named directly rather than a new crate.** It was already in the dependency graph
+through `tempfile`, so naming it adds nothing. One call is used: `statvfs`.
+
+**503, and no `Retry-After`.** 503 rather than 500 because it is neither the client's fault nor a
+bug, and because reading an existing note still works — a client told "internal error" has no
+reason to believe the second part. No `Retry-After` because how long genuinely depends on when the
+stored notes expire or are read, and a guessed value is a worse answer than none.
+
+### Still not done, and why
+
+Periodic `VACUUM`. With `auto_vacuum = FULL` the key file already shrinks on every delete, and the
+note file reuses its freed pages with `secure_delete` zeroing them, so the cost of *not* vacuuming
+is disk that stays allocated rather than data that lingers. Deciding the cadence needs a measured
+answer to "how much does the note file grow under real traffic", which needs real traffic.
