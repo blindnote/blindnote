@@ -19,6 +19,10 @@ aes-gcm = { version = "0.11.1", default-features = false, features = ["aes", "al
 axum = { version = "0.8.9", default-features = false, features = ["http1", "json", "tokio"] }
 base64 = { version = "0.23.1", default-features = false, features = ["alloc"] }
 blindnote-crypto = { path = "crates/crypto" }
+# Build-time only: the client build is pre-compressed into the binary rather
+# than compressed per request.
+brotli = { version = "9.1.1", default-features = false, features = ["std"] }
+sha2 = { version = "0.11.1", default-features = false, features = ["alloc"] }
 blindnote-store = { path = "crates/store" }
 # The kernel CSPRNG directly, with no userspace generator in front of it. A
 # reseeding PRNG is state that would have to be kept, protected and zeroized,
