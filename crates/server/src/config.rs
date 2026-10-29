@@ -56,6 +56,17 @@ pub struct Config {
     /// the disk over a day. Both are needed, and they are different numbers.
     pub creates_per_hour: u32,
 
+    /// Stop accepting new notes when the data volume has less than this free.
+    ///
+    /// A full disk is the one ordinary failure that can destroy a note
+    /// somebody is waiting to read: SQLite cannot commit, the log cannot grow
+    /// and the sweeper cannot delete. So creation is refused while there is
+    /// still room to finish serving what is already stored. Reading and
+    /// reporting stay open, because both make room.
+    ///
+    /// Zero disables the check.
+    pub min_free_bytes: u64,
+
     /// How often expired notes and their keys are deleted.
     pub sweep_interval: Duration,
 
@@ -85,6 +96,11 @@ impl Default for Config {
             requests_per_second: 5,
             request_burst: 20,
             creates_per_hour: 60,
+            // 256 MiB. Large enough that the write-ahead logs, a sweep and
+            // every note already stored can all finish; small enough not to
+            // waste a volume. Roughly four thousand full-size notes of
+            // headroom.
+            min_free_bytes: 256 * 1024 * 1024,
             sweep_interval: Duration::from_secs(60),
             request_timeout: Duration::from_secs(15),
             max_concurrent_requests: 256,
@@ -127,6 +143,11 @@ impl Config {
                 "CREATES_PER_HOUR",
                 "positive integer",
                 defaults.creates_per_hour,
+            )?,
+            min_free_bytes: from_env_parsed(
+                "MIN_FREE_BYTES",
+                "positive integer",
+                defaults.min_free_bytes,
             )?,
             sweep_interval: from_env_seconds("SWEEP_INTERVAL_SECONDS", defaults.sweep_interval)?,
             request_timeout: from_env_seconds("REQUEST_TIMEOUT_SECONDS", defaults.request_timeout)?,
