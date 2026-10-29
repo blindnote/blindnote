@@ -1,6 +1,8 @@
+import { useCopy } from '../lib/i18n'
 import { Button } from './Button'
 import { cx } from './cx'
 import { Icon } from './Icon'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { Logo } from './Logo'
 import type { SiteLink } from './siteLinks'
 
@@ -9,11 +11,11 @@ type SiteHeaderProps = {
   /** Mobil menü maddeleri (Figma "Menü" frame'i) */
   menuLinks: ReadonlyArray<SiteLink>
   homeHref: string
-  /** Sağdaki "Gizli Mesaj Oluştur" butonu. Anasayfa'nın en üstünde Figma'da yok (Anasayfa_Scroll'da var). */
+  /** Sağdaki create butonu. Anasayfa'nın en üstünde Figma'da yok (Anasayfa_Scroll'da var). */
   cta?: { label: string; onClick: () => void }
   /** Sayfa kaydırıldı: başlık altına ince gölge (Figma Anasayfa_Scroll) */
   elevated?: boolean
-  /** Mobilde kompakt "Oluştur" butonu görünsün mü (kaydırınca) */
+  /** Mobilde kompakt create butonu görünsün mü (kaydırınca) */
   ctaOnMobile?: boolean
   /** Mobil menü açık mı (yalnız < md) */
   menuOpen: boolean
@@ -22,18 +24,19 @@ type SiteHeaderProps = {
 
 /** Figma: site-header (1440) ve site-header-mobile + Menü (375). */
 export function SiteHeader(props: SiteHeaderProps) {
+  const t = useCopy()
   return (
     <header className={cx('sticky top-0 z-40 bg-page/95 backdrop-blur transition-shadow dark:bg-night/95', props.elevated && 'shadow-[0_1px_0_rgb(79_32_0/0.08),0_6px_16px_-8px_rgb(79_32_0/0.18)]')}>
       <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between pr-2 pl-4 md:h-[88px] md:px-8">
         <a
           href={props.homeHref}
-          aria-label="BlindNote ana sayfa"
+          aria-label={t.header.home}
           className="rounded-md text-ink outline-none focus-visible:ring-4 focus-visible:ring-accent dark:text-sand"
         >
           <Logo className="h-[26px] md:h-8 lg:h-7 xl:h-8" />
         </a>
 
-        <nav aria-label="Ana menü" className="hidden lg:block">
+        <nav aria-label={t.header.mainMenu} className="hidden lg:block">
           <ul className="flex items-center gap-0.5 xl:gap-3">
             {props.links.map((link) => (
               <li key={link.href}>
@@ -48,7 +51,8 @@ export function SiteHeader(props: SiteHeaderProps) {
           </ul>
         </nav>
 
-        <div className="hidden justify-end lg:flex xl:w-[203px]">
+        <div className="hidden items-center justify-end gap-3 lg:flex xl:w-[260px]">
+          <LanguageSwitcher tone="light" />
           {props.cta && (
             <Button variant="secondary" onClick={props.cta.onClick}>
               {props.cta.label}
@@ -56,7 +60,7 @@ export function SiteHeader(props: SiteHeaderProps) {
           )}
         </div>
 
-        {/* Mobil: kaydırınca menünün yanında kompakt "Oluştur" butonu (Figma'da yok — türetildi) */}
+        {/* Mobil: kaydırınca menünün yanında kompakt create butonu (Figma'da yok — türetildi) */}
         <div className="ml-auto flex items-center gap-1 lg:hidden">
           {props.cta && props.ctaOnMobile && (
             <button
@@ -65,7 +69,7 @@ export function SiteHeader(props: SiteHeaderProps) {
               className="inline-flex h-9 items-center gap-1.5 rounded-2xl bg-ink px-3.5 text-[13px] font-semibold text-white outline-none hover:bg-ink-hover focus-visible:ring-4 focus-visible:ring-accent dark:bg-accent dark:text-ink"
             >
               <Icon name="message-plus" className="size-[18px]" />
-              <span className="leading-none [text-box:trim-both_cap_alphabetic]">Oluştur</span>
+              <span className="leading-none [text-box:trim-both_cap_alphabetic]">{t.header.create}</span>
             </button>
           )}
         <button
@@ -73,7 +77,7 @@ export function SiteHeader(props: SiteHeaderProps) {
           onClick={props.onMenuToggle}
           aria-expanded={props.menuOpen}
           aria-controls="mobil-menu"
-          aria-label={props.menuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+          aria-label={props.menuOpen ? t.header.closeMenu : t.header.openMenu}
           className="grid size-11 place-items-center rounded-lg text-ink-strong outline-none hover:bg-accent/15 focus-visible:ring-4 focus-visible:ring-accent lg:hidden dark:text-sand"
         >
           <Icon name={props.menuOpen ? 'close' : 'menu'} className={cx(props.menuOpen ? 'size-4' : 'h-4 w-6')} />
@@ -84,7 +88,7 @@ export function SiteHeader(props: SiteHeaderProps) {
       {props.menuOpen && (
         <nav
           id="mobil-menu"
-          aria-label="Mobil menü"
+          aria-label={t.header.mobileMenu}
           className="absolute inset-x-0 top-full h-[calc(100dvh-72px)] overflow-y-auto bg-page py-6 md:h-[calc(100dvh-88px)] lg:hidden dark:bg-night"
         >
           <ul className="flex flex-col gap-2">
@@ -99,6 +103,9 @@ export function SiteHeader(props: SiteHeaderProps) {
                 </a>
               </li>
             ))}
+            <li className="mt-2 px-4 pt-2">
+              <LanguageSwitcher tone="light" />
+            </li>
           </ul>
         </nav>
       )}

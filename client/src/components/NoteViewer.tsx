@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { useCopy } from '../lib/i18n'
 import { cx } from './cx'
 import { Icon } from './Icon'
 import { Panel } from './Panel'
@@ -22,7 +23,8 @@ type NoteViewerProps = {
 const TEXT = 'break-words whitespace-pre-wrap text-ink-strong dark:text-sand'
 const SCROLL = 'max-h-[55vh] overflow-y-auto rounded-md outline-none focus-visible:ring-4 focus-visible:ring-accent'
 
-function CopyButton(props: { onCopy?: () => void; copied?: boolean; tone?: 'light' | 'dark' }) {
+function CopyButton(props: { onCopy?: () => void; copied?: boolean }) {
+  const t = useCopy()
   if (!props.onCopy) return null
   return (
     <button
@@ -31,7 +33,7 @@ function CopyButton(props: { onCopy?: () => void; copied?: boolean; tone?: 'ligh
       className="inline-flex h-10 items-center gap-1.5 rounded-2xl border-[1.5px] border-ink md:rounded-button px-4 text-sm font-semibold text-ink outline-none transition-colors hover:bg-ink/6 focus-visible:ring-4 focus-visible:ring-accent dark:border-accent dark:text-accent dark:hover:bg-accent/10"
     >
       <Icon name={props.copied ? 'check' : 'copy'} className="size-4" />
-      <span className="leading-none [text-box:trim-both_cap_alphabetic]">{props.copied ? 'Kopyalandı' : 'Metni kopyala'}</span>
+      <span className="leading-none [text-box:trim-both_cap_alphabetic]">{props.copied ? t.noteViewer.copied : t.noteViewer.copyText}</span>
     </button>
   )
 }
@@ -41,6 +43,7 @@ function CopyButton(props: { onCopy?: () => void; copied?: boolean; tone?: 'ligh
  * Uzun notlarda kutu kendi içinde kayar (tasarımda yok — türetildi).
  */
 export function NoteViewer(props: NoteViewerProps) {
+  const t = useCopy()
   const style = useContext(NoteStyleContext)
 
   if (style === 'paper') {
@@ -52,7 +55,7 @@ export function NoteViewer(props: NoteViewerProps) {
           <div
             tabIndex={0}
             role="region"
-            aria-label="Gizli mesaj"
+            aria-label={t.noteViewer.secretMessage}
             className={cx(
               SCROLL,
               TEXT,
@@ -64,7 +67,7 @@ export function NoteViewer(props: NoteViewerProps) {
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-accent/50 px-6 py-3 md:px-10">
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-fur dark:text-sand-muted">
               <Icon name="eye-off" className="size-4 text-accent" />
-              Sayfadan çıkınca bu not yok olur
+              {t.noteViewer.disappears}
             </span>
             <CopyButton onCopy={props.onCopy} copied={props.copied} />
           </div>
@@ -74,19 +77,19 @@ export function NoteViewer(props: NoteViewerProps) {
   }
 
   if (style === 'sealed') {
-    // B · Açılmış mühür: üstte durum şeridi, altta not ve sağ altta kopyala. (Etiket ve alt not incelemede kaldırıldı)
+    // B · Açılmış mühür: üstte durum şeridi, altta not ve sağ altta kopyala.
     return (
       <div className="mx-auto w-full overflow-hidden rounded-2xl border-2 border-ink/10 bg-page shadow-composer md:rounded-card dark:border-night-line dark:bg-night-card">
         <div className="flex items-center justify-between gap-3 bg-ink px-4 py-3 text-white md:px-6 dark:bg-night-raised">
           <span className="inline-flex items-center gap-2 font-display text-sm font-semibold md:text-base">
             <Icon name="unlock" className="size-4 text-accent md:size-5" />
-            Mesajın açıldı
+            {t.noteViewer.opened}
           </span>
         </div>
         <div
           tabIndex={0}
           role="region"
-          aria-label="Gizli mesaj"
+          aria-label={t.noteViewer.secretMessage}
           className={cx(SCROLL, TEXT, 'px-4 pt-4 text-[15px] leading-6 font-medium md:px-6 md:pt-6 md:text-base md:leading-7')}
         >
           {props.text}
@@ -105,7 +108,7 @@ export function NoteViewer(props: NoteViewerProps) {
       <div
         tabIndex={0}
         role="region"
-        aria-label="Gizli mesaj"
+        aria-label={t.noteViewer.secretMessage}
         className={cx(SCROLL, TEXT, 'text-xs leading-[1.75] font-medium md:text-sm md:leading-7')}
       >
         {props.text}

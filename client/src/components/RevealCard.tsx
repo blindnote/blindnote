@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { useCopy } from '../lib/i18n'
 import { Button } from './Button'
 import { Icon } from './Icon'
 import { Panel } from './Panel'
@@ -47,17 +48,18 @@ function Envelope() {
 
 /** Figma: Mesaj Aç → note-composer (ortada dar beyaz kutu, buton + uyarı). */
 export function RevealCard(props: RevealCardProps) {
+  const t = useCopy()
   const style = useContext(RevealStyleContext)
   const opening = props.status === 'opening'
 
   if (style === 'envelope') {
-    // A · Mühürlü zarf: "sana özel" duygusunu güçlendirir; mührü kırmak = tek seferlik açmak
+    // A · Mühürlü zarf: "sana özel" duygusunu güçlendirir; mühürü kırmak = tek seferlik açmak
     return (
       <Panel tone={props.error ? 'danger' : 'default'}>
         <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
           <Envelope />
-          <Button onClick={props.onReveal} loading={opening} loadingLabel="Mühür kırılıyor…">
-            Mührü Kır ve Oku
+          <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.breakingSeal}>
+            {t.revealCard.breakSeal}
           </Button>
           <ErrorText error={props.error} />
         </div>
@@ -79,10 +81,10 @@ export function RevealCard(props: RevealCardProps) {
             <span className="flex size-9 items-center justify-center rounded-full bg-ink text-accent dark:bg-accent dark:text-ink">
               <Icon name="lock" className="size-5" />
             </span>
-            <Button onClick={props.onReveal} loading={opening} loadingLabel="Açılıyor…">
-              Mesajı Görüntüle
+            <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.opening}>
+              {t.revealCard.view}
             </Button>
-            <p className="text-center text-xs font-semibold text-ink md:text-sm dark:text-sand-muted">Sadece bir kez görüntülenebilir.</p>
+            <p className="text-center text-xs font-semibold text-ink md:text-sm dark:text-sand-muted">{t.revealCard.onlyOnceShort}</p>
           </div>
         </div>
         <div className="flex justify-center pt-2">
@@ -95,11 +97,11 @@ export function RevealCard(props: RevealCardProps) {
   return (
     <Panel tone={props.error ? 'danger' : 'default'} innerClassName="mx-auto w-full md:w-fit md:min-w-[359px]">
       <div className="flex flex-col items-center gap-3 py-6 pb-8 md:py-0 md:pb-2">
-        <Button onClick={props.onReveal} loading={opening} loadingLabel="Açılıyor…">
-          Mesajı Görüntüle
+        <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.opening}>
+          {t.revealCard.view}
         </Button>
         <p className="text-center text-xs font-semibold text-ink md:text-sm dark:text-sand-muted">
-          Mesajı sadece bir kez görüntüleyebilirsin.
+          {t.revealCard.onlyOnceLong}
         </p>
         <ErrorText error={props.error} />
       </div>

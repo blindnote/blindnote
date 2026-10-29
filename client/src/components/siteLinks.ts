@@ -1,28 +1,37 @@
+import type { Strings } from '../lib/i18n'
+
 export type SiteLink = { label: string; href: string }
 
-/** Header ve mobil menüdeki bağlantılar (Figma: site-header / Menü). */
-export const HEADER_LINKS: ReadonlyArray<SiteLink> = [
-  { label: 'Özgürce Paylaş', href: '/' },
-  { label: 'BlindNote Nedir?', href: '#nedir' },
-  { label: 'Uçtan Uca Şifreleme', href: '#sifreleme' },
-  { label: 'Sıkça Sorulan Sorular', href: '#sss' },
-]
-
-/** Mobil menü (Figma "Menü" frame'i): ilk madde "Gizli Mesaj Oluştur". */
-export const MENU_LINKS: ReadonlyArray<SiteLink> = [
-  { label: 'Gizli Mesaj Oluştur', href: '/' },
-  { label: 'BlindNote Nedir?', href: '#nedir' },
-  { label: 'Uçtan Uca Şifreleme', href: '#sifreleme' },
-  { label: 'Sıkça Sorulan Sorular', href: '#sss' },
-]
-
 /**
- * Footer bağlantıları. Figma'da 3. madde "Nasıl Çalışır?" (header'da "Uçtan Uca Şifreleme").
- * Tasarımdaki gibi bırakıldı; hangisi doğruysa ikisi eşitlenmeli.
+ * Header, menu and footer links. The hrefs are fixed anchors (`#nedir`,
+ * `#sifreleme`, `#sss`) shared with the app's fragment routing; only the
+ * labels follow the active language, so these are built from the dictionary.
  */
-export const FOOTER_LINKS: ReadonlyArray<SiteLink> = [
-  { label: 'Özgürce Paylaş', href: '/' },
-  { label: 'BlindNote Nedir?', href: '#nedir' },
-  { label: 'Nasıl Çalışır?', href: '#sifreleme' },
-  { label: 'Sıkça Sorulan Sorular', href: '#sss' },
-]
+export function headerLinks(t: Strings): ReadonlyArray<SiteLink> {
+  return [
+    { label: t.nav.shareFreely, href: '/' },
+    { label: t.nav.whatIs, href: '#nedir' },
+    { label: t.nav.encryption, href: '#sifreleme' },
+    { label: t.nav.faq, href: '#sss' },
+  ]
+}
+
+/** Mobile menu: the first item is the create action rather than "share freely". */
+export function menuLinks(t: Strings): ReadonlyArray<SiteLink> {
+  return [
+    { label: t.nav.createSecret, href: '/' },
+    { label: t.nav.whatIs, href: '#nedir' },
+    { label: t.nav.encryption, href: '#sifreleme' },
+    { label: t.nav.faq, href: '#sss' },
+  ]
+}
+
+/** Footer: the third item reads "How It Works" (Figma), pointing at the same section. */
+export function footerLinks(t: Strings): ReadonlyArray<SiteLink> {
+  return [
+    { label: t.nav.shareFreely, href: '/' },
+    { label: t.nav.whatIs, href: '#nedir' },
+    { label: t.nav.howItWorks, href: '#sifreleme' },
+    { label: t.nav.faq, href: '#sss' },
+  ]
+}

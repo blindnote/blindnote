@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react'
+import { useCopy } from '../lib/i18n'
 import { FaqItem } from './FaqItem'
 import { Monkey } from './Monkey'
 import { SectionHeading } from './SectionHeading'
@@ -13,14 +14,11 @@ export type FaqEntry = { question: string; answer: ReactNode }
 export type FaqStyle = 'figma' | 'split' | 'cards'
 export const FaqStyleContext = createContext<FaqStyle>('split')
 
-type FaqProps = {
-  /** Sorular Figma'dan; cevap metinleri tasarımda yok, çağıran verir. */
-  items: ReadonlyArray<FaqEntry>
-}
-
 /** Figma: faq — maymun + "Sıkça Sorulan Sorular" + akordiyon listesi. */
-export function Faq(props: FaqProps) {
+export function Faq() {
+  const t = useCopy()
   const style = useContext(FaqStyleContext)
+  const items = t.faq.items
   const section = 'scroll-mt-20 bg-page px-4 py-14 md:px-20 md:py-24 dark:bg-night'
 
   if (style === 'split') {
@@ -32,14 +30,14 @@ export function Faq(props: FaqProps) {
             <Monkey pose="eyes" className="w-12 md:w-16" />
             <Logo variant="wordmark" className="h-3.5 text-ink md:h-4 dark:text-sand" />
             <h2 id="sss-baslik" className="font-display text-2xl leading-[1.3] font-semibold tracking-[-0.02em] md:leading-[1.25] text-ink md:text-[40px] dark:text-sand">
-              Sıkça Sorulan Sorular
+              {t.faq.heading}
             </h2>
             <p className="text-[15px] leading-6 text-fur md:text-base md:leading-7 dark:text-sand-muted">
-              Merak ettiklerinin cevabı burada. Kısaca: mesajın tarayıcında şifrelenir, bir kez açılır ve yok olur.
+              {t.faq.intro}
             </p>
           </div>
           <div className="flex flex-col gap-3 md:gap-4">
-            {props.items.map((item) => (
+            {items.map((item) => (
               <FaqItem key={item.question} question={item.question} answer={item.answer} group="sss" />
             ))}
           </div>
@@ -52,9 +50,9 @@ export function Faq(props: FaqProps) {
     // B · Kartlar: soru sayısı az olduğu için hepsi açık; tıklamadan okunur
     return (
       <section id="sss" aria-labelledby="sss-baslik" className={section}>
-        <SectionHeading id="sss-baslik" title="Sıkça Sorulan Sorular" withMonkey />
+        <SectionHeading id="sss-baslik" title={t.faq.heading} withMonkey />
         <dl className="mx-auto mt-10 grid max-w-[1062px] gap-4 md:mt-[60px] md:grid-cols-2 md:gap-6">
-          {props.items.map((item, i) => (
+          {items.map((item, i) => (
             <div
               key={item.question}
               className="flex flex-col gap-2 rounded-2xl border border-accent/40 bg-[color-mix(in_srgb,var(--color-accent)_5%,var(--color-page))] p-5 shadow-step md:rounded-card md:p-7 dark:border-accent/20 dark:bg-night-card dark:shadow-none"
@@ -71,9 +69,9 @@ export function Faq(props: FaqProps) {
 
   return (
     <section id="sss" aria-labelledby="sss-baslik" className={section}>
-      <SectionHeading id="sss-baslik" title="Sıkça Sorulan Sorular" withMonkey />
+      <SectionHeading id="sss-baslik" title={t.faq.heading} withMonkey />
       <div className="mx-auto mt-10 flex max-w-[1062px] flex-col gap-4 md:mt-[60px]">
-        {props.items.map((item) => (
+        {items.map((item) => (
           <FaqItem key={item.question} question={item.question} answer={item.answer} group="sss" />
         ))}
       </div>
