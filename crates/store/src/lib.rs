@@ -42,6 +42,7 @@
 //! difference.
 
 mod db;
+mod disk;
 mod keys;
 mod notes;
 mod schema;
@@ -124,6 +125,20 @@ pub enum StoreError {
         found: String,
     },
 
+    /// The disk is too full to accept a new note.
+    ///
+    /// Creation only. Reading, reporting and sweeping stay open, because all
+    /// three make room rather than consume it -- and because a note somebody
+    /// is waiting to read must not become unreachable just because the disk
+    /// filled up after it was stored.
+    #[error("only {free_bytes} bytes free, which is below the {floor_bytes} byte floor")]
+    Full {
+        /// Bytes available to an unprivileged process.
+        free_bytes: u64,
+        /// The floor below which new notes are refused.
+        floor_bytes: u64,
+    },
+
     /// A note was offered with no views, which nobody could ever read.
     ///
     /// Refused at the door rather than stored: a note that cannot be opened
@@ -158,6 +173,22 @@ pub struct Store {
     inner: Arc<Inner>,
 }
 
+/// How little free space is enough to stop accepting new notes.
+///
+/// A floor in bytes rather than a percentage, because what matters is whether
+/// there is room to finish serving the notes already stored, and that is an
+/// absolute quantity. A percentage of a small volume is a small number exactly
+/// when it needs not to be.
+///
+/// Zero disables the check, which is what the tests that are not about it use.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct FreeSpaceFloor(pub u64);
+
+impl FreeSpaceFloor {
+    /// No floor: never refuse a note for want of space.
+    pub const NONE: Self = Self(0);
+}
+
 /// The two writer connections.
 ///
 /// One writer per file, with no reader pool. SQLite is synchronous, so every
@@ -170,6 +201,8 @@ pub struct Store {
 struct Inner {
     notes: Mutex<Connection>,
     keys: Mutex<Connection>,
+    data_dir: PathBuf,
+    floor: FreeSpaceFloor,
 }
 
 impl Store {
@@ -186,16 +219,16 @@ impl Store {
     /// [`StoreError::Pragma`] if a required setting did not take effect,
     /// [`StoreError::SchemaTooNew`] if a file came from a newer build, and
     /// [`StoreError::Sqlite`] for anything else SQLite refuses.
-    pub async fn open(data_dir: &Path) -> Result<Self, StoreError> {
+    pub async fn open(data_dir: &Path, floor: FreeSpaceFloor) -> Result<Self, StoreError> {
         let data_dir = data_dir.to_path_buf();
 
-        tokio::task::spawn_blocking(move || Self::open_blocking(&data_dir))
+        tokio::task::spawn_blocking(move || Self::open_blocking(&data_dir, floor))
             .await
             .map_err(|_| StoreError::Panicked)?
     }
 
     /// The file work behind [`Store::open`].
-    fn open_blocking(data_dir: &Path) -> Result<Self, StoreError> {
+    fn open_blocking(data_dir: &Path, floor: FreeSpaceFloor) -> Result<Self, StoreError> {
         prepare_directory(data_dir)?;
 
         let notes_path = data_dir.join("notes.db");
@@ -212,7 +245,38 @@ impl Store {
             inner: Arc::new(Inner {
                 notes: Mutex::new(notes),
                 keys: Mutex::new(keys),
+                data_dir: data_dir.to_path_buf(),
+                floor,
             }),
+        })
+    }
+
+    /// Refuses when the disk is too full to accept another note.
+    ///
+    /// One `statvfs` per create. That is a few microseconds against the two
+    /// `fsync`-backed commits a create already costs, so there is nothing to
+    /// gain from caching it and a stale answer to lose.
+    fn room_for_another(&self) -> Result<(), StoreError> {
+        if self.inner.floor == FreeSpaceFloor::NONE {
+            return Ok(());
+        }
+
+        let free_bytes = disk::free_bytes(&self.inner.data_dir)?;
+        if free_bytes >= self.inner.floor.0 {
+            return Ok(());
+        }
+
+        // Counts only, no note involved, and worth saying loudly: from here on
+        // the service is read-only until something expires or is read.
+        tracing::error!(
+            free_bytes,
+            floor_bytes = self.inner.floor.0,
+            "refusing new notes: the data directory is nearly full"
+        );
+
+        Err(StoreError::Full {
+            free_bytes,
+            floor_bytes: self.inner.floor.0,
         })
     }
 
@@ -221,6 +285,7 @@ impl Store {
     /// # Errors
     ///
     /// Returns [`StoreError::NoViews`] if the note allows no reads,
+    /// [`StoreError::Full`] if the disk is too full to take another,
     /// [`StoreError::Crypto`] if randomness or sealing fails, and
     /// [`StoreError::Sqlite`] if either write fails. A failed note write is
     /// compensated by deleting the key that was just stored, so a rejected
@@ -229,6 +294,7 @@ impl Store {
         if note.views_left == 0 {
             return Err(StoreError::NoViews);
         }
+        self.room_for_another()?;
 
         let note_id = Id::random()?;
         let key_id = Id::random()?;
