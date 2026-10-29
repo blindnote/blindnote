@@ -9,22 +9,31 @@ use serde::{Deserialize, Serialize};
 use crate::api::{ApiState, decode, encode};
 use crate::error::ApiError;
 
-/// Largest note we accept, counted in the plaintext the user typed.
+/// Largest note the product offers, counted in the plaintext a user types.
 const MAX_PLAINTEXT_BYTES: usize = 64 * 1024;
 
-/// AES-GCM appends a 16-byte tag and adds no padding, so the ciphertext the
-/// browser sends is exactly the plaintext length plus the tag.
-const TAG_BYTES: usize = 16;
+/// Room for whatever framing the client wraps around its ciphertext.
+///
+/// The browser currently sends `nonce ‖ ciphertext ‖ tag`, which is 28 bytes
+/// of overhead. The exact format is deliberately not this server's business --
+/// it cannot read the payload and has no reason to parse it -- so the bound is
+/// a round number above anything a sane framing would add, rather than a sum
+/// that has to be corrected every time the client changes.
+const CLIENT_FRAMING_HEADROOM: usize = 512;
 
-/// Largest ciphertext we accept.
-const MAX_CIPHERTEXT_BYTES: usize = MAX_PLAINTEXT_BYTES + TAG_BYTES;
+/// Largest opaque payload we accept.
+///
+/// The user-facing 64 KB limit is enforced in the browser, before encryption,
+/// which is the only place it can produce a useful message. This is the
+/// backstop.
+const MAX_PAYLOAD_BYTES: usize = MAX_PLAINTEXT_BYTES + CLIENT_FRAMING_HEADROOM;
 
-/// Smallest ciphertext we accept: an empty note is still a tag.
+/// Smallest payload we accept: an AES-GCM tag, and nothing else.
 ///
 /// This also rejects an empty string, which is the shape a broken client sends
 /// when its encryption step silently did nothing -- a failure mode worth
 /// catching here rather than storing.
-const MIN_CIPHERTEXT_BYTES: usize = TAG_BYTES;
+const MIN_PAYLOAD_BYTES: usize = 16;
 
 /// How long a note may live.
 ///
@@ -92,12 +101,12 @@ pub(crate) async fn handle(
     })?;
 
     let ciphertext = decode(&request.ciphertext)?;
-    if ciphertext.len() < MIN_CIPHERTEXT_BYTES {
+    if ciphertext.len() < MIN_PAYLOAD_BYTES {
         return Err(ApiError::BadRequest(
             "the ciphertext is too short to be one",
         ));
     }
-    if ciphertext.len() > MAX_CIPHERTEXT_BYTES {
+    if ciphertext.len() > MAX_PAYLOAD_BYTES {
         return Err(ApiError::BadRequest("the note is larger than 64 KB"));
     }
 
@@ -119,7 +128,7 @@ pub(crate) async fn handle(
 
 #[cfg(test)]
 mod tests {
-    use super::{MAX_CIPHERTEXT_BYTES, MAX_PLAINTEXT_BYTES, Ttl};
+    use super::{MAX_PAYLOAD_BYTES, MAX_PLAINTEXT_BYTES, Ttl};
 
     #[test]
     fn the_default_lifetime_is_a_day() {
