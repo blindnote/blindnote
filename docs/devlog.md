@@ -525,3 +525,71 @@ already has, plus the matching `integrity` attributes, plus `connect-src 'self'`
 `require-trusted-types-for 'script'`. Then a test that loads the page in a real browser with the
 policy on and asserts the console is free of policy violations — because a policy that silently
 blocks the application's own script is the failure mode here.
+
+## 2026-10-29 — step 7: the policy, and the proof that it is not decorative
+
+The content security policy, built from the bundle's own hashes. 130 tests, all gates clean, and
+the whole flow run in a real Chrome under the policy with an **empty console**.
+
+```
+default-src 'none';
+script-src 'sha256-wXIuffKtwwC5hXlVGkyiQD6aelAkT1TWvRwgOcaRA20=';
+style-src  'sha256-RiDVlNQ4TVtzMQO3I9qUzTxjQoGVNd4dnaXaO0m7Cac=';
+font-src 'self'; connect-src 'self';
+object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';
+require-trusted-types-for 'script'
+```
+
+### The half of this that is easy to miss
+
+A CSP hash matches an **inline** script by its text. For an **external** script it matches only
+when the element repeats the same hash in an `integrity` attribute — checked against MDN before any
+of this was written, because getting it wrong produces a policy that looks strict and silently
+blocks the application's own bundle.
+
+So pinning the bundle takes three places carrying one value: the `integrity` attribute in the page,
+the hash of the file that is served, and the source list in the header. `build.rs` computes all
+three from one set of bytes — it stamps the page, then re-hashes the page because its own bytes just
+changed — and a test asserts the three agree. If they ever drift, the browser refuses the script and
+the page goes blank with nothing to say why, which is the worst kind of failure to debug.
+
+### Why the browser run is the real test
+
+The page mounting at all is the proof. Had the stamped hash not matched the served bytes, Chrome
+would have refused the script and `#root` would have stayed empty. It mounted, the note was created,
+the link opened, the note revealed with its Turkish characters intact, and the console stayed empty
+through all of it — so `require-trusted-types-for 'script'` does not break React 19 either, which
+was the open question.
+
+Checked beforehand rather than discovered: no `style={{…}}` attributes anywhere in the components
+(so no `style-src-attr` problem), no `dangerouslySetInnerHTML` (so nothing for Trusted Types to
+block), and the twelve `url()` in the CSS are all fonts (so `font-src 'self'` is enough). The nine
+`data:` occurrences in the bundle turned out to be React's own object keys, not data URLs — which is
+why `img-src` is absent rather than permissive.
+
+### Decisions taken while writing this
+
+**`default-src 'none'` first.** Every directive the policy does not name falls back to it, so a
+browser feature nobody has thought of yet is denied rather than permitted. Listing what to deny is
+a list that is wrong every time a browser ships something.
+
+**`form-action 'none'`, not the `'self'` originally written down.** Every request this application
+makes goes through `fetch`, so no form ever navigates, and `'none'` is the stricter truth. `'self'`
+would have permitted something that never happens.
+
+**No `img-src`, no `media-src`, no `worker-src`.** `default-src 'none'` covers them, and naming a
+directive with a permissive value to "be safe" is how a policy stops meaning anything.
+
+**One policy, not route-scoped yet.** §8.2 calls it route-scoped because the password route will
+add `'wasm-unsafe-eval'` for Argon2-WASM. There is no password route, so there is one policy; the
+scoping arrives with the route that needs it.
+
+**An empty bundle pins `'none'` rather than nothing.** A binary built without `client/dist` emits
+`script-src 'none'`, which is the correct policy for a binary that serves no scripts. An empty
+directive would have been the same thing by accident rather than on purpose.
+
+### Next
+
+Step 8, password mode: Argon2id through `hash-wasm` and the route-scoped `'wasm-unsafe-eval'` that
+goes with it. After that what is left needs things this session does not have — Docker for the
+reproducible build, and the machine for steps 3, 9 and 10.
