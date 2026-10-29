@@ -120,12 +120,37 @@ impl Server {
             .to_owned()
     }
 
+    /// Sends a request carrying one extra header.
+    pub async fn send_with_header(
+        &self,
+        method: Method,
+        path: &str,
+        name: &'static str,
+        value: &str,
+    ) -> Answer {
+        self.request_with(method, path, None, Some((name, value.to_owned())))
+            .await
+    }
+
     async fn request(&self, method: Method, path: &str, body: Option<String>) -> Answer {
+        self.request_with(method, path, body, None).await
+    }
+
+    async fn request_with(
+        &self,
+        method: Method,
+        path: &str,
+        body: Option<String>,
+        extra: Option<(&'static str, String)>,
+    ) -> Answer {
         let uri = format!("http://{}{path}", self.address);
         let mut builder = Request::builder().method(method).uri(uri);
 
         if body.is_some() {
             builder = builder.header(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        }
+        if let Some((name, value)) = extra {
+            builder = builder.header(name, value);
         }
 
         let request = builder
