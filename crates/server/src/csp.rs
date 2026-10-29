@@ -65,9 +65,21 @@ fn build() -> String {
     // not a host list.
     directive(&mut policy, "font-src", "'self'");
 
+    // Favicons, the apple-touch icon and the manifest's icons are all served
+    // from this binary. 'self' lets the browser load them and admits nothing
+    // wider: a third-party image is a beacon that leaks the page was opened,
+    // and 'self' forbids exactly that -- while default-src 'none' would refuse
+    // our own icons along with everyone else's.
+    directive(&mut policy, "img-src", "'self'");
+
     // The three API calls, and nothing else. This is the directive that makes
     // injected code unable to send a note anywhere.
     directive(&mut policy, "connect-src", "'self'");
+
+    // The web app manifest, same-origin. Without this it falls back to
+    // default-src 'none' and the browser drops it; with it the browser reads
+    // the icons and theme colour the manifest declares.
+    directive(&mut policy, "manifest-src", "'self'");
 
     // No plugins, no embedding, no base-tag rewriting of relative urls, and no
     // form may navigate anywhere: every request this application makes goes
