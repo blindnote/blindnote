@@ -210,7 +210,11 @@ async fn the_page_the_bytes_and_the_policy_agree_on_one_hash() {
     );
 }
 
-/// The stylesheet is pinned the same way.
+/// The stylesheet is pinned too, but by SRI rather than a CSP hash: browsers do
+/// not match an external stylesheet against a `style-src` hash, so the byte
+/// guarantee lives in the `integrity` attribute (which browsers enforce for a
+/// `<link>`) and the policy allows the sheet from this origin with `'self'`.
+/// A `style-src` hash here would silently refuse our own stylesheet.
 #[tokio::test]
 async fn the_stylesheet_is_pinned_too() {
     let server = Server::start().await;
@@ -222,8 +226,18 @@ async fn the_stylesheet_is_pinned_too() {
     let sheet = find_src(&page.body, ".css").expect("the page references a stylesheet");
     let stamped = find_integrity(&page.body, &sheet).expect("the link tag carries an integrity");
 
+    let bytes = server.send(Method::GET, &sheet).await;
+    let etag = bytes.header("etag").expect("an ETag").trim_matches('"');
+    assert_eq!(
+        stamped, etag,
+        "the stylesheet integrity is not the hash of the file it points at"
+    );
+
     let policy = page.header("content-security-policy").expect("a policy");
-    assert!(policy.contains(&format!("'sha256-{stamped}'")), "{policy}");
+    assert!(
+        policy.contains("style-src 'self'"),
+        "the policy does not allow the stylesheet from this origin: {policy}"
+    );
 }
 
 /// The hash in the `integrity` attribute of the tag that references `href`.
