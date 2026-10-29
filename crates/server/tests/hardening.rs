@@ -32,6 +32,59 @@ async fn every_response_carries_the_security_headers() {
     assert!(answer.header("permissions-policy").is_some());
 }
 
+/// The policy is on every response, and it denies by default.
+#[tokio::test]
+async fn every_response_carries_a_policy_that_denies_by_default() {
+    let server = Server::start().await;
+
+    let answer = server.send(Method::GET, "/healthz").await;
+    let policy = answer
+        .header("content-security-policy")
+        .expect("a content security policy");
+
+    assert!(policy.starts_with("default-src 'none';"), "{policy}");
+    for directive in [
+        "connect-src 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+        "require-trusted-types-for 'script'",
+    ] {
+        assert!(
+            policy.contains(directive),
+            "the policy is missing {directive}: {policy}"
+        );
+    }
+}
+
+/// Nothing in the policy opens a door.
+///
+/// `'unsafe-inline'` or a scheme source would make the hashes decorative, and
+/// the policy is the reason injected code cannot send a note anywhere.
+#[tokio::test]
+async fn the_policy_contains_no_escape_hatch() {
+    let server = Server::start().await;
+
+    let answer = server.send(Method::GET, "/healthz").await;
+    let policy = answer.header("content-security-policy").expect("a policy");
+
+    for hatch in [
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "'wasm-unsafe-eval'",
+        "'strict-dynamic'",
+        "http:",
+        "https:",
+        "data:",
+        "*",
+    ] {
+        assert!(
+            !policy.contains(hatch),
+            "the policy contains {hatch}: {policy}"
+        );
+    }
+}
+
 /// An error response is still a response.
 ///
 /// Headers added by a layer that sits inside the error path would be missing
