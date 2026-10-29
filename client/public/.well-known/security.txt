@@ -1,0 +1,7 @@
+# BlindNote security contact (RFC 9116).
+# Served from the binary at https://blindnote.com/.well-known/security.txt
+Contact: mailto:ye@deligoz.me
+Expires: 2027-10-29T00:00:00.000Z
+Preferred-Languages: tr, en
+Canonical: https://blindnote.com/.well-known/security.txt
+Policy: https://github.com/blindnote/blindnote/blob/master/SECURITY.md
