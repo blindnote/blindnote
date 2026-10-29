@@ -176,6 +176,70 @@ async fn an_unknown_file_is_not_found() {
     assert_eq!(answer.status, StatusCode::NOT_FOUND);
 }
 
+/// The chain, checked end to end: page, bytes, policy.
+///
+/// A content security policy hash matches an external script only when the
+/// element repeats it in `integrity`, so pinning the bundle takes three things
+/// that must all carry the same value: the attribute in the page, the hash of
+/// the file that is served, and the source list in the header. The build
+/// computes all three from one set of bytes, which is exactly why a test is
+/// worth having -- if they ever drift, the browser refuses the script and the
+/// page goes blank with nothing to say why.
+#[tokio::test]
+async fn the_page_the_bytes_and_the_policy_agree_on_one_hash() {
+    let server = Server::start().await;
+    if !has_an_interface(&server).await {
+        return;
+    }
+
+    let page = server.send(Method::GET, "/").await;
+    let script = find_src(&page.body, ".js").expect("the page references a script");
+    let stamped = find_integrity(&page.body, &script).expect("the script tag carries an integrity");
+
+    let bytes = server.send(Method::GET, &script).await;
+    let etag = bytes.header("etag").expect("an ETag").trim_matches('"');
+    assert_eq!(
+        stamped, etag,
+        "the page pins a hash that is not the hash of the file it points at"
+    );
+
+    let policy = page.header("content-security-policy").expect("a policy");
+    assert!(
+        policy.contains(&format!("'sha256-{stamped}'")),
+        "the policy does not pin the hash the page carries: {policy}"
+    );
+}
+
+/// The stylesheet is pinned the same way.
+#[tokio::test]
+async fn the_stylesheet_is_pinned_too() {
+    let server = Server::start().await;
+    if !has_an_interface(&server).await {
+        return;
+    }
+
+    let page = server.send(Method::GET, "/").await;
+    let sheet = find_src(&page.body, ".css").expect("the page references a stylesheet");
+    let stamped = find_integrity(&page.body, &sheet).expect("the link tag carries an integrity");
+
+    let policy = page.header("content-security-policy").expect("a policy");
+    assert!(policy.contains(&format!("'sha256-{stamped}'")), "{policy}");
+}
+
+/// The hash in the `integrity` attribute of the tag that references `href`.
+fn find_integrity(page: &str, href: &str) -> Option<String> {
+    let at = page.find(href)?;
+    let rest = page.get(at..)?;
+    let end = rest.find('>')?;
+    let tag = rest.get(..end)?;
+
+    let marker = "integrity=\"sha256-";
+    let start = tag.find(marker)? + marker.len();
+    let value = tag.get(start..)?;
+
+    Some(value.get(..value.find('"')?)?.to_owned())
+}
+
 /// Finds the first `/assets/...<suffix>` the page references.
 fn find_src(page: &str, suffix: &str) -> Option<String> {
     let start = page.find("/assets/")?;
