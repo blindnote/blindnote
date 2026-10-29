@@ -12,17 +12,19 @@
 //!   back to this, so a browser feature nobody thought about is denied rather
 //!   than permitted. The alternative -- listing what to deny -- is a list that
 //!   is wrong every time a browser ships something.
-//! * **The script and style hashes are the build's, not a human's.** They come
-//!   from `build.rs`, which computed them from the bytes it embedded and
-//!   stamped the same values into the page's `integrity` attributes. A hash
-//!   typed into a header by hand is a hash that drifts.
+//! * **The script hash is the build's, not a human's.** It comes from
+//!   `build.rs`, which computed it from the bytes it embedded and stamped the
+//!   same value into the page's `integrity` attribute. The stylesheet is pinned
+//!   by that same `integrity` attribute alone -- browsers do not match an
+//!   external stylesheet against a `style-src` hash the way they do a script, so
+//!   `style-src` is `'self'` and SRI carries the byte guarantee.
 
 use std::fmt::Write as _;
 use std::sync::LazyLock;
 
 use axum::http::HeaderValue;
 
-use crate::assets::{SCRIPT_HASHES, STYLE_HASHES};
+use crate::assets::SCRIPT_HASHES;
 
 /// The policy, built once from the embedded bundle's hashes.
 static POLICY: LazyLock<String> = LazyLock::new(build);
@@ -45,10 +47,18 @@ fn build() -> String {
     // Deny by default, then name what the application actually needs.
     directive(&mut policy, "default-src", "'none'");
 
-    // The bundle, pinned by hash. With nothing embedded there is nothing to
-    // allow, and 'none' says so rather than leaving the directive empty.
+    // Scripts are pinned by hash: a browser matches an external script against a
+    // script-src hash when the element repeats it in `integrity`. With nothing
+    // embedded there is nothing to allow, and 'none' says so.
     directive(&mut policy, "script-src", &sources(SCRIPT_HASHES));
-    directive(&mut policy, "style-src", &sources(STYLE_HASHES));
+
+    // Styles cannot be pinned the same way: browsers do not match an external
+    // stylesheet against a style-src hash (only inline styles), so a hash here
+    // would silently block our own stylesheet. The byte pinning lives in the
+    // link's `integrity` attribute instead -- which browsers DO enforce for a
+    // stylesheet -- and style-src is 'self' to permit the same-origin sheet.
+    // There are no inline styles in the bundle.
+    directive(&mut policy, "style-src", "'self'");
 
     // Self-hosted woff2, from the same connection as everything else. No
     // Google Fonts, no third party, ever -- which is why this is 'self' and
