@@ -80,11 +80,21 @@ export function NoteNotFoundScreen(props: NoteNotFoundScreenProps) {
             <span aria-hidden="true" className="absolute inset-x-6 bottom-2 h-10 rounded-full bg-page/70 blur-xl md:bottom-6 md:h-16 dark:bg-night/70" />
             <Monkey pose="mouth" className="absolute bottom-0 w-16 md:w-28" />
           </div>
+          {/*
+            Başlık tasarımda "Bu mesaj hiç olmadı." idi. Sunucu, notun hiç var
+            olmamasıyla çoktan okunmuş olmasını AYIRT EDEMEZ (ve bilerek
+            edemez), üstelik yaygın durum ikincisi. Başlık bu yüzden taraf
+            seçmiyor; alt metin iki olasılığı da söylüyor ve beklenen bir
+            mesajın yanmış görünmesinin ne anlama geldiğini ekliyor.
+          */}
           <h1 className="mt-4 font-display text-[32px] leading-[1.2] font-bold tracking-[-0.02em] text-ink md:mt-6 md:text-5xl dark:text-sand">
-            Bu mesaj hiç olmadı.
+            Bu mesaj burada değil.
           </h1>
           <p className="mt-3 max-w-[343px] text-base leading-[1.45] text-pretty text-ink md:mt-4 md:max-w-[600px] md:text-2xl md:leading-[1.35] dark:text-sand-muted">
             Belki çoktan okundu, belki de hiç var olmadı. Tek kullanımlık mesajlar iz bırakmaz.
+            <span className="mt-2 block text-sm leading-5 text-fur md:text-base dark:text-sand-muted">
+              Beklediğin bir mesajsa, biri senden önce açmış olabilir. Gönderene haber ver.
+            </span>
           </p>
           <div className="mt-8 flex w-full flex-col items-center gap-3 md:mt-9">
             {cta}
