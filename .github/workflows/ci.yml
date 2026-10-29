@@ -40,6 +40,13 @@ jobs:
       - name: Install the pinned toolchain
         run: rustup show active-toolchain || rustup toolchain install
 
+      # The interface is baked into the binary by build.rs, and the tests that
+      # cover serving it skip when it is absent. Building it here is what makes
+      # those tests run rather than quietly pass.
+      - name: Build the client
+        working-directory: client
+        run: npm ci && npm run build
+
       - name: Cache the cargo registry and the target directory
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -59,6 +66,40 @@ jobs:
 
       - name: Test
         run: cargo test --workspace --all-features
+
+  client:
+    name: client
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check and build
+        run: npm run build
+
+      # A hard gate, not a note in a document. Every kilobyte here is on the
+      # critical path of somebody opening a one-time link, and the budget is
+      # the reason React's cost was accepted deliberately rather than by
+      # accident.
+      - name: Check the read path against its budget
+        run: |
+          budget=92160
+          total=0
+          for file in dist/assets/*.js dist/assets/*.css; do
+            size=$(brotli -q 11 -c "$file" | wc -c)
+            printf '%-40s %7d bytes brotli\n' "$(basename "$file")" "$size"
+            total=$((total + size))
+          done
+          echo "total: $total bytes, budget: $budget bytes"
+          test "$total" -le "$budget"
 
   deps:
     name: deps
