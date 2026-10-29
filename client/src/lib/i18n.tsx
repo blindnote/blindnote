@@ -163,7 +163,7 @@ const en: Strings = {
     button: 'Create a Secret Message',
     loading: 'Encrypting…',
     label: 'Your secret message',
-    placeholder: 'Wi-Fi password, private notes…',
+    placeholder: 'For their eyes only…',
     empty: 'Write your message first.',
   },
   linkReady: {
@@ -356,7 +356,7 @@ const tr: Strings = {
     button: 'Gizli Mesaj Oluştur',
     loading: 'Şifreleniyor…',
     label: 'Gizli mesajın',
-    placeholder: 'Wifi şifresi, özel notlar…',
+    placeholder: 'Yalnızca onun gözleri için…',
     empty: 'Önce mesajını yaz.',
   },
   linkReady: {
