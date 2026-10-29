@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Fonts: self-hosted woff2 (public/fonts). Google Fonts CDN bilerek kullanılmıyor:
+   gizlilik odaklı üründe ziyaretçiyi üçüncü tarafa bildirmemek için.
+   Turkish glyphs (ğ ş ı İ) live in latin-ext, so both subsets are declared.
+--------------------------------------------------------------------------- */
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/baloo-2-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/baloo-2-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/baloo-2-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/baloo-2-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/baloo-2-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/baloo-2-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/raleway-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/raleway-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/raleway-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/raleway-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/raleway-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Raleway"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/raleway-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+/* Karanlık mod ŞİMDİLİK KAPALI: sistem tercihi izlenmez, site her zaman açık temada.
+   dark: sınıfları kodda duruyor; yalnızca <html data-theme="dark"> verilirse çalışır.
+   İleride açmak için aşağıdaki @media bloğunu geri ekleyin:
+     @media (prefers-color-scheme: dark) { &:where(:not([data-theme="light"], [data-theme="light"] *)) { @slot; } } */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Tasarım değişkenleri (Figma "Blindnote" bölümünden okundu)
+   Açık tema = Figma değerleri. Karanlık tema = önerilen palet (Figma'da yok).
+--------------------------------------------------------------------------- */
+@theme {
+  /* Yazı tipleri */
+  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Raleway", ui-sans-serif, system-ui, sans-serif;
+
+  /* Renkler — açık tema (Figma) */
+  --color-ink: #4f2000;          /* başlık, ana buton, footer, ana metin */
+  --color-ink-strong: #3f2c22;   /* Neutral/900 — not içeriği, link metni, menü */
+  --color-fur: #7a573f;          /* maymun kürkü, ikincil kahve */
+  --color-muted: #b0846d;        /* Neutral/500 — placeholder, link anatomisi çizgileri */
+  --color-accent: #fabe82;       /* turuncu vurgu (kart zemini %5, kenar %40) */
+  --color-cream: #fef8f2;        /* krem bölüm zemini */
+  --color-page: #ffffff;         /* Base/White */
+  --color-blush: #ffd7e9;        /* hero arka planındaki pembe parıltı */
+
+  /* Renkler — karanlık tema (öneri) */
+  --color-night: #1a120d;        /* sayfa zemini */
+  --color-night-raised: #241912; /* krem bölümün karşılığı */
+  --color-night-card: #2e2018;   /* kart / composer zemini */
+  --color-night-line: #3f2c22;   /* kenarlık */
+  --color-night-footer: #120c08; /* footer */
+  --color-sand: #fef8f2;         /* başlık metni */
+  --color-sand-muted: #d9c2b0;   /* gövde metni */
+
+  /* Durum renkleri (Figma'da yok — türetildi) */
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-danger-dark: #fda29b;
+  --color-ink-hover: #6b2c00;    /* ana buton hover */
+  --color-accent-hover: #fcd0a3; /* karanlık mod ana buton hover */
+
+  /* Köşe yarıçapları */
+  --radius-card: 2rem;   /* 32 — composer dış kabı, adım kartı, SSS satırı */
+  --radius-inner: 1.5rem;/* 24 — composer iç kutusu */
+  --radius-button: 1.25rem; /* 20 — buton, link anatomisi */
+
+  /* Gölgeler */
+  --shadow-composer: 0 4px 5px 0 rgb(16 24 40 / 0.10);
+  --shadow-step: 0 3px 1px 0 rgb(250 190 130 / 0.04), 0 3px 8px 0 rgb(250 190 130 / 0.12);
+  --shadow-link: 0 3px 1px 0 rgb(0 0 0 / 0.04);
+
+  /* Hareket (Figma'da yok — türetildi): maymunun konuşma balonu */
+  --animate-bn-pop: bn-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  @keyframes bn-pop {
+    from { opacity: 0; transform: translateY(6px) scale(0.9); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-page font-sans text-ink antialiased dark:bg-night dark:text-sand-muted;
+  }
+}
