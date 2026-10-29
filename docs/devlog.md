@@ -784,3 +784,47 @@ carries both new directives, all seven assets return 200 with the right content
 type (`image/svg+xml`, `image/vnd.microsoft.icon`, `application/manifest+json`
 among them), and a real browser loaded the page with an empty console — no CSP
 refusal for any icon or the manifest. Shipped as `v0.1.3`.
+
+## 2026-10-29 — two languages, chosen by the browser, not the IP
+
+The interface shipped Turkish-only. This makes it bilingual — English and Turkish —
+and opens in the visitor's own language, with English as the default.
+
+### How the language is chosen
+
+Detection is client-side and private by design. The order is: a remembered choice
+in `localStorage` first, then the first of `navigator.languages` we support, then
+English. **Not the IP address** — an IP lookup needs a third party or server-side
+geolocation, it is wrong behind a VPN (the operator's own case), and this service
+logs nothing about who loaded the page. `navigator.languages` is the honest signal
+and keeps the static-binary, no-log model intact. A small segmented switcher in the
+header and footer lets anyone override; the choice is remembered and `<html lang>`
+and the document title follow it.
+
+### How the copy is wired
+
+No i18n library — the dependency list stays `react` + `react-dom` (every package is
+a line in the CSP and an entry in the reproducible build). Instead `src/lib/i18n.tsx`
+holds one typed `Strings` shape and both dictionaries, a `LocaleProvider`, and a
+`useCopy()` hook. Components already used React context for their design variants, so
+reading copy from context is idiomatic here rather than a new pattern. Every piece of
+interface copy — the five screens, the three marketing sections, the nav, the error
+messages, the aria labels — now comes from the dictionary; the old `src/lib/content.ts`
+(FAQ and error strings) folded into it and was removed. UI copy stays its own language
+on both sides, per the content rule.
+
+### Verified
+
+`tsc -b` (strict) and `cargo test -p blindnote-server` green. Read path is **89,098 B
+brotli** against the 92,160 B gate — i18n added ~2.9 KB and there is ~3 KB of headroom.
+In a real browser: an `en` browser opened in English (`<html lang="en">`, English h1
+and nav); clicking the Turkish toggle flipped every string, set `lang="tr"`, updated
+the title, and persisted the choice to `localStorage`; the console stayed empty.
+Shipped as `v0.1.4`.
+
+### One thing to decide (content, not code)
+
+The trust badge reads "İsviçre Korumalı" / "Swiss-Protected", but the server runs in
+Germany (Hetzner, nbg1). I translated it faithfully rather than silently changing the
+claim, but for a product whose whole pitch is "we don't lie to you" (section 1) this is
+worth a deliberate decision: correct the wording, or drop the badge. Flagged, not fixed.
