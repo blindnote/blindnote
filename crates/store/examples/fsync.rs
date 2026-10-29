@@ -17,7 +17,7 @@
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use blindnote_store::{NewNote, Store, UnixTime};
+use blindnote_store::{FreeSpaceFloor, NewNote, Store, UnixTime};
 
 /// Payload size: a plausible note, well under the 64 KB limit.
 const PAYLOAD_BYTES: usize = 4096;
@@ -45,7 +45,9 @@ async fn main() {
             .to_path_buf()
     });
 
-    let store = Store::open(&directory).await.expect("the store opens");
+    let store = Store::open(&directory, FreeSpaceFloor::NONE)
+        .await
+        .expect("the store opens");
     let payload = vec![0xAB; PAYLOAD_BYTES];
 
     let mut creates = Vec::with_capacity(iterations);

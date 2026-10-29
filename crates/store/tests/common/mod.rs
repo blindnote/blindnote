@@ -7,7 +7,7 @@
 
 use std::path::PathBuf;
 
-use blindnote_store::{NewNote, Store, UnixTime};
+use blindnote_store::{FreeSpaceFloor, NewNote, Store, UnixTime};
 use tempfile::TempDir;
 
 /// The default time-to-live, matching the product's default of 24 hours.
@@ -27,7 +27,7 @@ impl Fixture {
     /// Opens a fresh store in a new temporary directory.
     pub async fn new() -> Self {
         let directory = tempfile::tempdir().expect("a temporary directory");
-        let store = Store::open(directory.path())
+        let store = Store::open(directory.path(), FreeSpaceFloor::NONE)
             .await
             .expect("the store opens");
 
@@ -36,7 +36,7 @@ impl Fixture {
 
     /// Re-opens the same directory with a new store, as a restart would.
     pub async fn reopen(&self) -> Store {
-        Store::open(self.directory.path())
+        Store::open(self.directory.path(), FreeSpaceFloor::NONE)
             .await
             .expect("the store re-opens")
     }
