@@ -12,3 +12,6 @@
 codedb.snapshot
 *.bak
 .DS_Store
+
+# zigrep local archive
+.zigrep_archive
