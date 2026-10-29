@@ -280,6 +280,7 @@ fn content_type(path: &str) -> &'static str {
         "webp" => "image/webp",
         "ico" => "image/vnd.microsoft.icon",
         "json" => "application/json",
+        "webmanifest" => "application/manifest+json",
         "txt" => "text/plain; charset=utf-8",
         // Not guessed. An unknown type served as something plausible is how a
         // file ends up being interpreted as a script.
