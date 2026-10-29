@@ -120,7 +120,7 @@ export interface Strings {
     keyOnlyYou: string
     neverServer: string
   }
-  tagline: { aria: string; noTrace: string; swiss: string; e2e: string }
+  tagline: { aria: string; oneTime: string; zeroKnowledge: string; e2e: string }
   faq: { heading: string; intro: string; items: readonly FaqEntryText[] }
   backToTop: string
   errors: {
@@ -275,8 +275,8 @@ const en: Strings = {
   },
   tagline: {
     aria: 'Security features',
-    noTrace: 'No Trace',
-    swiss: 'Swiss-Protected',
+    oneTime: 'One-Time Read',
+    zeroKnowledge: 'Zero-Knowledge',
     e2e: 'End-to-End Encrypted',
   },
   faq: {
@@ -468,8 +468,8 @@ const tr: Strings = {
   },
   tagline: {
     aria: 'Güvenlik özellikleri',
-    noTrace: 'İz Bırakmadan',
-    swiss: 'İsviçre Korumalı',
+    oneTime: 'Tek Seferlik Okuma',
+    zeroKnowledge: 'Sıfır Bilgi',
     e2e: 'Uçtan Uca Şifrelenmiş',
   },
   faq: {
