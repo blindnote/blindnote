@@ -38,6 +38,9 @@ governor = { version = "0.10.4", default-features = false, features = ["std"] }
 # the reproducible build has one fewer moving part. Default features are off to
 # leave out the WebAssembly FFI backend.
 rusqlite = { version = "0.41.1", default-features = false, features = ["bundled", "cache"] }
+# Already in the graph through tempfile, so naming it directly adds no crate.
+# Used for one call: how many bytes are left on the data volume.
+rustix = { version = "1.1.6", default-features = false, features = ["fs", "std"] }
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { version = "1.0.154", default-features = false, features = ["std"] }
 subtle = { version = "2.6.1", default-features = false }
