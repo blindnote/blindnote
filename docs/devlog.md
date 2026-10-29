@@ -828,3 +828,39 @@ The trust badge reads "İsviçre Korumalı" / "Swiss-Protected", but the server 
 Germany (Hetzner, nbg1). I translated it faithfully rather than silently changing the
 claim, but for a product whose whole pitch is "we don't lie to you" (section 1) this is
 worth a deliberate decision: correct the wording, or drop the badge. Flagged, not fixed.
+
+## 2026-10-30 — honest trust badges, and a warmer placeholder
+
+Three small composer changes the operator art-directed live, and the resolution of the
+badge decision the `v0.1.4` entry flagged.
+
+### The "Swiss-Protected" badge is gone
+
+It was false: the server runs in Germany (Hetzner, nbg1), not Switzerland. And writing
+"German-Protected" instead buys nothing — Germany's data protection is strong, but it
+carries none of the "Swiss privacy" brand signal, so the swap would trade a lie for an
+oddity. The real differentiator here was never geography; it is technical (section 1/3):
+the server cannot read the note. So the badge now leads with that truth.
+
+The trust row is now **One-Time Read · Zero-Knowledge · End-to-End Encrypted**. "No Trace"
+also went — its meaning is already covered by zero-knowledge (the server sees nothing) and
+one-time-read (nothing is left afterwards), and dropping it let the product's actual
+identity, self-destruction, take the lead slot. The keys were renamed `noTrace`/`swiss` →
+`oneTime`/`zeroKnowledge` across the `Strings` type, both dictionaries, and both `Tagline`
+usages (badge list and the plain-text variant) — one inseparable change, since the rename
+has to compile as a unit. No new icons: the existing eye-off / shield / lock are reused.
+
+### Placeholder and spacing
+
+The compose placeholder was a list of examples ("Wi-Fi password, private notes…"); it now
+reads **"For their eyes only…"** / **"Yalnızca onun gözleri için…"**, a nod to the
+see-no-evil mark. And the trust badges sat jammed under the create button, so the desktop
+stack gap went from 12 px to 24 px.
+
+### Verified
+
+`tsc -b` (strict) and `cargo test` green. Read path **89,016 B brotli** against the
+92,160 B gate (the copy is slightly shorter than before, so headroom grew a touch). In a
+real browser, both languages: the new placeholder and the three badges render, the badges
+sit on one row with clear space below the button, and the Turkish strings (Tek Seferlik
+Okuma · Sıfır Bilgi · Uçtan Uca Şifrelenmiş) fit without overflow. Shipped as `v0.1.5`.
