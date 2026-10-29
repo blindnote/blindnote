@@ -36,6 +36,14 @@ pub(crate) enum ApiError {
     /// body forever.
     TooLarge,
 
+    /// The service is not accepting new notes.
+    ///
+    /// Distinct from [`Self::Internal`] because it is neither the client's
+    /// fault nor a bug: the disk is nearly full, and reading an existing note
+    /// still works. A client that is told "internal error" has no reason to
+    /// believe the second part.
+    Full,
+
     /// Something failed on our side.
     Internal,
 }
@@ -75,6 +83,16 @@ impl IntoResponse for ApiError {
                 Body {
                     error: "too_large",
                     detail: Some("the note is larger than 64 KB"),
+                },
+            ),
+            // No `Retry-After`. How long is genuinely unknown -- it depends on
+            // when the stored notes expire or are read -- and a guessed value
+            // would be a worse answer than none.
+            Self::Full => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Body {
+                    error: "full",
+                    detail: Some("new notes are not being accepted right now"),
                 },
             ),
             Self::Internal => (
@@ -123,6 +141,9 @@ impl From<StoreError> for ApiError {
     fn from(error: StoreError) -> Self {
         match error {
             StoreError::Unavailable => Self::Unavailable,
+            // Logged by the store, which has the numbers. Repeating it here
+            // would put two lines in the log for one refusal.
+            StoreError::Full { .. } => Self::Full,
             other => {
                 tracing::error!(error = %other, "storage failure");
                 Self::Internal
