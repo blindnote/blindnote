@@ -741,3 +741,46 @@ The private GHCR package is pulled with a read-only token held on the host (the 
 decision for the pre-launch window); it can pull the image and nothing else. One further section 9 hardening step is tracked privately. What remains before launch is the DNS cutover to the new host, the section 11 docs
 (`README`, `SECURITY.md`, `security.txt`, abuse policy), decommissioning the old box, and
 the history secret-scan before the repo goes public.
+
+## 2026-10-29 — the favicons, and the two CSP directives they needed
+
+The page shipped without any favicon at all: no `<link rel="icon">`, nothing in
+`public/`. A tab showed the browser's blank-document glyph. This closes that,
+with the modern icon set rather than a lone `.ico`.
+
+### What was added
+
+- **One mark, generated from the logo.** The brand's see-no-evil monkey is the
+  right face for a service called BlindNote, and it already exists as the
+  `LOGO_MONKEY` mark the designer kept apart from the illustration set. The
+  favicons are generated *from that source* (`client/src/components/Logo.tsx`),
+  its CSS custom properties substituted for their literal hex, so the icon can
+  never drift from the logo. Rendered with `rsvg-convert`; the `.ico` assembled
+  with ImageMagick.
+- **The files** (`client/public/`): `icon.svg` (the scalable primary — a cream
+  squircle tile with the monkey at 62.5% so it survives 16px), `favicon.ico`
+  (16/32/48 in one file), `apple-touch-icon.png` (180, opaque square — iOS masks
+  the corners itself), `icon-192.png` and `icon-512.png` (manifest, purpose
+  `any`), `icon-maskable-512.png` (the monkey kept inside the central 80% safe
+  zone), and `manifest.webmanifest`.
+- **Four links in `index.html`** — the `.ico` at 32×32, the SVG, the apple-touch
+  icon, the manifest — plus a `theme-color` meta. The evilmartians minimal set,
+  not a twenty-tag pile.
+
+### The two directives it needed
+
+The policy is `default-src 'none'`, which also governs images and the manifest
+when they are not named — so the icons the browser went to fetch were refused by
+our own CSP. Two directives, both `'self'`, fix it and widen nothing to a third
+party: `img-src 'self'` (favicons and the apple-touch icon are `img-src`, which
+is not obvious) and `manifest-src 'self'`. A same-origin image cannot be an
+exfiltration beacon, which is the whole point of the directive. The build also
+learned one content type: `.webmanifest` → `application/manifest+json`.
+
+### Verified
+
+`cargo test -p blindnote-server` green. Against the running binary: the policy
+carries both new directives, all seven assets return 200 with the right content
+type (`image/svg+xml`, `image/vnd.microsoft.icon`, `application/manifest+json`
+among them), and a real browser loaded the page with an empty console — no CSP
+refusal for any icon or the manifest. Shipped as `v0.1.3`.
