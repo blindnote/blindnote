@@ -254,11 +254,16 @@ fn find_integrity(page: &str, href: &str) -> Option<String> {
     Some(value.get(..value.find('"')?)?.to_owned())
 }
 
-/// Finds the first `/assets/...<suffix>` the page references.
+/// Finds the `/assets/...<suffix>` the page references.
+///
+/// The suffix anchors it: find the suffix, then the `/assets/` that opens that
+/// path. Searching forward from the first `/assets/` would run past the script
+/// when the suffix is the stylesheet's, dragging in quotes and tags that make an
+/// invalid request URI.
 fn find_src(page: &str, suffix: &str) -> Option<String> {
-    let start = page.find("/assets/")?;
-    let rest = page.get(start..)?;
-    let end = rest.find(suffix)? + suffix.len();
+    let suffix_at = page.find(suffix)?;
+    let start = page.get(..suffix_at)?.rfind("/assets/")?;
+    let end = suffix_at + suffix.len();
 
-    Some(rest.get(..end)?.to_owned())
+    Some(page.get(start..end)?.to_owned())
 }
