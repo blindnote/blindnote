@@ -1,0 +1,12 @@
+# Keep the build context small and deterministic: only source goes to the daemon.
+/target
+**/node_modules
+/client/dist
+/data
+.git
+.github
+docs
+codedb.snapshot
+*.bak
+.DS_Store
+# The client is rebuilt inside the image; never ship a host-built dist.
