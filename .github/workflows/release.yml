@@ -60,10 +60,7 @@ jobs:
         with:
           context: .
           tags: ${{ steps.meta.outputs.tags }}
-          # No metadata-action labels: they inject org.opencontainers.image.created
-          # (the build time) into the config, which breaks bit-reproducibility. The
-          # Dockerfile carries the deterministic labels; the git revision and version
-          # live in the SLSA provenance attestation instead.
+          labels: ${{ steps.meta.outputs.labels }}
           provenance: mode=max
           sbom: true
           build-args: |
