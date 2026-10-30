@@ -20,7 +20,7 @@
 
 /* Karanlık mod AÇIK: varsayılan olarak sistem tercihi (prefers-color-scheme)
    izlenir -- JS gerekmez, ilk boyamada doğru tema gelir. <html data-theme="dark">
-   ya da data-theme="light" sistemi geçersiz kılar (tema düğmesi bunu ayarlar).
+   ya da data-theme="light" sistemi geçersiz kılar (ileride bir tema düğmesi eklenirse onu ayarlar).
    Böylece dark: sınıfları iki durumda tetiklenir: (1) açıkça data-theme="dark",
    (2) sistem karanlık VE data-theme="light" değil. */
 @custom-variant dark {
