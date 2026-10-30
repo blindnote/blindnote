@@ -47,7 +47,7 @@
   --color-ink: #4f2000;          /* başlık, ana buton, footer, ana metin */
   --color-ink-strong: #3f2c22;   /* Neutral/900 — not içeriği, link metni, menü */
   --color-fur: #7a573f;          /* maymun kürkü, ikincil kahve */
-  --color-muted: #b0846d;        /* Neutral/500 — placeholder, link anatomisi çizgileri */
+  --color-muted: #8f6650;        /* AA-tuned (eski #b0846d 3.3:1 idi; şimdi beyaz/krem üzerinde ~5:1). Placeholder, caption, link anatomisi. Karanlıkta aşağıda #a98d79'a çevrilir. */
   --color-accent: #fabe82;       /* turuncu vurgu (kart zemini %5, kenar %40) */
   --color-cream: #fef8f2;        /* krem bölüm zemini */
   --color-page: #ffffff;         /* Base/White */
@@ -84,6 +84,19 @@
   @keyframes bn-pop {
     from { opacity: 0; transform: translateY(6px) scale(0.9); }
     to { opacity: 1; transform: none; }
+  }
+}
+
+/* Muted, metin olarak iki arka planda da AA okunur kalsın diye şemaya göre ton
+   değiştirir: açıkta koyu kahve (@theme'de), karanlıkta soluk kum. Her kullanıma
+   dark: eklemek yerine token'ı şema bazında override ederek -- böylece text-muted,
+   placeholder:text-muted vb. kendiliğinden döner. */
+:root[data-theme="dark"] {
+  --color-muted: #a98d79;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-muted: #a98d79;
   }
 }
 
