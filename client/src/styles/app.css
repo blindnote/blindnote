@@ -45,7 +45,7 @@
   --color-accent: #fabe82;       /* turuncu vurgu (kart zemini %5, kenar %40) */
   --color-cream: #fef8f2;        /* krem bölüm zemini */
   --color-page: #ffffff;         /* Base/White */
-  --color-blush: #ffd7e9;        /* hero arka planındaki pembe parıltı */
+  --color-blush: #f3cbbd;        /* hero arka planındaki sıcak şeftali parıltısı (eski candy-pembe #ffd7e9 paletten değildi) */
 
   /* Renkler — karanlık tema (öneri) */
   --color-night: #1a120d;        /* sayfa zemini */
