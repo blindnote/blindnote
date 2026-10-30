@@ -101,6 +101,19 @@ jobs:
           echo "total: $total bytes, budget: $budget bytes"
           test "$total" -le "$budget"
 
+      # One tool for formatting and linting; biome.jsonc pins the rules. `ci`
+      # is the non-writing, CI-tuned form of `check`.
+      - name: Check formatting and lint with Biome
+        run: npx biome ci
+
+      - name: Check for unused code and dependencies
+        run: npm run knip
+
+      # Pure-logic unit tests (crypto, link, base64url); the browser flows are
+      # the e2e job's.
+      - name: Run the unit tests
+        run: npm run test:unit
+
   e2e:
     name: e2e
     runs-on: ubuntu-24.04
