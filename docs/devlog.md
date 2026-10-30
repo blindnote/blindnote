@@ -864,3 +864,66 @@ stack gap went from 12 px to 24 px.
 real browser, both languages: the new placeholder and the three badges render, the badges
 sit on one row with clear space below the button, and the Turkish strings (Tek Seferlik
 Okuma · Sıfır Bilgi · Uçtan Uca Şifrelenmiş) fit without overflow. Shipped as `v0.1.5`.
+
+## 2026-10-30 — designer review: UI findings, and a real E2E suite
+
+A design/QA pass (seven findings, desktop + iOS) came back. All were legitimate and none
+touched a hard rule; the fixes shipped as `v0.1.6`, and — the larger change — the project
+grew an end-to-end test suite, because it had none.
+
+### The findings
+
+- **D-03 (zero-knowledge badge).** The icon was a shield-with-cross that read as a medical
+  mark; it is now `server-off`. The Turkish "Sıfır Bilgi" is the term for a zero-knowledge
+  *proof* and said nothing to a lay reader, so it became **"Biz Bile Göremeyiz"** — the plain
+  consequence: the note is encrypted in the browser, so the operator cannot read it. English
+  "Zero-Knowledge" stays as the term its audience knows; the two are localized, not translated.
+- **D-04 (scroll-spy).** The nav links scrolled to sections but never marked the one in view.
+  A small `useActiveSection` hook (IntersectionObserver, no dependency) now sets `aria-current`
+  and a brown underline on the section under the header. The first cut highlighted one section
+  behind — a wide trigger band let the previous section's lower edge linger — fixed by taking
+  the *bottommost* section touching the band, not the topmost.
+- **D-05 (clickable envelope).** The reveal envelope is now a real `<button>` (keyboard for
+  free, a light hover/press scale that respects `prefers-reduced-motion`). Reading burns the
+  note, so a second trigger must not fire a second burn: the guard is a `useRef` in `App`,
+  set before the request and cleared in `finally`, which makes the reveal idempotent no matter
+  how many controls call it.
+- **D-01 / D-02 / M-01.** The header create button is filled on the home screen and outline
+  elsewhere; the desktop nav is centered with a three-column grid; the language switcher moved
+  into the mobile header (left of the hamburger) rather than living only inside the menu.
+- **M-02 (iOS auto-zoom).** The composer textarea was `text-sm` (14 px), and iOS Safari zooms
+  any field below 16 px on focus. It is now `text-base` (16 px) on mobile, `md:text-xl`
+  unchanged, plus a `blur()` before the screen changes so the keyboard dismisses. No
+  `maximum-scale=1` — that would also kill pinch-zoom (accessibility).
+
+### The E2E suite
+
+The repo had solid Rust tests and *zero* client or end-to-end tests — the worst gap for a
+browser-delivered E2EE product, where the whole claim is about what the browser does and does
+not send. Playwright (a dev-dependency only; it touches neither the runtime bundle nor the
+CSP) now drives Chromium against **the real server binary with the client embedded in it** —
+the shipped artifact, started by `e2e/serve.sh` on a throwaway data directory — not a dev
+server.
+
+Thirteen tests, the load-bearing ones first:
+
+- **Hard rule 1, automated.** The key and the plaintext appear in no request body, no API URL
+  and no `Referer`, across the whole compose → reveal flow. This is the §12.9 HAR scan turned
+  into a gate rather than a one-off.
+- **Hard rule 3.** `GET /api/reveal` is 405; loading a link fires no reveal — only the click
+  does.
+- **Hard rule 4.** A missing note and an already-read note return byte-identical 404s.
+- **One-time.** A link opens once, then reads as not-found.
+- **D-05 single-fire.** Firing the envelope and the button synchronously still sends exactly
+  one burn.
+- Plus the happy path, both languages' badges and placeholder, the scroll-spy `aria-current`,
+  the 16 px textarea, the mobile-header switcher, and no horizontal overflow at 320 px.
+
+CI gained an `e2e` job that builds the client, bakes it into the binary and runs the suite.
+
+### Verified
+
+Full gate green before release: `cargo fmt`, `clippy -D warnings`, 139 Rust tests, 13 E2E
+tests, and the read path at **89,684 B brotli** against the 92,160 B budget (2,476 B spare;
+the scroll-spy, the envelope button and the extra copy together cost ~670 B). Shipped as
+`v0.1.6`.
