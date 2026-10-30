@@ -1,9 +1,6 @@
-import type { ReactNode } from 'react'
 import { useCopy } from '../lib/i18n'
 import { Logo } from './Logo'
 import { Monkey } from './Monkey'
-
-export type FaqEntry = { question: string; answer: ReactNode }
 
 /**
  * Figma: faq -- iki sütun: solda sabit başlık ve kısa giriş, sağda soru-cevap listesi.
