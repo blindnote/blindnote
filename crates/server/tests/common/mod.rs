@@ -1,4 +1,8 @@
-#![allow(dead_code, unreachable_pub, reason = "shared test fixtures; not every item is used by every test binary")]
+#![allow(
+    dead_code,
+    unreachable_pub,
+    reason = "shared test fixtures; not every item is used by every test binary"
+)]
 
 //! A real server on a real socket, and a small client to talk to it.
 //!
