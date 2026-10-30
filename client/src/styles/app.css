@@ -107,4 +107,26 @@
   body {
     @apply bg-page font-sans text-ink antialiased dark:bg-night dark:text-sand-muted;
   }
+
+  /* Seçili metin (özellikle görüntülenen not ve kopyalanan link) iki temada da
+     okunur kalsın: şeftali zemin + koyu ink metin (ink/accent ~8.3:1). Metin
+     rengini set etmek şart -- karanlıkta açık metin peach üstünde düşük zıtlık
+     verirdi. */
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  /* Hareketi azalt: kullanıcı prefers-reduced-motion derse animasyon (maymunun
+     bn-pop balonu dâhil), geçişler ve yumuşak kaydırma pratikte durur. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
