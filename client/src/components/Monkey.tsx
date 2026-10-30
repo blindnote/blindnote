@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
  * Oranlar Figma ile aynı (90×76, 106×69, 80×88), bu yüzden yerleşim ölçüleri değişmedi.
  * Renkler illüstrasyona ait sabit palet (kürk #7A573F, yüz #FABE82, kontur #4F2000); temayla değişmez.
  */
-export const MONKEY_POSES = {
+const MONKEY_POSES = {
   eyes: {
     viewBox: '0 0 120 101',
     art: (
