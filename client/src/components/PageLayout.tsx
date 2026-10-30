@@ -7,6 +7,7 @@ import { HowItWorks } from './HowItWorks'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
 import { footerLinks, headerLinks, menuLinks } from './siteLinks'
+import { useActiveSection } from './useActiveSection'
 import { useScrolledPast } from './useScrollY'
 
 type PageLayoutProps = {
@@ -26,16 +27,22 @@ type PageLayoutProps = {
   onMenuToggle: () => void
 }
 
+/** The header's section links point at these; scroll-spy watches them in document order. */
+const SECTION_IDS = ['nedir', 'sifreleme', 'sss'] as const
+
 /** Tüm ekranlarda ortak iskelet: header → hero → 3 bilgi bölümü → footer (Figma'daki 5 ekranın hepsi). */
 export function PageLayout(props: PageLayoutProps) {
   const t = useCopy()
   const scrolled = useScrolledPast(8)
   const pastHero = useScrolledPast(520)
   const showCta = props.onCreateNote && (!props.ctaAfterScroll || pastHero)
+  const activeSection = useActiveSection(SECTION_IDS)
+  const activeHref = activeSection ? `#${activeSection}` : '/'
   return (
     <div className="min-h-dvh bg-page dark:bg-night">
       <SiteHeader
         links={headerLinks(t)}
+        activeHref={activeHref}
         menuLinks={menuLinks(t)}
         homeHref={props.homeHref}
         cta={showCta && props.onCreateNote ? { label: t.nav.createSecret, onClick: props.onCreateNote } : undefined}

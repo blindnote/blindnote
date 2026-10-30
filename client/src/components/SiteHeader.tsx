@@ -8,6 +8,8 @@ import type { SiteLink } from './siteLinks'
 
 type SiteHeaderProps = {
   links: ReadonlyArray<SiteLink>
+  /** Aktif bölümün href'i (scroll-spy); eşleşen link vurgulanır. */
+  activeHref?: string
   /** Mobil menü maddeleri (Figma "Menü" frame'i) */
   menuLinks: ReadonlyArray<SiteLink>
   homeHref: string
@@ -38,16 +40,25 @@ export function SiteHeader(props: SiteHeaderProps) {
 
         <nav aria-label={t.header.mainMenu} className="hidden lg:block">
           <ul className="flex items-center gap-0.5 xl:gap-3">
-            {props.links.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className="block rounded-lg px-2 py-2.5 font-display text-base leading-6 font-medium whitespace-nowrap text-ink outline-none hover:underline xl:px-3 xl:text-lg hover:decoration-accent hover:decoration-2 hover:underline-offset-4 focus-visible:ring-4 focus-visible:ring-accent dark:text-sand"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+            {props.links.map((link) => {
+              const isActive = link.href === props.activeHref
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    aria-current={isActive ? 'true' : undefined}
+                    className={cx(
+                      'block rounded-lg px-2 py-2.5 font-display text-base leading-6 font-medium whitespace-nowrap outline-none hover:underline xl:px-3 xl:text-lg hover:decoration-accent hover:decoration-2 hover:underline-offset-4 focus-visible:ring-4 focus-visible:ring-accent',
+                      isActive
+                        ? 'text-ink font-semibold underline decoration-accent decoration-2 underline-offset-4 dark:text-sand'
+                        : 'text-ink dark:text-sand',
+                    )}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              )
+            })}
           </ul>
         </nav>
 
