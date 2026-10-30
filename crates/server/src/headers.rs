@@ -42,8 +42,11 @@ const PERMISSIONS_POLICY: &str = "accelerometer=(), ambient-light-sensor=(), aut
 /// The header set, built once.
 static SECURITY_HEADERS: LazyLock<[(HeaderName, HeaderValue); 7]> = LazyLock::new(|| {
     [
-        // Two years, subdomains included, and submitted to the preload list
-        // so that even a first visit never happens over plain HTTP.
+        // Two years, subdomains included, with the `preload` directive. The
+        // domain was submitted to the browser preload list at hstspreload.org
+        // (2026-10-30) and is pending inclusion; once it ships in a browser
+        // release, even a first-ever visit is forced onto HTTPS. It stays on
+        // the list only while the domain keeps meeting the requirements.
         (
             STRICT_TRANSPORT_SECURITY,
             HeaderValue::from_static("max-age=63072000; includeSubDomains; preload"),
