@@ -145,6 +145,9 @@ export function App() {
       const id = await createNote(payload)
       const url = buildNoteLink(window.location.origin, id, await exportKey(key))
 
+      // Drop focus before the screen changes; iOS Safari otherwise keeps the
+      // on-screen keyboard up over the link-ready screen.
+      ;(document.activeElement as HTMLElement | null)?.blur()
       go({ name: 'link', url })
     } catch (error) {
       setComposeError(messageFor(error, t.errors))

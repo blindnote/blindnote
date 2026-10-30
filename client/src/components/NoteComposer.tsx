@@ -104,7 +104,7 @@ export function NoteComposer(props: NoteComposerProps) {
             rows={4}
             spellCheck={false}
             autoComplete="off"
-            className="max-h-[50vh] min-h-[98px] w-full resize-none bg-transparent text-sm leading-6 break-words text-ink-strong outline-none [field-sizing:content] placeholder:text-muted placeholder:italic md:min-h-[87px] md:text-xl md:leading-6 md:placeholder:not-italic dark:text-sand dark:placeholder:text-muted"
+            className="max-h-[50vh] min-h-[98px] w-full resize-none bg-transparent text-base leading-6 break-words text-ink-strong outline-none [field-sizing:content] placeholder:text-muted placeholder:italic md:min-h-[87px] md:text-xl md:leading-6 md:placeholder:not-italic dark:text-sand dark:placeholder:text-muted"
           />
           <div className="hidden flex-col items-end gap-6 pt-4 pb-2 md:flex">{actions(false)}</div>
         </div>
