@@ -57,7 +57,18 @@ export function RevealCard(props: RevealCardProps) {
     return (
       <Panel tone={props.error ? 'danger' : 'default'}>
         <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
-          <Envelope />
+          {/* The envelope opens the note too — same action as the button. A real
+              <button> gives keyboard access for free; the ref guard in App keeps
+              a double trigger from firing two burns. */}
+          <button
+            type="button"
+            onClick={props.onReveal}
+            disabled={opening}
+            aria-label={t.revealCard.breakSeal}
+            className="group rounded-3xl outline-none transition-transform duration-150 focus-visible:ring-4 focus-visible:ring-accent enabled:cursor-pointer enabled:hover:scale-[1.03] enabled:active:scale-[0.98] disabled:opacity-60 motion-reduce:transition-none motion-reduce:enabled:hover:scale-100"
+          >
+            <Envelope />
+          </button>
           <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.breakingSeal}>
             {t.revealCard.breakSeal}
           </Button>
