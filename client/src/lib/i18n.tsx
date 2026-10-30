@@ -62,7 +62,7 @@ export interface Strings {
     empty: string
   }
   linkReady: { title: string; subtitle: string }
-  linkCard: { yourLink: string; copy: string; copied: string; copiedAnnounce: string }
+  linkCard: { yourLink: string; copy: string; copied: string; copiedAnnounce: string; keyHint: string }
   reveal: { title: string; subtitle: string; envelopeExtra: string }
   revealCard: {
     view: string
@@ -175,6 +175,7 @@ const en: Strings = {
     copy: 'Copy',
     copied: 'Copied',
     copiedAnnounce: 'Link copied to clipboard.',
+    keyHint: 'The highlighted part is your key — it never reaches our server.',
   },
   reveal: {
     title: 'Knock Knock',
@@ -368,6 +369,7 @@ const tr: Strings = {
     copy: 'Kopyala',
     copied: 'Kopyalandı',
     copiedAnnounce: 'Bağlantı panoya kopyalandı.',
+    keyHint: 'Vurgulu kısım senin anahtarın — sunucumuza asla ulaşmaz.',
   },
   reveal: {
     title: 'Tak Tak',

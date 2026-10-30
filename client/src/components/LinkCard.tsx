@@ -1,7 +1,5 @@
-import { createContext, useContext } from 'react'
 import { useCopy } from '../lib/i18n'
 import { Button } from './Button'
-import { cx } from './cx'
 import { Icon } from './Icon'
 import { Panel } from './Panel'
 
@@ -15,14 +13,6 @@ type LinkCardProps = {
   /** Panoya yazılamadıysa gösterilecek metin */
   copyError?: string
 }
-
-/**
- * Link kartının görünümü.
- * share (varsayılan): link + Kopyala butonu — incelemede seçildi (Figma'da yok).
- * figma: Figma'daki tek satır (karşılaştırma için).
- */
-export type LinkStyle = 'share' | 'figma'
-export const LinkStyleContext = createContext<LinkStyle>('share')
 
 function Feedback(props: { copied: boolean; copyError?: string }) {
   const t = useCopy()
@@ -40,56 +30,53 @@ function Feedback(props: { copied: boolean; copyError?: string }) {
   )
 }
 
-/** Figma: Bağlantı Oluşturuldu → note-composer (link satırı + solar:copy-bold). */
+/** Splits a note URL into its prefix (`…/#`), id and key -- for display only. */
+function splitNoteUrl(url: string): { prefix: string; id: string; key: string } | null {
+  const hash = url.indexOf('#')
+  if (hash === -1) return null
+  const slash = url.indexOf('/', hash + 1)
+  if (slash === -1) return null
+  const prefix = url.slice(0, hash + 1)
+  const id = url.slice(hash + 1, slash)
+  const key = url.slice(slash + 1)
+  if (id === '' || key === '') return null
+  return { prefix, id, key }
+}
+
+/**
+ * Figma: Bağlantı Oluşturuldu → note-composer. Linkin TAMAMI görünür (kısaltma yok);
+ * anahtar parçası vurgulanır -- asıl değerli kısım o. Kopyala her hâlükârda tüm URL'yi
+ * (props.url) yazar; segmentlere ayırmak yalnızca görsel, select-all yine tam URL'yi verir.
+ */
 export function LinkCard(props: LinkCardProps) {
   const t = useCopy()
-  const style = useContext(LinkStyleContext)
-
-  if (style === 'share') {
-    // Paylaşım kartı: link kutusu + Kopyala butonu
-    return (
-      <div className="mx-auto w-full md:max-w-[816px]">
-        <Panel>
-            <div className="flex items-center gap-2 rounded-xl border border-accent/40 bg-cream p-1.5 pl-3 md:rounded-2xl md:p-2 md:pl-4 dark:border-accent/20 dark:bg-night-raised">
-              <p title={props.url} className="min-w-0 flex-1 truncate text-xs font-medium text-ink-strong select-all md:text-sm dark:text-sand">
-                <span className="sr-only">{t.linkCard.yourLink}</span>
-                {props.url}
-              </p>
-              <Button size="sm" onClick={props.onCopy}>
-                <span className="inline-flex items-center gap-1.5">
-                  <Icon name={props.copied ? 'check' : 'copy'} className="size-4" />
-                  {props.copied ? t.linkCard.copied : t.linkCard.copy}
-                </span>
-              </Button>
-            </div>
-        </Panel>
-        <Feedback copied={props.copied} copyError={props.copyError} />
-      </div>
-    )
-  }
-
+  const parts = splitNoteUrl(props.url)
   return (
-    <div className="mx-auto w-full md:max-w-[816px]">
-      <Panel innerClassName="py-3! md:py-6!">
-        <div className="flex items-center gap-2.5">
-          <p
-            title={props.url}
-            className="min-w-0 flex-1 truncate font-medium text-xs leading-4 text-ink-strong select-all md:text-sm md:leading-7 dark:text-sand"
-          >
+    <div className="mx-auto w-full md:max-w-[640px]">
+      <Panel>
+        <div className="rounded-xl border border-accent/40 bg-cream p-4 md:rounded-2xl md:p-5 dark:border-accent/20 dark:bg-night-raised">
+          <p title={props.url} className="font-mono text-sm leading-7 break-all select-all md:text-base md:leading-8">
             <span className="sr-only">{t.linkCard.yourLink}</span>
-            {props.url}
-          </p>
-          <button
-            type="button"
-            onClick={props.onCopy}
-                        className={cx(
-              'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 -my-1 -mr-2 outline-none transition-colors',
-              'text-ink hover:bg-accent/20 focus-visible:ring-4 focus-visible:ring-accent dark:text-accent dark:hover:bg-accent/10',
+            {parts ? (
+              <>
+                <span className="text-muted">{parts.prefix}</span>
+                <span className="text-ink-strong dark:text-sand">{parts.id}</span>
+                <span className="text-muted">/</span>
+                <span className="rounded bg-accent/25 px-1 font-semibold text-ink-strong box-decoration-clone dark:bg-accent/25 dark:text-sand">
+                  {parts.key}
+                </span>
+              </>
+            ) : (
+              <span className="text-ink-strong dark:text-sand">{props.url}</span>
             )}
-          >
+          </p>
+        </div>
+        <p className="mt-3 text-center text-xs text-muted md:text-sm">{t.linkCard.keyHint}</p>
+        <div className="mt-4 flex justify-center">
+          <Button onClick={props.onCopy}>
             <Icon name={props.copied ? 'check' : 'copy'} className="size-4 md:size-5" />
-            <span className="text-xs font-semibold md:text-sm">{props.copied ? t.linkCard.copied : t.linkCard.copy}</span>
-          </button>
+            {props.copied ? t.linkCard.copied : t.linkCard.copy}
+          </Button>
         </div>
       </Panel>
       <Feedback copied={props.copied} copyError={props.copyError} />
