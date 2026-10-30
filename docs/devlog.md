@@ -927,3 +927,81 @@ Full gate green before release: `cargo fmt`, `clippy -D warnings`, 139 Rust test
 tests, and the read path at **89,684 B brotli** against the 92,160 B budget (2,476 B spare;
 the scroll-spy, the envelope button and the extra copy together cost ~670 B). Shipped as
 `v0.1.6`.
+
+## 2026-10-30 — the designer's second pass, a dead-code sweep, and a real quality gate
+
+A working session the day after `v0.1.6`, all of it on the live site's feel and the repository's
+hygiene. None of it is deployed yet; it sits on `master` as a reviewed baseline.
+
+### The designer's second pass
+
+Going back over the UI surfaced a handful of things the first review missed:
+
+- **The link is the product, so stop hiding it.** The "Your Link Is Ready" screen truncated the
+  one-time link with an ellipsis, which made the core artifact look like a footnote. It now shows
+  the whole link, monospace and selectable, with the **key fragment highlighted** the same way the
+  landing page's anatomy teaches it — one copyable string; the highlight is purely visual.
+- **Show the key at its real length.** The encryption explainer's example id/key were cartoon-short
+  (12/14 chars) and carried a stray, wrong-format mini-url (`blindnote.com/l#…`). They are now the
+  real lengths (22/43 chars), and the mini-url is replaced by a caption that mirrors the key card —
+  "Useless without the key" — which teaches the zero-knowledge point instead of adding noise.
+- **The hero glow was off-brand.** `--color-blush` was a cotton-candy pink (`#ffd7e9`), the only
+  cool hue in an otherwise warm ink/cream/caramel palette; it read as playful rather than serious.
+  Retuned to a warm peach (`#f3cbbd`), and the backdrop settled on the calm variant.
+- **The header cut a seam.** The solid white header drew a hard line across the top of the gradient.
+  It is transparent at the top now — gaining a frosted background only on scroll or with the mobile
+  menu open — and the hero backdrop extends up behind it, so the wash runs unbroken from the top.
+- **The footer was scattered.** Edge-to-edge `justify-between` links spread into three sparse bands
+  and collided the right-pinned language switcher with the floating back-to-top button. Centered and
+  grouped now; the right corner stays clear.
+- **The FAQ was reworked.** The six answers were accurate but the set missed three questions the
+  project's honesty demands: whether we can read a note (no access logs; the IP is in memory only),
+  whether a deleted note is recoverable (no backups, no snapshots), and **what the service does not
+  protect against** (the reader's screen, their device, a screenshot). Added those, grounded in the
+  hard rules, and every answer is shown open now — no accordion — so nothing honest hides behind a
+  click.
+
+### HSTS preload
+
+The header already sent `preload`; the domain was submitted to the browser preload list at
+hstspreload.org and is pending inclusion. The header comment and the contract, which both said it
+was still to submit, were corrected. The commitment it carries — every current and future subdomain
+on HTTPS, effectively forever — is safe for a single-box, DNS-only service.
+
+### A dead-code sweep
+
+Every presentational component shipped with two or three alternate layouts behind a style context
+that **no provider ever overrode**, so only the default ever rendered — leftovers from the design
+review. Collapsing each of the nine to its shipped variant (and deleting the orphaned `FaqItem`)
+took the read path from 89,684 B brotli to **87,216 B** — headroom back up from ~1.5 KB to ~4.9 KB.
+
+### A quality gate the client never had
+
+The client had a budget check and, since `v0.1.6`, the Playwright E2E suite — but no formatter, no
+linter, no unit tests, no unused-code detection. All added, each a dev-dependency only, none in the
+runtime bundle or the CSP:
+
+- **Vitest** — 17 unit tests over the security-critical pure functions: base64url round-trips and
+  rejects non-alphabet input; the link parser rejects a truncated `#id/key` *before* the request
+  that would burn the note; AES-GCM round-trips, and a tampered ciphertext fails to decrypt.
+- **knip** — unused files, exports and dependencies. It found a handful of internal-only exports
+  (demoted from `pub`) and the dead `FaqEntry` type; the report-by-link call is kept, tagged
+  `@public`, as the deliberate §11 gap it is.
+- **Biome** — one tool for formatting and linting, tuned to the existing style (single quotes, no
+  semicolons) so adoption was a format pass, not a rewrite. Three a11y rules are off with reasons
+  (the deliberate `role="group"`/`role="region"` divs, the aria-hidden/labelled logo SVGs, the
+  focusable scrollable note region); the real findings were fixed.
+
+On the Rust side the lint table was already strict (`clippy::all` denied, `pedantic` warned,
+`unwrap_used` denied, `unreachable_pub` warned — which already enforces the `pub(crate)` discipline).
+Two things were added: **`allow_attributes_without_reason`**, so every `#[allow]`/`#[expect]` now
+argues for itself (the existing suppressions gained reasons), and **cargo-machete** in CI for unused
+dependencies (cargo-deny does not cover those; it found none).
+
+### Verified
+
+Everything green locally: `cargo fmt`, `clippy -D warnings`, 139 Rust tests, cargo-deny and
+cargo-machete; and on the client `biome ci`, knip, 17 Vitest unit tests, 13 Playwright E2E tests,
+the build, and the read path at **87,216 B brotli** against the 92,160 B budget. CI's `client` job
+now also runs Biome, knip and the unit tests; the `deps` job runs cargo-machete. Committed to
+`master` as a baseline; **not deployed** — that waits on review.
