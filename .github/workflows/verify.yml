@@ -1,0 +1,42 @@
+name: verify
+
+# Runs verify.sh against the live site: checks the published image's keyless
+# cosign signature (and its Rekor-logged identity), then builds the client from
+# the tag's source and confirms the site serves those exact bytes, hash-pinned.
+# On demand -- the live site must already be running the tag you verify.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag the live site is running (e.g. v0.1.7)"
+        required: true
+      host:
+        description: "Host to check"
+        required: false
+        default: blindnote.com
+
+permissions:
+  contents: read
+  packages: read # cosign reads the published image signature (private while the repo is)
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0 # full history + tags, so verify.sh can build the tag
+          persist-credentials: false
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      # The runner has node, npm, git, curl and openssl preinstalled.
+      - name: Verify the served client matches the published source
+        run: ./verify.sh "${{ inputs.tag }}" "${{ inputs.host }}"
