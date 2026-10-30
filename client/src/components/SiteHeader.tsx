@@ -31,7 +31,7 @@ export function SiteHeader(props: SiteHeaderProps) {
   const t = useCopy()
   return (
     <header className={cx('sticky top-0 z-40 bg-page/95 backdrop-blur transition-shadow dark:bg-night/95', props.elevated && 'shadow-[0_1px_0_rgb(79_32_0/0.08),0_6px_16px_-8px_rgb(79_32_0/0.18)]')}>
-      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between pr-2 pl-4 md:h-[88px] md:px-8">
+      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between pr-2 pl-4 md:h-[88px] md:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
         <a
           href={props.homeHref}
           aria-label={t.header.home}
@@ -40,7 +40,7 @@ export function SiteHeader(props: SiteHeaderProps) {
           <Logo className="h-[26px] md:h-8 lg:h-7 xl:h-8" />
         </a>
 
-        <nav aria-label={t.header.mainMenu} className="hidden lg:block">
+        <nav aria-label={t.header.mainMenu} className="hidden lg:block lg:justify-self-center">
           <ul className="flex items-center gap-0.5 xl:gap-3">
             {props.links.map((link) => {
               const isActive = link.href === props.activeHref
@@ -64,7 +64,7 @@ export function SiteHeader(props: SiteHeaderProps) {
           </ul>
         </nav>
 
-        <div className="hidden items-center justify-end gap-3 lg:flex xl:w-[260px]">
+        <div className="hidden items-center justify-end gap-3 lg:flex lg:justify-self-end xl:w-[260px]">
           <LanguageSwitcher tone="light" />
           {props.cta && (
             <Button variant={props.ctaVariant ?? 'secondary'} onClick={props.cta.onClick}>
