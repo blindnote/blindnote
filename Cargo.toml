@@ -74,6 +74,7 @@ dbg_macro = "deny"
 doc_markdown = "allow"
 todo = "deny"
 unwrap_used = "deny"
+allow_attributes_without_reason = "warn"
 
 [profile.release]
 codegen-units = 1
