@@ -17,14 +17,18 @@ JavaScript that protects your secret, so a dishonest server could send *differen
 JavaScript to one person and read everything. The only real answer is a chain you can
 follow yourself:
 
-> published source → reproducible build → published, signed artifact → proof the served
-> bytes are the published bytes → a transparency log → **somebody actually checking.**
+> published source → a signed release whose signature carries the build workflow's own
+> identity (logged in a transparency log) → proof the code your browser runs is built from
+> that source, byte for byte → **somebody actually checking.**
 
-So BlindNote publishes its source, builds reproducibly, signs every release with
-[cosign](https://docs.sigstore.dev/) keyless (the signature carries the build workflow's
-own identity, not a key we could quietly swap), and ships [`verify.sh`](./verify.sh) so you
-don't have to take our word for any of it. A hash nobody checks is theatre; the ask is that
-you run the check.
+So BlindNote publishes its source and signs every release with
+[cosign](https://docs.sigstore.dev/) keyless (the signature carries the build workflow's own
+identity, not a key we could quietly swap, and is logged in a public transparency log) with
+SLSA provenance and an SBOM, and ships [`verify.sh`](./verify.sh) — which checks that
+signature and then proves the client your browser actually runs is byte-for-byte the client
+built from that release's source. (The server binary is not yet bit-for-bit reproducible; we
+verify the code your browser executes, which is what a browser-delivered app turns on.) A
+hash nobody checks is theatre; the ask is that you run the check.
 
 The project exists because its 2021 predecessor called itself "end-to-end encrypted" and
 **stored every note in the database as plaintext.** It was never public, so the false claim
@@ -49,14 +53,17 @@ The deeper reasoning — and the measurements behind each decision — live in
 
 ## Verifying a release
 
-With `cosign`, `docker` and `git`, inside a checkout of this repo:
+With `cosign`, `node`, `git` and `curl`, inside a checkout of this repo:
 
 ```sh
-./verify.sh v0.1.0
+./verify.sh v0.1.7
 ```
 
 It checks that the published image was signed by this repository's release workflow at that
-exact tag, then rebuilds the image from the source at that tag and compares the result.
+exact tag, then builds the client from the source at that tag and confirms the live site
+serves those exact bytes — each asset byte-for-byte, with its hash pinned in the page's CSP
+and SRI so the browser would refuse anything else. Run it against the release the site is
+currently serving.
 
 ## What it does *not* protect against
 
