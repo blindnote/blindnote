@@ -101,6 +101,44 @@ jobs:
           echo "total: $total bytes, budget: $budget bytes"
           test "$total" -le "$budget"
 
+  e2e:
+    name: e2e
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install the pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache the cargo registry and the target directory
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Install the Playwright browser
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts starts the real server binary with the client
+      # embedded in it (e2e/serve.sh), so the tests exercise the shipped
+      # artifact rather than a dev server (CLAUDE.md section 3).
+      - name: Run the end-to-end tests
+        working-directory: client
+        run: npm run test:e2e
+
   deps:
     name: deps
     runs-on: ubuntu-24.04

@@ -3,6 +3,12 @@
 **/node_modules
 /client/dist
 
+# Playwright E2E artefacts
+/client/test-results
+/client/playwright-report
+/client/.playwright
+/client/blob-report
+
 # Runtime state: pending notes and their keys live here. Never committed and
 # never copied anywhere else -- durability comes from block-level replication,
 # not from copies in time (CLAUDE.md rule 7).
