@@ -90,7 +90,12 @@ export async function revealNote(id: string): Promise<Bytes> {
   }
 }
 
-/** Destroys a note without reading it, on an abuse report. */
+/**
+ * Destroys a note without reading it, on an abuse report (CLAUDE.md §11).
+ *
+ * @public Reserved for the report-by-link UI, which is a product gap, not wired
+ * to the interface yet -- kept so the client half of the mechanism stays ready.
+ */
 export async function reportNote(id: string): Promise<void> {
   await post('/api/report', { id })
 }
