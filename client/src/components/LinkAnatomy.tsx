@@ -1,17 +1,11 @@
-import { createContext, useContext } from 'react'
 import { useCopy } from '../lib/i18n'
 import { Logo } from './Logo'
 
 /**
- * Link anatomisinin görünümü.
- * figma: Figma'daki etiketli URL kutusu.
- * ticket: "Yırtılan bilet" — tasarım tuvalindeki Fikir 4 (Figma'da yok).
+ * Link anatomisi · "Yırtılan bilet": büyük parça kutu numarası (sunucuda),
+ * koparılan küçük parça yalnızca alıcıdaki anahtar.
  */
-export type AnatomyStyle = 'figma' | 'ticket'
-export const AnatomyStyleContext = createContext<AnatomyStyle>('ticket')
-
-/** Fikir 4 · Yırtılan bilet: büyük parça kutu numarası, koparlıan küçük parça yalnızca alıcıdaki anahtar. */
-function Ticket() {
+export function LinkAnatomy() {
   const t = useCopy()
   const label = 'font-display text-xs font-semibold tracking-[0.08em] uppercase md:text-sm'
   return (
@@ -23,9 +17,9 @@ function Ticket() {
         </div>
         <div>
           <p className={`${label} text-muted`}>{t.anatomy.boxNumber}</p>
-          <p className="mt-0.5 font-mono text-xl text-ink-strong md:text-[30px] md:leading-[38px] dark:text-sand">VDjPkmhBaXm9</p>
+          <p className="mt-0.5 font-mono text-xl text-ink-strong md:text-[30px] md:leading-[38px] break-all dark:text-sand">VDjPkmhBaXm9QsR2tLkZ4w</p>
         </div>
-        <p className="font-mono text-xs text-muted md:text-sm">blindnote.com/l#…</p>
+        <p className="text-xs text-muted md:text-sm">{t.anatomy.boxNote}</p>
       </div>
       <div
         aria-hidden="true"
@@ -33,35 +27,9 @@ function Ticket() {
       />
       <div className="mt-3 mx-1 flex rotate-1 flex-col gap-3 rounded-b-3xl bg-ink p-5 text-white shadow-step md:p-7 lg:mt-0 lg:ml-7 lg:h-[200px] lg:w-[300px] lg:translate-y-2.5 lg:rotate-6 lg:justify-between lg:rounded-l-none lg:rounded-r-3xl lg:px-7 lg:py-7 dark:bg-accent dark:text-ink">
         <span className={`${label} text-accent dark:text-ink/70`}>{t.anatomy.keyOnlyYou}</span>
-        <p className="font-mono text-lg break-all md:text-2xl md:leading-8">D936F4PyUQYhH4</p>
+        <p className="font-mono text-lg break-all md:text-2xl md:leading-8">D936F4PyUQYhH4tN7vKmBcR8sWxZ0eLpGqUoIaJ5dY2</p>
         <span className="text-xs opacity-80">{t.anatomy.neverServer}</span>
       </div>
-      <figcaption className="sr-only">{t.anatomy.caption}</figcaption>
-    </figure>
-  )
-}
-
-export function LinkAnatomy() {
-  const t = useCopy()
-  const style = useContext(AnatomyStyleContext)
-  if (style === 'ticket') return <Ticket />
-  return (
-    <figure className="mx-auto flex w-full max-w-[343px] flex-col gap-2 md:max-w-[734px] md:gap-4">
-      <div aria-hidden="true" className="grid grid-cols-3 gap-3 md:gap-6">
-        {t.anatomy.labels.map((label) => (
-          <span
-            key={label}
-            className="relative h-[27px] text-center font-display text-[11px] leading-[18px] font-semibold whitespace-nowrap text-ink md:h-[53px] md:pt-3 md:text-lg md:leading-[29px] dark:text-sand"
-          >
-            {label}
-            <span className="absolute top-[17px] left-1/2 h-2.5 w-px bg-muted md:top-[38px] md:h-5" />
-          </span>
-        ))}
-      </div>
-      <p className="truncate rounded-xl border border-accent/40 bg-page p-3 text-center text-[11px] leading-4 text-ink-strong shadow-link md:rounded-button md:px-6 md:text-left md:text-2xl md:leading-7 dark:border-accent/20 dark:bg-night-card dark:text-sand">
-        <span className="md:hidden">https://blindnote.com/l#VDjPkmhBa/D936F4PyUQY</span>
-        <span className="hidden md:inline">https://blindnote.com/l#VDjPkmhBaXm9/D936F4PyUQYhH4</span>
-      </p>
       <figcaption className="sr-only">{t.anatomy.caption}</figcaption>
     </figure>
   )

@@ -119,6 +119,7 @@ export interface Strings {
     boxNumber: string
     keyOnlyYou: string
     neverServer: string
+    boxNote: string
   }
   tagline: { aria: string; oneTime: string; zeroKnowledge: string; e2e: string }
   faq: { heading: string; intro: string; items: readonly FaqEntryText[] }
@@ -273,6 +274,7 @@ const en: Strings = {
     boxNumber: 'Box number · on the server',
     keyOnlyYou: 'Key · only with you',
     neverServer: 'This part never goes to the server.',
+    boxNote: 'Useless without the key.',
   },
   tagline: {
     aria: 'Security features',
@@ -467,6 +469,7 @@ const tr: Strings = {
     boxNumber: 'Kutu numarası · sunucuda',
     keyOnlyYou: 'Anahtar · sadece sende',
     neverServer: 'Bu parça hiçbir zaman sunucuya gitmez.',
+    boxNote: 'Anahtar olmadan açılmaz.',
   },
   tagline: {
     aria: 'Güvenlik özellikleri',
