@@ -1,5 +1,8 @@
 #![forbid(unsafe_code)]
-#![cfg_attr(test, allow(clippy::unwrap_used, reason = "unwrap is acceptable in test code"))]
+#![cfg_attr(
+    test,
+    allow(clippy::unwrap_used, reason = "unwrap is acceptable in test code")
+)]
 
 //! Identifiers, per-note keys and the at-rest AEAD layer.
 //!
