@@ -52,13 +52,23 @@ export function Hero(props: HeroProps) {
     <section className="relative isolate">
       <div aria-hidden="true" className={cx('absolute inset-x-0 -top-24 bottom-0 -z-10', BACKDROP)} />
       {/* Figma "section-fade": en altta sayfa rengine yumuşak geçiş */}
-      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-8 bg-gradient-to-b from-transparent to-page md:h-[51px] dark:to-night" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 -z-10 h-8 bg-gradient-to-b from-transparent to-page md:h-[51px] dark:to-night"
+      />
 
-      <div className={cx('mx-auto flex max-w-[880px] flex-col items-center px-4 pt-8 pb-12 md:pb-[62px]', TOP_SPACE[props.space ?? 'default'])}>
+      <div
+        className={cx(
+          'mx-auto flex max-w-[880px] flex-col items-center px-4 pt-8 pb-12 md:pb-[62px]',
+          TOP_SPACE[props.space ?? 'default'],
+        )}
+      >
         {props.monkey?.placement === 'top' && (
           <Monkey
             pose={props.monkey.pose}
-            className={props.monkey.pose === 'ears' ? 'mb-3 w-[72px] md:-mb-1.5 md:w-[106px]' : 'mb-3 w-14 md:-mb-1.5 md:w-20'}
+            className={
+              props.monkey.pose === 'ears' ? 'mb-3 w-[72px] md:-mb-1.5 md:w-[106px]' : 'mb-3 w-14 md:-mb-1.5 md:w-20'
+            }
           />
         )}
 
@@ -79,14 +89,19 @@ export function Hero(props: HeroProps) {
         {props.card && (
           <div className={cx('relative isolate w-full', peek ? peek.gap : 'mt-8 md:mt-[62px]')}>
             {peek && props.monkey && (
-              <Monkey pose={props.monkey.pose} className={cx('absolute bottom-full left-1/2 -z-10 -translate-x-1/2', peek.monkey)} />
+              <Monkey
+                pose={props.monkey.pose}
+                className={cx('absolute bottom-full left-1/2 -z-10 -translate-x-1/2', peek.monkey)}
+              />
             )}
             {props.card}
           </div>
         )}
 
         {props.footer && (
-          <div className={cx('flex w-full flex-col items-center', props.card ? 'mt-8 md:mt-9' : 'mt-10 md:mt-[30px]')}>{props.footer}</div>
+          <div className={cx('flex w-full flex-col items-center', props.card ? 'mt-8 md:mt-9' : 'mt-10 md:mt-[30px]')}>
+            {props.footer}
+          </div>
         )}
       </div>
     </section>

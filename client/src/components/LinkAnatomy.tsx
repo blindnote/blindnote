@@ -17,7 +17,9 @@ export function LinkAnatomy() {
         </div>
         <div>
           <p className={`${label} text-muted`}>{t.anatomy.boxNumber}</p>
-          <p className="mt-0.5 font-mono text-xl text-ink-strong md:text-[30px] md:leading-[38px] break-all dark:text-sand">VDjPkmhBaXm9QsR2tLkZ4w</p>
+          <p className="mt-0.5 font-mono text-xl text-ink-strong md:text-[30px] md:leading-[38px] break-all dark:text-sand">
+            VDjPkmhBaXm9QsR2tLkZ4w
+          </p>
         </div>
         <p className="text-xs text-muted md:text-sm">{t.anatomy.boxNote}</p>
       </div>
@@ -27,7 +29,9 @@ export function LinkAnatomy() {
       />
       <div className="mt-3 mx-1 flex rotate-1 flex-col gap-3 rounded-b-3xl bg-ink p-5 text-white shadow-step md:p-7 lg:mt-0 lg:ml-7 lg:h-[200px] lg:w-[300px] lg:translate-y-2.5 lg:rotate-6 lg:justify-between lg:rounded-l-none lg:rounded-r-3xl lg:px-7 lg:py-7 dark:bg-accent dark:text-ink">
         <span className={`${label} text-accent dark:text-ink/70`}>{t.anatomy.keyOnlyYou}</span>
-        <p className="font-mono text-lg break-all md:text-2xl md:leading-8">D936F4PyUQYhH4tN7vKmBcR8sWxZ0eLpGqUoIaJ5dY2</p>
+        <p className="font-mono text-lg break-all md:text-2xl md:leading-8">
+          D936F4PyUQYhH4tN7vKmBcR8sWxZ0eLpGqUoIaJ5dY2
+        </p>
         <span className="text-xs opacity-80">{t.anatomy.neverServer}</span>
       </div>
       <figcaption className="sr-only">{t.anatomy.caption}</figcaption>

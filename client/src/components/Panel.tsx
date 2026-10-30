@@ -23,7 +23,11 @@ export function Panel(props: PanelProps) {
         props.className,
       )}
     >
-      <div className={cx('rounded-xl bg-page px-2 py-3 md:rounded-inner md:p-6 dark:bg-night-card', props.innerClassName)}>{props.children}</div>
+      <div
+        className={cx('rounded-xl bg-page px-2 py-3 md:rounded-inner md:p-6 dark:bg-night-card', props.innerClassName)}
+      >
+        {props.children}
+      </div>
     </div>
   )
 }

@@ -30,7 +30,10 @@ export function NoteNotFoundScreen(props: NoteNotFoundScreenProps) {
           >
             {t.notFound.poofTitle}
           </span>
-          <span aria-hidden="true" className="absolute inset-x-6 bottom-2 h-10 rounded-full bg-page/70 blur-xl md:bottom-6 md:h-16 dark:bg-night/70" />
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-6 bottom-2 h-10 rounded-full bg-page/70 blur-xl md:bottom-6 md:h-16 dark:bg-night/70"
+          />
           <Monkey pose="mouth" className="absolute bottom-0 w-16 md:w-28" />
         </div>
         <h1 className="mt-4 font-display text-[32px] leading-[1.2] font-bold tracking-[-0.02em] text-ink md:mt-6 md:text-5xl dark:text-sand">
@@ -42,9 +45,7 @@ export function NoteNotFoundScreen(props: NoteNotFoundScreenProps) {
             {t.notFound.poofHint}
           </span>
         </p>
-        <div className="mt-8 flex w-full flex-col items-center gap-3 md:mt-9">
-          {cta}
-        </div>
+        <div className="mt-8 flex w-full flex-col items-center gap-3 md:mt-9">{cta}</div>
       </div>
     </section>
   )

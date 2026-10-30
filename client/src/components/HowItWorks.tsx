@@ -10,7 +10,11 @@ const POSES: readonly MonkeyPose[] = ['eyes', 'ears', 'mouth']
 export function HowItWorks() {
   const t = useCopy()
   return (
-    <section id="nedir" aria-labelledby="nedir-baslik" className="scroll-mt-20 bg-page px-1.5 py-14 md:px-8 md:py-24 dark:bg-night">
+    <section
+      id="nedir"
+      aria-labelledby="nedir-baslik"
+      className="scroll-mt-20 bg-page px-1.5 py-14 md:px-8 md:py-24 dark:bg-night"
+    >
       <SectionHeading id="nedir-baslik" title={t.how.title} description={t.how.description} />
       <ol className="mx-auto mt-10 flex max-w-[1216px] flex-col items-center gap-10 md:mt-10 lg:flex-row lg:items-stretch lg:gap-6">
         {t.how.steps.map((s, i) => (
