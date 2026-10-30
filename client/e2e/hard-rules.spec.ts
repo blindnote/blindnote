@@ -11,7 +11,7 @@ test('the key and the plaintext never leave the browser', async ({ page, baseURL
   const secret = 'super secret plaintext 9f3a-do-not-leak'
   const seen: { url: string; body: string | null; referer: string }[] = []
   page.on('request', (r) => {
-    seen.push({ url: r.url(), body: r.postData(), referer: r.headers()['referer'] ?? '' })
+    seen.push({ url: r.url(), body: r.postData(), referer: r.headers().referer ?? '' })
   })
 
   const link = await composeNote(page, secret)
