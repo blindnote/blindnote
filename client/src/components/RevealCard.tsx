@@ -1,16 +1,6 @@
-import { createContext, useContext } from 'react'
 import { useCopy } from '../lib/i18n'
 import { Button } from './Button'
-import { Icon } from './Icon'
 import { Panel } from './Panel'
-
-/**
- * "Mesaj Aç" kartının görünümü.
- * figma: Figma'daki dar kutu.
- * envelope / frosted: tasarım incelemesi için önerilen iki alternatif (Figma'da yok).
- */
-export type RevealStyle = 'figma' | 'envelope' | 'frosted'
-export const RevealStyleContext = createContext<RevealStyle>('envelope')
 
 type RevealCardProps = {
   /**
@@ -46,74 +36,30 @@ function Envelope() {
   )
 }
 
-/** Figma: Mesaj Aç → note-composer (ortada dar beyaz kutu, buton + uyarı). */
+/**
+ * Figma: Mesaj Aç → note-composer -- "Mühürlü zarf": "sana özel" duygusu, mühürü kırmak = tek seferlik açmak.
+ */
 export function RevealCard(props: RevealCardProps) {
   const t = useCopy()
-  const style = useContext(RevealStyleContext)
   const opening = props.status === 'opening'
-
-  if (style === 'envelope') {
-    // A · Mühürlü zarf: "sana özel" duygusunu güçlendirir; mühürü kırmak = tek seferlik açmak
-    return (
-      <Panel tone={props.error ? 'danger' : 'default'}>
-        <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
-          {/* The envelope opens the note too — same action as the button. A real
-              <button> gives keyboard access for free; the ref guard in App keeps
-              a double trigger from firing two burns. */}
-          <button
-            type="button"
-            onClick={props.onReveal}
-            disabled={opening}
-            aria-label={t.revealCard.breakSeal}
-            className="group rounded-3xl outline-none transition-transform duration-150 focus-visible:ring-4 focus-visible:ring-accent enabled:cursor-pointer enabled:hover:scale-[1.03] enabled:active:scale-[0.98] disabled:opacity-60 motion-reduce:transition-none motion-reduce:enabled:hover:scale-100"
-          >
-            <Envelope />
-          </button>
-          <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.breakingSeal}>
-            {t.revealCard.breakSeal}
-          </Button>
-          <ErrorText error={props.error} />
-        </div>
-      </Panel>
-    )
-  }
-
-  if (style === 'frosted') {
-    // B · Buzlu cam: mesajın orada olduğunu ama henüz okunamadığını gösterir
-    return (
-      <Panel tone={props.error ? 'danger' : 'default'}>
-        <div className="relative overflow-hidden rounded-lg">
-          <div aria-hidden="true" className="flex flex-col gap-3 px-2 py-6 blur-[3px] md:px-6 md:py-8">
-            {['w-11/12', 'w-9/12', 'w-10/12', 'w-6/12'].map((w) => (
-              <span key={w} className={`h-3 rounded-full bg-ink/15 md:h-3.5 dark:bg-sand/15 ${w}`} />
-            ))}
-          </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-page/55 backdrop-blur-[2px] dark:bg-night-card/55">
-            <span className="flex size-9 items-center justify-center rounded-full bg-ink text-accent dark:bg-accent dark:text-ink">
-              <Icon name="lock" className="size-5" />
-            </span>
-            <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.opening}>
-              {t.revealCard.view}
-            </Button>
-            <p className="text-center text-xs font-semibold text-ink md:text-sm dark:text-sand-muted">{t.revealCard.onlyOnceShort}</p>
-          </div>
-        </div>
-        <div className="flex justify-center pt-2">
-          <ErrorText error={props.error} />
-        </div>
-      </Panel>
-    )
-  }
-
   return (
-    <Panel tone={props.error ? 'danger' : 'default'} innerClassName="mx-auto w-full md:w-fit md:min-w-[359px]">
-      <div className="flex flex-col items-center gap-3 py-6 pb-8 md:py-0 md:pb-2">
-        <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.opening}>
-          {t.revealCard.view}
+    <Panel tone={props.error ? 'danger' : 'default'}>
+      <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
+        {/* The envelope opens the note too -- same action as the button. A real
+            <button> gives keyboard access for free; the ref guard in App keeps
+            a double trigger from firing two burns. */}
+        <button
+          type="button"
+          onClick={props.onReveal}
+          disabled={opening}
+          aria-label={t.revealCard.breakSeal}
+          className="group rounded-3xl outline-none transition-transform duration-150 focus-visible:ring-4 focus-visible:ring-accent enabled:cursor-pointer enabled:hover:scale-[1.03] enabled:active:scale-[0.98] disabled:opacity-60 motion-reduce:transition-none motion-reduce:enabled:hover:scale-100"
+        >
+          <Envelope />
+        </button>
+        <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.breakingSeal}>
+          {t.revealCard.breakSeal}
         </Button>
-        <p className="text-center text-xs font-semibold text-ink md:text-sm dark:text-sand-muted">
-          {t.revealCard.onlyOnceLong}
-        </p>
         <ErrorText error={props.error} />
       </div>
     </Panel>

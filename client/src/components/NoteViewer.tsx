@@ -1,21 +1,11 @@
-import { createContext, useContext } from 'react'
 import { useCopy } from '../lib/i18n'
 import { cx } from './cx'
 import { Icon } from './Icon'
-import { Panel } from './Panel'
-
-/**
- * Açılan notun görünümü.
- * figma: Figma'daki kutu.
- * paper / sealed: tasarım incelemesi için önerilen iki alternatif (Figma'da yok).
- */
-export type NoteStyle = 'figma' | 'paper' | 'sealed'
-export const NoteStyleContext = createContext<NoteStyle>('sealed')
 
 type NoteViewerProps = {
   /** Çözülmüş not. Düz metin olarak basılır (HTML yorumlanmaz). */
   text: string
-  /** Not metnini kopyala (alternatif görünümlerde gösterilir). Panoya yazma işi çağıranda. */
+  /** Not metnini kopyala. Panoya yazma işi çağıranda. */
   onCopy?: () => void
   copied?: boolean
 }
@@ -39,80 +29,32 @@ function CopyButton(props: { onCopy?: () => void; copied?: boolean }) {
 }
 
 /**
- * Figma: Mesaj Açıldı → note-composer. Satır sonları korunur, uzun kelimeler kırılır.
- * Uzun notlarda kutu kendi içinde kayar (tasarımda yok — türetildi).
+ * Figma: Mesaj Açıldı → note-composer -- "Açılmış mühür": üstte durum şeridi, altta not,
+ * sağ altta kopyala. Satır sonları korunur, uzun kelimeler kırılır; uzun notlarda kutu kendi içinde kayar.
  */
 export function NoteViewer(props: NoteViewerProps) {
   const t = useCopy()
-  const style = useContext(NoteStyleContext)
-
-  if (style === 'paper') {
-    // A · Kâğıt not: çizgili kâğıt, üstünde bant; not "elden verilmiş" hissi verir.
-    return (
-      <div className="relative mx-auto w-full max-w-[720px] pt-3">
-        <span aria-hidden="true" className="absolute top-1 left-6 z-10 h-6 w-20 -rotate-6 rounded-sm md:left-10 bg-accent/45 dark:bg-accent/30" />
-        <div className="-rotate-[0.6deg] rounded-[20px] border border-accent/40 bg-cream shadow-step dark:border-accent/20 dark:bg-night-card">
-          <div
-            tabIndex={0}
-            role="region"
-            aria-label={t.noteViewer.secretMessage}
-            className={cx(
-              SCROLL,
-              TEXT,
-              'bg-[repeating-linear-gradient(180deg,transparent_0px,transparent_27px,color-mix(in_srgb,var(--color-accent)_35%,transparent)_27px,color-mix(in_srgb,var(--color-accent)_35%,transparent)_28px)] bg-local bg-[position:0_22px] px-6 pt-[22px] pb-3 text-sm leading-7 font-medium md:px-10 md:text-base md:leading-7',
-            )}
-          >
-            {props.text}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-accent/50 px-6 py-3 md:px-10">
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-fur dark:text-sand-muted">
-              <Icon name="eye-off" className="size-4 text-accent" />
-              {t.noteViewer.disappears}
-            </span>
-            <CopyButton onCopy={props.onCopy} copied={props.copied} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (style === 'sealed') {
-    // B · Açılmış mühür: üstte durum şeridi, altta not ve sağ altta kopyala.
-    return (
-      <div className="mx-auto w-full overflow-hidden rounded-2xl border-2 border-ink/10 bg-page shadow-composer md:rounded-card dark:border-night-line dark:bg-night-card">
-        <div className="flex items-center justify-between gap-3 bg-ink px-4 py-3 text-white md:px-6 dark:bg-night-raised">
-          <span className="inline-flex items-center gap-2 font-display text-sm font-semibold md:text-base">
-            <Icon name="unlock" className="size-4 text-accent md:size-5" />
-            {t.noteViewer.opened}
-          </span>
-        </div>
-        <div
-          tabIndex={0}
-          role="region"
-          aria-label={t.noteViewer.secretMessage}
-          className={cx(SCROLL, TEXT, 'px-4 pt-4 text-[15px] leading-6 font-medium md:px-6 md:pt-6 md:text-base md:leading-7')}
-        >
-          {props.text}
-        </div>
-        {props.onCopy && (
-          <div className="flex justify-end px-4 pt-4 pb-4 md:px-6 md:pb-6">
-            <CopyButton onCopy={props.onCopy} copied={props.copied} />
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
-    <Panel>
+    <div className="mx-auto w-full overflow-hidden rounded-2xl border-2 border-ink/10 bg-page shadow-composer md:rounded-card dark:border-night-line dark:bg-night-card">
+      <div className="flex items-center justify-between gap-3 bg-ink px-4 py-3 text-white md:px-6 dark:bg-night-raised">
+        <span className="inline-flex items-center gap-2 font-display text-sm font-semibold md:text-base">
+          <Icon name="unlock" className="size-4 text-accent md:size-5" />
+          {t.noteViewer.opened}
+        </span>
+      </div>
       <div
         tabIndex={0}
         role="region"
         aria-label={t.noteViewer.secretMessage}
-        className={cx(SCROLL, TEXT, 'text-xs leading-[1.75] font-medium md:text-sm md:leading-7')}
+        className={cx(SCROLL, TEXT, 'px-4 pt-4 text-[15px] leading-6 font-medium md:px-6 md:pt-6 md:text-base md:leading-7')}
       >
         {props.text}
       </div>
-    </Panel>
+      {props.onCopy && (
+        <div className="flex justify-end px-4 pt-4 pb-4 md:px-6 md:pb-6">
+          <CopyButton onCopy={props.onCopy} copied={props.copied} />
+        </div>
+      )}
+    </div>
   )
 }
