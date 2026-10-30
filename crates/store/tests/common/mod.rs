@@ -1,4 +1,4 @@
-#![allow(dead_code, unreachable_pub)]
+#![allow(dead_code, unreachable_pub, reason = "shared test fixtures; not every item is used by every test binary")]
 
 //! Shared fixture for the store's integration tests.
 //!

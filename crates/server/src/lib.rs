@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-#![cfg_attr(test, allow(clippy::unwrap_used))]
+#![cfg_attr(test, allow(clippy::unwrap_used, reason = "unwrap is acceptable in test code"))]
 
 //! BlindNote's HTTP server.
 //!
