@@ -1005,3 +1005,58 @@ cargo-machete; and on the client `biome ci`, knip, 17 Vitest unit tests, 13 Play
 the build, and the read path at **87,216 B brotli** against the 92,160 B budget. CI's `client` job
 now also runs Biome, knip and the unit tests; the `deps` job runs cargo-machete. Committed to
 `master` as a baseline; **not deployed** — that waits on review.
+
+## 2026-10-31 — dark mode, contrast as a test, and the browser chrome
+
+The interface shipped with a full dark palette and `dark:` classes in every component, but gated
+behind an explicit `data-theme="dark"` that nothing set — the site always rendered light. This
+session turned it on and made the result provable rather than eyeballed. On a branch (`dark-mode`),
+not merged and not deployed: it waits on local review, and a theme toggle is left as a decision
+because it would touch the CSP (below).
+
+### Dark mode, following the system
+
+The `dark` custom-variant now also fires under `@media (prefers-color-scheme: dark)` (guarded by
+`:not([data-theme="light"])`), so the OS theme is honoured with no JavaScript and no flash on first
+paint; an explicit `data-theme` still overrides it. That was the whole switch — the designer's
+palette and per-component `dark:` classes did the rest. Verified in a real browser (Playwright,
+`colorScheme` emulation) across every screen — landing/compose, reveal, link-ready, note-opened,
+desktop and mobile, both schemes. No gaps: focus rings are all `ring-accent` (visible on both), the
+hero backdrop already carried `dark:` gradients, the section-fade already faded to `night`.
+
+### Contrast, measured and then guarded
+
+A WCAG pass over the whole palette found one text failure: the muted token (`#b0846d`) was 3.3:1 on
+white, below AA 4.5:1 for the placeholders, captions and the link's non-key part it carries. It is
+now `#8f6650` (~5:1); and because the same role needs a *light* tone on dark backgrounds, the token
+flips to `#a98d79` under the dark scheme by overriding the variable per scheme rather than adding a
+`dark:` at every use. The audit is now a test (`src/lib/contrast.test.ts`) that reads the tokens
+straight from `app.css`, so dropping any colour below its threshold fails CI — both schemes, 4.5:1
+for normal text, 3:1 for large text and the key ticket; decorative borders are exempt.
+
+### The browser chrome, and two accessibility touches
+
+`color-scheme` advertises both schemes, and a `theme-color` media pair tints the Safari/Chrome
+chrome (the iOS notch area, the macOS toolbar) cream in light and night in dark — Safari has
+honoured this since version 15. Alongside it: a branded `::selection` (accent peach, ink text,
+~8.3:1 both ways, so a selected note stays readable instead of the browser default), and a
+`prefers-reduced-motion` reset that neutralises animation, transition and smooth-scroll for visitors
+who ask for less motion.
+
+### The theme toggle, deferred on purpose
+
+A manual toggle is the obvious next step and the override mechanism is already there, but it is left
+for a decision. A no-flash toggle needs an inline `<head>` script to set `data-theme` before paint,
+and the CSP (`csp.rs`/`build.rs`) pins only *external* script hashes via `integrity`, with a test
+forbidding `'unsafe-inline'`/`'unsafe-eval'` (hard rule 11). Supporting an inline script is
+security-critical build surgery, and per §2 a feature that would bend a hard rule is the user's
+call — not a 2 a.m. one. It would also add a control to a header the designer laid out deliberately.
+
+### Verified
+
+A build break was caught and fixed in passing: the new WCAG test reads `app.css` through `node:fs`,
+but `tsconfig.app` (no node types) was compiling every file under `src`, tests included, so `tsc -b`
+broke; tests now live in their own `tsconfig.test.json`. Everything green — `tsc -b` + the Vite
+build, 139 Rust tests (interface/CSP included), 42 Vitest unit tests (25 the new contrast
+assertions), 16 Playwright E2E tests (3 new, guarding the dark wiring end-to-end against the shipped
+binary), Biome, knip, and the read path at **87,764 B brotli** against the 92,160 B budget.
