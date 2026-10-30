@@ -74,7 +74,9 @@ export function SiteHeader(props: SiteHeaderProps) {
         </div>
 
         {/* Mobil: kaydırınca menünün yanında kompakt create butonu (Figma'da yok — türetildi) */}
-        <div className="ml-auto flex items-center gap-1 lg:hidden">
+        <div className="ml-auto flex items-center gap-1.5 lg:hidden">
+          {/* Dil seçici mobilde de header'da, hamburgerin solunda (her sayfada aynı yerde). */}
+          <LanguageSwitcher tone="light" />
           {props.cta && props.ctaOnMobile && (
             <button
               type="button"
@@ -116,9 +118,6 @@ export function SiteHeader(props: SiteHeaderProps) {
                 </a>
               </li>
             ))}
-            <li className="mt-2 px-4 pt-2">
-              <LanguageSwitcher tone="light" />
-            </li>
           </ul>
         </nav>
       )}
