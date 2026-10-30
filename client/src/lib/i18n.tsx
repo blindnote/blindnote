@@ -290,12 +290,7 @@ const en: Strings = {
       {
         question: 'Why should I use this service?',
         answer:
-          'To share a password, a key, or a private note without leaving a trace in your chat history. The link opens once; the moment it is opened, the note is deleted from the server.',
-      },
-      {
-        question: 'Who is this service for?',
-        answer:
-          "Anyone who needs to share something sensitive just once. You don't need an account, and we don't ask for your email address.",
+          "To share a password, a key, or a private note without leaving a lasting trace in your chat history. The link opens only once; the moment it is opened, the note is deleted from the server. You don't need an account, and we never ask for your email address.",
       },
       {
         question: 'How does the service work?',
@@ -303,9 +298,19 @@ const en: Strings = {
           'Your note is encrypted in your browser before it is sent; only the encrypted form reaches the server. The key that decrypts it sits in the part of the link after the # sign, and browsers never add that part to any request. So the key never reaches us.',
       },
       {
-        question: 'How secure is this service?',
+        question: 'Can you (or anyone else) read my note?',
         answer:
-          "Because the key is never sent to the server, we can't see the note's contents either. When a note is read we delete its 32-byte key; once the key is gone, the encrypted text can no longer be opened by anyone. We don't claim the bytes are physically erased from the disk — on a modern SSD no one can prove that. Our guarantee is mathematical: the key is gone.",
+          'No. Because the key never reaches us, all we hold is encrypted text we cannot open. We keep no access logs; your IP address is used only momentarily to limit abuse, and is never written anywhere.',
+      },
+      {
+        question: 'Can a deleted note be recovered? Do you keep backups?',
+        answer:
+          "When a note is read, we delete its 32-byte key; once the key is gone, the encrypted text can no longer be opened by anyone. We keep no backups and take no snapshots — what is deleted does not come back. We don't claim the bytes are physically erased from the disk; on a modern SSD no one can prove that. Our guarantee is mathematical: the key is gone.",
+      },
+      {
+        question: 'What does this service not protect against?',
+        answer:
+          "Let's be honest: we can't protect the screen of the person reading the note. Malware on the recipient's device, a screenshot, or the recipient keeping a copy after reading are beyond our reach. The protection covers the note's journey through us — not the screen at the other end.",
       },
       {
         question: 'What if someone else gets hold of the link?',
@@ -485,31 +490,36 @@ const tr: Strings = {
       {
         question: 'Bu hizmeti neden kullanmalıyım?',
         answer:
-          'Bir şifreyi, bir anahtarı ya da özel bir notu sohbet geçmişinde iz bırakmadan paylaşmak için. Bağlantı bir kez açılır; açıldığı anda not sunucudan silinir.',
+          'Bir şifreyi, bir anahtarı ya da özel bir notu, sohbet geçmişinde kalıcı iz bırakmadan paylaşmak için. Bağlantı yalnızca bir kez açılır; açıldığı anda not sunucudan silinir. Hesap açmanız gerekmez, e-posta adresinizi sormayız.',
       },
       {
-        question: 'Servis kimin için?',
-        answer:
-          'Hassas bir bilgiyi tek seferlik paylaşması gereken herkes için. Hesap açmanız gerekmiyor, e-posta adresinizi sormuyoruz.',
-      },
-      {
-        question: 'Servis nasıl çalışır?',
+        question: 'Nasıl çalışır?',
         answer:
           'Notunuz gönderilmeden önce tarayıcınızda şifrelenir; sunucuya yalnızca şifreli hâli gider. Şifreyi çözen anahtar, bağlantının # işaretinden sonraki kısmında durur ve tarayıcılar o kısmı hiçbir isteğe eklemez. Yani anahtar bize hiç ulaşmaz.',
       },
       {
-        question: 'Bu hizmet ne kadar güvenli?',
+        question: 'Notumu siz (ya da bir başkası) okuyabilir misiniz?',
         answer:
-          'Anahtar sunucuya hiç gönderilmediği için notun içeriğini biz de göremiyoruz. Not okunduğunda ona ait 32 baytlık anahtarı siliyoruz; anahtar gidince şifreli metin artık kimse için açılamaz. Diskteki baytların fiziksel olarak yok edildiğini iddia etmiyoruz — modern bir SSD’de bunu kimse kanıtlayamaz. Güvencemiz matematiksel: anahtar yok.',
+          'Hayır. Anahtar bize hiç ulaşmadığı için elimizde yalnızca açamadığımız şifreli bir metin var. Erişim kaydı (log) tutmuyoruz; IP adresiniz yalnızca kötüye kullanımı sınırlamak için anlık kullanılır, hiçbir yere yazılmaz.',
+      },
+      {
+        question: 'Silinen not geri gelir mi? Yedek tutuyor musunuz?',
+        answer:
+          'Not okunduğunda ona ait 32 baytlık anahtarı sileriz; anahtar gidince şifreli metin artık kimse için açılamaz. Hiçbir yedek, hiçbir snapshot almayız — silinen geri gelmez. Diskteki baytların fiziksel olarak yok edildiğini iddia etmeyiz; modern bir SSD’de bunu kimse kanıtlayamaz. Güvencemiz matematikseldir: anahtar yok.',
+      },
+      {
+        question: 'Bu hizmet neyi korumaz?',
+        answer:
+          'Dürüst olalım: notu okuyan kişinin ekranını koruyamayız. Alıcının cihazındaki bir zararlı yazılım, bir ekran görüntüsü ya da alıcının notu okuduktan sonra kopyalaması bizim elimizde değil. Koruma, notun bizdeki yolculuğu içindir — karşı taraftaki ekran için değil.',
       },
       {
         question: 'Bağlantıyı başkası ele geçirirse ne olur?',
         answer:
-          'Bağlantının kendisi anahtardır: onu ilk açan notu okur. Bunu engelleyemeyiz ve engellediğimizi söylemeyeceğiz. Ama bir faydası var: beklediği notu “bulunamadı” olarak gören kişi, birinin ondan önce açtığını öğrenmiş olur. Bağlantı karşı tarafa ulaşmadıysa, kimseye ulaşmadığını varsaymayın.',
+          'Bağlantının kendisi anahtardır: onu ilk açan notu okur. Bunu engelleyemeyiz, engellediğimizi de söylemeyiz. Ama bir faydası var: beklediği notu “bulunamadı” olarak gören kişi, birinin ondan önce açtığını öğrenmiş olur. Bağlantı karşı tarafa ulaşmadıysa, kimseye ulaşmadığını varsaymayın.',
       },
       {
         question: 'Notu hiç açmazsam ne olur?',
-        answer: 'Not ve anahtarı 24 saat sonra, hiç okunmamış olsa bile silinir.',
+        answer: 'Not ve anahtarı, hiç okunmamış olsa bile 24 saat sonra silinir.',
       },
     ],
   },
