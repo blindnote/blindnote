@@ -95,16 +95,16 @@ export function SiteHeader(props: SiteHeaderProps) {
               <span className="leading-none [text-box:trim-both_cap_alphabetic]">{t.header.create}</span>
             </button>
           )}
-        <button
-          type="button"
-          onClick={props.onMenuToggle}
-          aria-expanded={props.menuOpen}
-          aria-controls="mobil-menu"
-          aria-label={props.menuOpen ? t.header.closeMenu : t.header.openMenu}
-          className="grid size-11 place-items-center rounded-lg text-ink-strong outline-none hover:bg-accent/15 focus-visible:ring-4 focus-visible:ring-accent lg:hidden dark:text-sand"
-        >
-          <Icon name={props.menuOpen ? 'close' : 'menu'} className={cx(props.menuOpen ? 'size-4' : 'h-4 w-6')} />
-        </button>
+          <button
+            type="button"
+            onClick={props.onMenuToggle}
+            aria-expanded={props.menuOpen}
+            aria-controls="mobil-menu"
+            aria-label={props.menuOpen ? t.header.closeMenu : t.header.openMenu}
+            className="grid size-11 place-items-center rounded-lg text-ink-strong outline-none hover:bg-accent/15 focus-visible:ring-4 focus-visible:ring-accent lg:hidden dark:text-sand"
+          >
+            <Icon name={props.menuOpen ? 'close' : 'menu'} className={cx(props.menuOpen ? 'size-4' : 'h-4 w-6')} />
+          </button>
         </div>
       </div>
 

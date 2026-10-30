@@ -9,9 +9,7 @@ test.beforeEach(async ({ page }) => {
 // The fix is a font size, which we can assert directly regardless of engine.
 test('the composer text is at least 16px so iOS does not auto-zoom', async ({ page }) => {
   await page.goto('/')
-  const size = await page
-    .locator('main textarea')
-    .evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))
+  const size = await page.locator('main textarea').evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize))
   expect(size).toBeGreaterThanOrEqual(16)
 })
 

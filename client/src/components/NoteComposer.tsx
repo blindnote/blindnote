@@ -41,7 +41,13 @@ export function NoteComposer(props: NoteComposerProps) {
 
   const actions = (block: boolean) => (
     <>
-      <Button type="submit" blockOnMobile={block} disabled={!canSubmit} loading={submitting} loadingLabel={t.composer.loading}>
+      <Button
+        type="submit"
+        blockOnMobile={block}
+        disabled={!canSubmit}
+        loading={submitting}
+        loadingLabel={t.composer.loading}
+      >
         {t.composer.button}
       </Button>
       <Tagline align="right" />
@@ -77,7 +83,10 @@ export function NoteComposer(props: NoteComposerProps) {
           className="absolute bottom-[calc(100%+12px)] left-[calc(50%+32px)] z-10 w-max max-w-[min(15rem,calc(50vw-2.75rem))] origin-bottom-left rounded-2xl rounded-bl-md bg-ink px-3 py-2 text-left text-[13px] leading-5 font-semibold text-white shadow-composer motion-safe:animate-bn-pop md:bottom-[calc(100%+22px)] md:left-[calc(50%+54px)] md:max-w-[17rem] md:px-4 md:py-3 md:text-base dark:bg-accent dark:text-ink"
         >
           {error}
-          <span aria-hidden="true" className="absolute -bottom-1.5 left-0 size-3 [clip-path:polygon(0_0,100%_0,0_100%)] bg-ink dark:bg-accent" />
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-1.5 left-0 size-3 [clip-path:polygon(0_0,100%_0,0_100%)] bg-ink dark:bg-accent"
+          />
         </p>
       )}
       <Panel>

@@ -484,8 +484,7 @@ const tr: Strings = {
   },
   faq: {
     heading: 'Sıkça Sorulan Sorular',
-    intro:
-      'Merak ettiklerinin cevabı burada. Kısaca: mesajın tarayıcında şifrelenir, bir kez açılır ve yok olur.',
+    intro: 'Merak ettiklerinin cevabı burada. Kısaca: mesajın tarayıcında şifrelenir, bir kez açılır ve yok olur.',
     items: [
       {
         question: 'Bu hizmeti neden kullanmalıyım?',

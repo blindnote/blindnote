@@ -77,9 +77,14 @@ function BannerLook(props: CreateNoteCtaProps) {
   const t = useCopy()
   return (
     <div className="flex w-full max-w-[848px] flex-col items-center gap-5 rounded-2xl bg-[linear-gradient(110deg,color-mix(in_srgb,var(--color-blush)_55%,var(--color-page))_0%,var(--color-cream)_55%,color-mix(in_srgb,var(--color-accent)_30%,var(--color-page))_100%)] px-5 py-7 text-center md:flex-row md:gap-6 md:rounded-card md:px-8 md:py-6 md:text-left dark:bg-[linear-gradient(110deg,var(--color-night-raised),var(--color-night-card))]">
-      <Monkey pose={props.bannerMonkey ?? 'ears'} className={(props.bannerMonkey ?? 'ears') === 'ears' ? 'w-16 md:w-20' : 'w-14 md:w-16'} />
+      <Monkey
+        pose={props.bannerMonkey ?? 'ears'}
+        className={(props.bannerMonkey ?? 'ears') === 'ears' ? 'w-16 md:w-20' : 'w-14 md:w-16'}
+      />
       <div className="flex-1">
-        <p className="font-display text-lg font-semibold text-ink md:text-2xl dark:text-sand">{props.bannerTitle ?? props.heading ?? t.cta.bannerTitle}</p>
+        <p className="font-display text-lg font-semibold text-ink md:text-2xl dark:text-sand">
+          {props.bannerTitle ?? props.heading ?? t.cta.bannerTitle}
+        </p>
         <p className="mt-1.5 text-sm leading-5 text-ink-strong md:text-base dark:text-sand-muted">
           {props.bannerText ?? t.cta.bannerText}
         </p>
@@ -98,16 +103,25 @@ function PathsLook(props: CreateNoteCtaProps) {
     'flex flex-1 items-center gap-3 rounded-2xl border p-4 text-left outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent md:p-5'
   return (
     <div className="flex w-full max-w-[720px] flex-col gap-3 md:flex-row md:gap-4">
-      <button type="button" onClick={props.onCreate} className={`${card} border-ink bg-ink text-white hover:bg-ink-hover dark:border-accent dark:bg-accent dark:text-ink`}>
+      <button
+        type="button"
+        onClick={props.onCreate}
+        className={`${card} border-ink bg-ink text-white hover:bg-ink-hover dark:border-accent dark:bg-accent dark:text-ink`}
+      >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/15 dark:bg-ink/10">
           <Icon name="lock" className="size-5" />
         </span>
         <span className="flex flex-col">
-          <span className="font-display text-base font-semibold md:text-lg">{props.buttonLabel ?? t.cta.createButton}</span>
+          <span className="font-display text-base font-semibold md:text-lg">
+            {props.buttonLabel ?? t.cta.createButton}
+          </span>
           <span className="text-xs opacity-80 md:text-sm">{t.cta.pathsSub}</span>
         </span>
       </button>
-      <a href={props.learnHref ?? '#nedir'} className={`${card} border-ink/15 bg-page text-ink hover:border-ink/40 dark:border-night-line dark:bg-night-card dark:text-sand`}>
+      <a
+        href={props.learnHref ?? '#nedir'}
+        className={`${card} border-ink/15 bg-page text-ink hover:border-ink/40 dark:border-night-line dark:bg-night-card dark:text-sand`}
+      >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-cream dark:bg-night-raised">
           <Icon name="eye-off" className="size-5 text-fur dark:text-accent" />
         </span>
@@ -127,9 +141,24 @@ export function CreateNoteCta(props: CreateNoteCtaProps) {
   const look = props.look ?? 'figma'
   const wrap = props.mobileOnly ? 'flex w-full flex-col items-center md:hidden' : 'flex w-full flex-col items-center'
 
-  if (look === 'composer') return <div className={wrap}><ComposerLook {...props} /></div>
-  if (look === 'banner') return <div className={wrap}><BannerLook {...props} /></div>
-  if (look === 'paths') return <div className={wrap}><PathsLook {...props} /></div>
+  if (look === 'composer')
+    return (
+      <div className={wrap}>
+        <ComposerLook {...props} />
+      </div>
+    )
+  if (look === 'banner')
+    return (
+      <div className={wrap}>
+        <BannerLook {...props} />
+      </div>
+    )
+  if (look === 'paths')
+    return (
+      <div className={wrap}>
+        <PathsLook {...props} />
+      </div>
+    )
 
   return (
     <div className={wrap}>

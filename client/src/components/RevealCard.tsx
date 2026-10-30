@@ -16,7 +16,10 @@ type RevealCardProps = {
 function ErrorText(props: { error?: string }) {
   if (!props.error) return null
   return (
-    <p role="alert" className="max-w-[311px] text-center text-xs font-medium text-danger md:text-sm dark:text-danger-dark">
+    <p
+      role="alert"
+      className="max-w-[311px] text-center text-xs font-medium text-danger md:text-sm dark:text-danger-dark"
+    >
       {props.error}
     </p>
   )
@@ -26,12 +29,38 @@ function ErrorText(props: { error?: string }) {
 function Envelope() {
   return (
     <svg viewBox="0 0 220 140" fill="none" aria-hidden="true" className="block w-[180px] md:w-[220px]">
-      <rect x="6" y="10" width="208" height="124" rx="14" className="fill-cream stroke-ink dark:fill-night-raised dark:stroke-accent" strokeWidth="3" />
+      <rect
+        x="6"
+        y="10"
+        width="208"
+        height="124"
+        rx="14"
+        className="fill-cream stroke-ink dark:fill-night-raised dark:stroke-accent"
+        strokeWidth="3"
+      />
       <path d="M8 22L110 86L212 22" className="stroke-ink dark:stroke-accent" strokeWidth="3" strokeLinejoin="round" />
-      <path d="M8 130L86 72M212 130L134 72" className="stroke-ink/30 dark:stroke-accent/40" strokeWidth="2.5" strokeLinecap="round" />
+      <path
+        d="M8 130L86 72M212 130L134 72"
+        className="stroke-ink/30 dark:stroke-accent/40"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
       <circle cx="110" cy="86" r="22" className="fill-ink dark:fill-accent" />
-      <circle cx="110" cy="86" r="15" className="fill-none stroke-accent dark:stroke-ink" strokeWidth="2" strokeDasharray="3 3" />
-      <path d="M103 86L108 91L118 80" className="stroke-accent dark:stroke-ink" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle
+        cx="110"
+        cy="86"
+        r="15"
+        className="fill-none stroke-accent dark:stroke-ink"
+        strokeWidth="2"
+        strokeDasharray="3 3"
+      />
+      <path
+        d="M103 86L108 91L118 80"
+        className="stroke-accent dark:stroke-ink"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }

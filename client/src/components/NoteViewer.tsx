@@ -23,7 +23,9 @@ function CopyButton(props: { onCopy?: () => void; copied?: boolean }) {
       className="inline-flex h-10 items-center gap-1.5 rounded-2xl border-[1.5px] border-ink md:rounded-button px-4 text-sm font-semibold text-ink outline-none transition-colors hover:bg-ink/6 focus-visible:ring-4 focus-visible:ring-accent dark:border-accent dark:text-accent dark:hover:bg-accent/10"
     >
       <Icon name={props.copied ? 'check' : 'copy'} className="size-4" />
-      <span className="leading-none [text-box:trim-both_cap_alphabetic]">{props.copied ? t.noteViewer.copied : t.noteViewer.copyText}</span>
+      <span className="leading-none [text-box:trim-both_cap_alphabetic]">
+        {props.copied ? t.noteViewer.copied : t.noteViewer.copyText}
+      </span>
     </button>
   )
 }
@@ -46,7 +48,11 @@ export function NoteViewer(props: NoteViewerProps) {
         tabIndex={0}
         role="region"
         aria-label={t.noteViewer.secretMessage}
-        className={cx(SCROLL, TEXT, 'px-4 pt-4 text-[15px] leading-6 font-medium md:px-6 md:pt-6 md:text-base md:leading-7')}
+        className={cx(
+          SCROLL,
+          TEXT,
+          'px-4 pt-4 text-[15px] leading-6 font-medium md:px-6 md:pt-6 md:text-base md:leading-7',
+        )}
       >
         {props.text}
       </div>
