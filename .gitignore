@@ -21,3 +21,8 @@ codedb.snapshot
 
 # zigrep local archive
 .zigrep_archive
+
+# Internal handoff / design-contract doc -- kept local, never published. It is an
+# AI-agent handoff (process rules, infra pointers), not part of the public source;
+# the design story that IS public lives in README.md, SECURITY.md and docs/devlog.md.
+/CLAUDE.md
