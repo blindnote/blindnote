@@ -1,0 +1,38 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "files": {
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "e2e/**/*.ts", "*.config.ts"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        // role="group"/role="region" on styled divs is deliberate, valid ARIA here
+        // (no semantic element fits the inline language toggle or the note region).
+        "useSemanticElements": "off",
+        // SVGs are either aria-hidden (decorative) or role="img" with aria-label;
+        // a <title> would be redundant.
+        "noSvgWithoutTitle": "off",
+        // The decrypted-note region is deliberately focusable (tabIndex=0) so
+        // keyboard users can focus and scroll it.
+        "noNoninteractiveTabindex": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  }
+}
