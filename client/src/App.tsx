@@ -95,6 +95,7 @@ export function App() {
   // button and the envelope are both triggered before React disables them.
   const revealing = useRef(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: screen.name is a trigger -- the effect reruns on a screen change to scroll to the top and close the menu; the body does not read it on purpose.
   useEffect(() => {
     window.scrollTo({ top: 0 })
     setMenuOpen(false)

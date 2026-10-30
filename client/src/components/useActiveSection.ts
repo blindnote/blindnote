@@ -13,9 +13,7 @@ import { useEffect, useState } from 'react'
 export function useActiveSection(ids: readonly string[]): string | null {
   const [active, setActive] = useState<string | null>(null)
   useEffect(() => {
-    const els = ids
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null)
+    const els = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null)
     if (els.length === 0) return
     const visible = new Set<string>()
     const observer = new IntersectionObserver(
@@ -32,7 +30,9 @@ export function useActiveSection(ids: readonly string[]): string | null {
       },
       { rootMargin: '-96px 0px -55% 0px', threshold: 0 },
     )
-    els.forEach((el) => observer.observe(el))
+    els.forEach((el) => {
+      observer.observe(el)
+    })
     return () => observer.disconnect()
   }, [ids])
   return active
