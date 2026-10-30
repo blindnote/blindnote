@@ -1,0 +1,14 @@
+# gitleaks configuration.
+#
+# We run the full default ruleset and allowlist exactly one known false
+# positive: a dummy, encryption-key-shaped string used as a fixed test vector
+# in the link parser's unit tests (client/src/lib/link.test.ts). It is not a
+# credential -- it decrypts nothing, reaches no server, and exists only to
+# exercise the "#ID/KEY" fragment parsing. Real note keys are generated in the
+# browser and never touch this repository.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Example note key used as a test vector in the link parser tests"
+regexes = ['''D936F4PyUQYhH4tN7vKmBcR8sWxZ0eLpGqUoIaJ5dY2''']
