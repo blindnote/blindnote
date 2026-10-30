@@ -469,7 +469,7 @@ const tr: Strings = {
   tagline: {
     aria: 'Güvenlik özellikleri',
     oneTime: 'Tek Seferlik Okuma',
-    zeroKnowledge: 'Sıfır Bilgi',
+    zeroKnowledge: 'Biz Bile Göremeyiz',
     e2e: 'Uçtan Uca Şifrelenmiş',
   },
   faq: {
