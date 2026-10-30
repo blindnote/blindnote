@@ -11,7 +11,7 @@
  * network or to WebCrypto lives in `src/lib` and is called from here.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ComposeScreen } from './components/ComposeScreen'
 import { LinkReadyScreen } from './components/LinkReadyScreen'
 import { NoteNotFoundScreen } from './components/NoteNotFoundScreen'
@@ -91,6 +91,9 @@ export function App() {
 
   const [revealStatus, setRevealStatus] = useState<'idle' | 'opening'>('idle')
   const [revealError, setRevealError] = useState<string>()
+  // Reading a note burns it, so the reveal must fire at most once even if the
+  // button and the envelope are both triggered before React disables them.
+  const revealing = useRef(false)
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -151,6 +154,8 @@ export function App() {
   }
 
   const reveal = async (link: NoteLink) => {
+    if (revealing.current) return
+    revealing.current = true
     setRevealError(undefined)
     setRevealStatus('opening')
     try {
@@ -182,6 +187,7 @@ export function App() {
       setRevealError(messageFor(error, t.errors))
     } finally {
       setRevealStatus('idle')
+      revealing.current = false
     }
   }
 
