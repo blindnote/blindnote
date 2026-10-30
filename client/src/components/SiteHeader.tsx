@@ -30,7 +30,15 @@ type SiteHeaderProps = {
 export function SiteHeader(props: SiteHeaderProps) {
   const t = useCopy()
   return (
-    <header className={cx('sticky top-0 z-40 bg-page/95 backdrop-blur transition-shadow dark:bg-night/95', props.elevated && 'shadow-[0_1px_0_rgb(79_32_0/0.08),0_6px_16px_-8px_rgb(79_32_0/0.18)]')}>
+    <header
+      className={cx(
+        'sticky top-0 z-40 transition-[background-color,box-shadow] duration-200',
+        // En üstte şeffaf: gradient header'ın içinden akar, beyaz şerit olmaz.
+        // Kaydırınca (veya mobil menü açıkken) frosted zemin + gölge kazanır.
+        props.elevated || props.menuOpen ? 'bg-page/95 backdrop-blur dark:bg-night/95' : 'bg-transparent',
+        props.elevated && 'shadow-[0_1px_0_rgb(79_32_0/0.08),0_6px_16px_-8px_rgb(79_32_0/0.18)]',
+      )}
+    >
       <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between pr-2 pl-4 md:h-[88px] md:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
         <a
           href={props.homeHref}

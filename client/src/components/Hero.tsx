@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { cx } from './cx'
 import { Monkey, type MonkeyPose } from './Monkey'
 
@@ -24,33 +24,16 @@ type HeroProps = {
 const TOP_SPACE = { default: 'md:pt-32', compact: 'md:pt-[88px]', roomy: 'md:pt-[167px]' } as const
 
 /**
- * Hero arka planı.
- * figma: Figma'daki görünüm (soldan pembe, ortası beyaz, sağı krem); keskin şerit kenarları yumuşatıldı.
- * glow / cream: tasarım incelemesi için önerilen iki alternatif (Figma'da yok).
+ * Hero arka planı: soldan sıcak şeftali parıltısı, sağda hafif karamel, en altta sayfa
+ * rengine söner. Arka plan header'ın arkasına kadar yukarı uzanır (-top-24, aşağıda) ki
+ * üstteki şeffaf header'la kesintisiz aksın -- beyaz şerit olmaz.
  */
-export type HeroBackdrop = 'figma' | 'glow' | 'cream'
-const BACKDROPS: Record<HeroBackdrop, string> = {
-  figma: [
-    'bg-[radial-gradient(45%_110%_at_0%_45%,color-mix(in_srgb,var(--color-blush)_30%,var(--color-page))_0%,transparent_75%),radial-gradient(40%_110%_at_100%_55%,color-mix(in_srgb,var(--color-accent)_8%,var(--color-page))_0%,transparent_75%),linear-gradient(180deg,var(--color-page)_0%,color-mix(in_srgb,var(--color-blush)_8%,var(--color-page))_100%)]',
-    'md:bg-[radial-gradient(30%_130%_at_0%_45%,color-mix(in_srgb,var(--color-blush)_38%,var(--color-page))_0%,color-mix(in_srgb,var(--color-blush)_12%,var(--color-page))_35%,transparent_80%),radial-gradient(35%_120%_at_100%_55%,color-mix(in_srgb,var(--color-accent)_9%,var(--color-page))_0%,transparent_80%),radial-gradient(40%_60%_at_60%_100%,color-mix(in_srgb,var(--color-blush)_6%,var(--color-page))_0%,transparent_80%)]',
-    'dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-    'md:dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-  ].join(' '),
-  glow: [
-    'bg-[radial-gradient(70%_55%_at_0%_10%,color-mix(in_srgb,var(--color-blush)_85%,var(--color-page))_0%,transparent_70%),radial-gradient(70%_50%_at_100%_45%,color-mix(in_srgb,var(--color-accent)_45%,var(--color-page))_0%,transparent_70%),radial-gradient(90%_40%_at_40%_100%,color-mix(in_srgb,var(--color-blush)_45%,var(--color-page))_0%,transparent_75%)]',
-    'md:bg-[radial-gradient(45%_85%_at_5%_15%,color-mix(in_srgb,var(--color-blush)_85%,var(--color-page))_0%,transparent_70%),radial-gradient(40%_80%_at_98%_40%,color-mix(in_srgb,var(--color-accent)_45%,var(--color-page))_0%,transparent_70%),radial-gradient(55%_55%_at_45%_105%,color-mix(in_srgb,var(--color-blush)_45%,var(--color-page))_0%,transparent_75%)]',
-    'dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-    'md:dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-  ].join(' '),
-  cream: [
-    'bg-[linear-gradient(165deg,color-mix(in_srgb,var(--color-blush)_70%,var(--color-cream))_0%,var(--color-cream)_45%,color-mix(in_srgb,var(--color-accent)_35%,var(--color-cream))_100%)]',
-    'dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-    'md:dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
-  ].join(' '),
-}
-
-/** Önizleme/inceleme için arka plan seçimi; ürün varsayılanı Figma görünümüdür. */
-export const HeroBackdropContext = createContext<HeroBackdrop>('glow')
+const BACKDROP = [
+  'bg-[radial-gradient(45%_110%_at_0%_45%,color-mix(in_srgb,var(--color-blush)_30%,var(--color-page))_0%,transparent_75%),radial-gradient(40%_110%_at_100%_55%,color-mix(in_srgb,var(--color-accent)_8%,var(--color-page))_0%,transparent_75%),linear-gradient(180deg,var(--color-page)_0%,color-mix(in_srgb,var(--color-blush)_8%,var(--color-page))_100%)]',
+  'md:bg-[radial-gradient(30%_130%_at_0%_45%,color-mix(in_srgb,var(--color-blush)_38%,var(--color-page))_0%,color-mix(in_srgb,var(--color-blush)_12%,var(--color-page))_35%,transparent_80%),radial-gradient(35%_120%_at_100%_55%,color-mix(in_srgb,var(--color-accent)_9%,var(--color-page))_0%,transparent_80%),radial-gradient(40%_60%_at_60%_100%,color-mix(in_srgb,var(--color-blush)_6%,var(--color-page))_0%,transparent_80%)]',
+  'dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
+  'md:dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
+].join(' ')
 
 /** Kartın arkasından bakan maymunun boyutu ve karta binme miktarı (Figma ölçüleri) */
 const PEEK = {
@@ -61,15 +44,13 @@ const PEEK = {
 
 /**
  * Figma: hero (Frame 513516). Arka plan Figma'da raster görsel; burada aynı geçiş tema
- * renklerinden CSS gradyanıyla kuruldu. Masaüstünde soldan pembe → ortada beyaz → sağda krem,
- * mobilde yukarıdan aşağı hafif pembe; renk kartın altına kadar iner, en altta sayfa rengine söner.
+ * renklerinden CSS gradyanıyla kuruldu.
  */
 export function Hero(props: HeroProps) {
-  const backdrop = useContext(HeroBackdropContext)
   const peek = props.monkey?.placement === 'peek' ? PEEK[props.monkey.pose] : undefined
   return (
-    <section className="relative isolate overflow-hidden">
-      <div aria-hidden="true" className={cx('absolute inset-0 -z-10', BACKDROPS[backdrop])} />
+    <section className="relative isolate">
+      <div aria-hidden="true" className={cx('absolute inset-x-0 -top-24 bottom-0 -z-10', BACKDROP)} />
       {/* Figma "section-fade": en altta sayfa rengine yumuşak geçiş */}
       <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-8 bg-gradient-to-b from-transparent to-page md:h-[51px] dark:to-night" />
 
