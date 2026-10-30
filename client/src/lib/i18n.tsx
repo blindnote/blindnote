@@ -22,7 +22,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 export type Locale = 'en' | 'tr'
 
 export const SUPPORTED: readonly Locale[] = ['en', 'tr']
-export const DEFAULT_LOCALE: Locale = 'en'
+const DEFAULT_LOCALE: Locale = 'en'
 const STORAGE_KEY = 'blindnote.locale'
 
 /** One reason/step/label pair, used by the list sections. */
@@ -543,7 +543,7 @@ function isLocale(value: string): value is Locale {
 }
 
 /** The remembered choice, if any and still supported. */
-export function readStoredLocale(): Locale | null {
+function readStoredLocale(): Locale | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY)
     return value && isLocale(value) ? value : null
@@ -553,7 +553,7 @@ export function readStoredLocale(): Locale | null {
 }
 
 /** Remembers a choice for next time. Best-effort: a blocked store is ignored. */
-export function storeLocale(locale: Locale): void {
+function storeLocale(locale: Locale): void {
   try {
     localStorage.setItem(STORAGE_KEY, locale)
   } catch {
@@ -565,7 +565,7 @@ export function storeLocale(locale: Locale): void {
  * The locale to open in: the remembered choice first, otherwise the first of
  * the browser's language preferences we support, otherwise English.
  */
-export function detectLocale(): Locale {
+function detectLocale(): Locale {
   const stored = readStoredLocale()
   if (stored) return stored
 
