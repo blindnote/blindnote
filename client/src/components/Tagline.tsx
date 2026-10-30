@@ -23,7 +23,7 @@ export function Tagline(props: TaglineProps) {
   const justify = props.align === 'right' ? 'justify-center md:justify-end' : 'justify-center'
   const items: ReadonlyArray<{ icon: IconName; text: string }> = [
     { icon: 'eye-off', text: t.tagline.oneTime },
-    { icon: 'shield-cross', text: t.tagline.zeroKnowledge },
+    { icon: 'server-off', text: t.tagline.zeroKnowledge },
     { icon: 'lock', text: t.tagline.e2e },
   ]
 

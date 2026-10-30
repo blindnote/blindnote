@@ -9,7 +9,7 @@ const ICONS = {
   check: { viewBox: '0 0 20 20', stroke: true, d: 'M4.5 10.5L8 14L15.5 6.5' },
   // Güven satırı alternatifleri için (Figma'da yok — türetildi)
   'eye-off': { viewBox: '0 0 24 24', stroke: true, d: 'M3 3L21 21M10.6 6.1A9.8 9.8 0 0 1 12 6C17 6 21 12 21 12A15.5 15.5 0 0 1 17.8 15.7M6.6 7.6C4.3 9.2 3 12 3 12S7 18 12 18A8.8 8.8 0 0 0 16.4 16.8M9.9 9.9A3 3 0 0 0 14.1 14.1' },
-  'shield-cross': { viewBox: '0 0 24 24', stroke: true, d: 'M12 3L19 6V11C19 15.5 16 19 12 21C8 19 5 15.5 5 11V6L12 3ZM12 8.5V14.5M9 11.5H15' },
+  'server-off': { viewBox: '0 0 24 24', stroke: true, d: 'M6 5H18A2 2 0 0 1 20 7V8A2 2 0 0 1 18 10H6A2 2 0 0 1 4 8V7A2 2 0 0 1 6 5Z M6 14H18A2 2 0 0 1 20 16V17A2 2 0 0 1 18 19H6A2 2 0 0 1 4 17V16A2 2 0 0 1 6 14Z M7.5 7.5H7.51 M7.5 16.5H7.51 M3 3L21 21' },
   lock: { viewBox: '0 0 24 24', stroke: true, d: 'M7 11V8A5 5 0 0 1 17 8V11M6 11H18A1 1 0 0 1 19 12V19A1 1 0 0 1 18 20H6A1 1 0 0 1 5 19V12A1 1 0 0 1 6 11ZM12 14.5V16.5' },
   unlock: { viewBox: '0 0 24 24', stroke: true, d: 'M7 11V8A5 5 0 0 1 16.6 6.2M6 11H18A1 1 0 0 1 19 12V19A1 1 0 0 1 18 20H6A1 1 0 0 1 5 19V12A1 1 0 0 1 6 11ZM12 14.5V16.5' },
   'message-plus': { viewBox: '0 0 24 24', stroke: true, d: 'M5 4.5H19A2 2 0 0 1 21 6.5V15A2 2 0 0 1 19 17H10L6 20.5V17H5A2 2 0 0 1 3 15V6.5A2 2 0 0 1 5 4.5ZM12 8V13.5M9.25 10.75H14.75' },
