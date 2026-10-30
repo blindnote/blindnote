@@ -23,6 +23,8 @@ type PageLayoutProps = {
   ctaAfterScroll?: boolean
   /** Mobilde header'daki kompakt create butonu kaydırmadan da görünsün (Yaz dışındaki tüm ekranlar) */
   ctaOnMobileAlways?: boolean
+  /** Header create butonunun varyantı: anasayfada dolu (primary), diğerlerinde çerçeveli. */
+  ctaVariant?: 'primary' | 'secondary'
   menuOpen: boolean
   onMenuToggle: () => void
 }
@@ -46,6 +48,7 @@ export function PageLayout(props: PageLayoutProps) {
         menuLinks={menuLinks(t)}
         homeHref={props.homeHref}
         cta={showCta && props.onCreateNote ? { label: t.nav.createSecret, onClick: props.onCreateNote } : undefined}
+        ctaVariant={props.ctaVariant}
         elevated={scrolled}
         ctaOnMobile={props.ctaOnMobileAlways || pastHero}
         menuOpen={props.menuOpen}

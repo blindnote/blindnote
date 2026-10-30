@@ -15,6 +15,8 @@ type SiteHeaderProps = {
   homeHref: string
   /** Sağdaki create butonu. Anasayfa'nın en üstünde Figma'da yok (Anasayfa_Scroll'da var). */
   cta?: { label: string; onClick: () => void }
+  /** Create butonunun varyantı (anasayfada dolu, diğerlerinde çerçeveli). */
+  ctaVariant?: 'primary' | 'secondary'
   /** Sayfa kaydırıldı: başlık altına ince gölge (Figma Anasayfa_Scroll) */
   elevated?: boolean
   /** Mobilde kompakt create butonu görünsün mü (kaydırınca) */
@@ -65,7 +67,7 @@ export function SiteHeader(props: SiteHeaderProps) {
         <div className="hidden items-center justify-end gap-3 lg:flex xl:w-[260px]">
           <LanguageSwitcher tone="light" />
           {props.cta && (
-            <Button variant="secondary" onClick={props.cta.onClick}>
+            <Button variant={props.ctaVariant ?? 'secondary'} onClick={props.cta.onClick}>
               {props.cta.label}
             </Button>
           )}

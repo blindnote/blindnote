@@ -216,6 +216,7 @@ export function App() {
       onCreateNote={screen.name === 'compose' ? focusTheComposer : startANote}
       ctaAfterScroll={screen.name === 'compose'}
       ctaOnMobileAlways={screen.name !== 'compose'}
+      ctaVariant={screen.name === 'compose' ? 'primary' : 'secondary'}
       menuOpen={menuOpen}
       onMenuToggle={() => setMenuOpen((open) => !open)}
     >
