@@ -73,7 +73,7 @@ export function SiteHeader(props: SiteHeaderProps) {
         </nav>
 
         <div className="hidden items-center justify-end gap-3 lg:flex lg:justify-self-end xl:w-[260px]">
-          <LanguageSwitcher tone="light" />
+          {!props.elevated && <LanguageSwitcher tone="light" size="md" />}
           {props.cta && (
             <Button variant={props.ctaVariant ?? 'secondary'} onClick={props.cta.onClick}>
               {props.cta.label}
