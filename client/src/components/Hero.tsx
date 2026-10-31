@@ -91,10 +91,7 @@ export function Hero(props: HeroProps) {
             {peek && props.monkey && (
               <Monkey
                 pose={props.monkey.pose}
-                className={cx(
-                  'pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2',
-                  peek.monkey,
-                )}
+                className={cx('pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2', peek.monkey)}
               />
             )}
             {props.card}
