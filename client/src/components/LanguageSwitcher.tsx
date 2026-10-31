@@ -4,6 +4,8 @@ import { DICTS, SUPPORTED, useLocale } from '../lib/i18n'
 type LanguageSwitcherProps = {
   /** light: on the page/header. dark: on the ink footer. */
   tone?: 'light' | 'dark'
+  /** md is a touch larger, for the header; sm (default) elsewhere. */
+  size?: 'sm' | 'md'
   className?: string
 }
 
@@ -15,6 +17,7 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher(props: LanguageSwitcherProps) {
   const { locale, setLocale } = useLocale()
   const dark = props.tone === 'dark'
+  const big = props.size === 'md'
   return (
     <div
       role="group"
@@ -35,7 +38,8 @@ export function LanguageSwitcher(props: LanguageSwitcherProps) {
             aria-pressed={active}
             aria-label={DICTS[option].langName}
             className={cx(
-              'rounded-full px-2 py-0.5 text-xs font-semibold uppercase outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent',
+              'rounded-full font-semibold uppercase outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent',
+              big ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs',
               active
                 ? dark
                   ? 'bg-white text-ink'
