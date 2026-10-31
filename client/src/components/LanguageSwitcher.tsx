@@ -39,7 +39,7 @@ export function LanguageSwitcher(props: LanguageSwitcherProps) {
             aria-label={DICTS[option].langName}
             className={cx(
               'rounded-full font-semibold uppercase outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent',
-              big ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs',
+              big ? 'px-3 py-3 text-sm lg:py-1' : 'px-2.5 py-1.5 text-xs',
               active
                 ? dark
                   ? 'bg-white text-ink'
