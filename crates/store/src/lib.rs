@@ -47,9 +47,11 @@
 mod counters;
 mod db;
 mod disk;
+mod hll;
 mod keys;
 mod notes;
 mod schema;
+mod stats;
 mod time;
 
 pub use crate::time::UnixTime;
@@ -101,8 +103,33 @@ pub struct Stats {
     pub expired: u64,
     /// Notes destroyed by an abuse report.
     pub reported: u64,
+    /// Page views: serves of the interface's entry point.
+    pub views: u64,
     /// Notes stored right now. Exact, from a live `COUNT`.
     pub pending: u64,
+}
+
+/// One UTC day of aggregate stats.
+///
+/// The day's totals plus `uniques`, an approximate distinct-visitor count from
+/// a salted daily sketch (see the `hll` module). All aggregate: no field is
+/// tied to a note or a visitor.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct DailyStat {
+    /// The day, as `YYYY-MM-DD` UTC.
+    pub day: String,
+    /// Page views that day.
+    pub views: u64,
+    /// Notes created that day.
+    pub created: u64,
+    /// Notes read that day.
+    pub read: u64,
+    /// Notes that expired unread, counted when swept that day.
+    pub expired: u64,
+    /// Notes destroyed by a report that day.
+    pub reported: u64,
+    /// Approximate distinct visitors that day.
+    pub uniques: u64,
 }
 
 /// Why a storage operation failed.
@@ -185,6 +212,10 @@ pub enum StoreError {
     #[error("crypto failed: {0}")]
     Crypto(#[from] CryptoError),
 
+    /// The system random source failed.
+    #[error("the system random source failed: {0}")]
+    Random(#[from] getrandom::Error),
+
     /// A blocking database task panicked.
     #[error("a database task panicked")]
     Panicked,
@@ -228,6 +259,8 @@ struct Inner {
     floor: FreeSpaceFloor,
     /// Anonymous aggregate counters, held in memory and persisted on sweep.
     counters: counters::Counters,
+    /// Daily aggregate stats and the day's unique-visitor sketch.
+    daily: Mutex<stats::Daily>,
 }
 
 impl Store {
@@ -267,6 +300,7 @@ impl Store {
         schema::migrate_keys(&mut keys)?;
 
         let counters = counters::Counters::load(&notes)?;
+        let daily = stats::Daily::load(&notes, UnixTime::now(), counters.snapshot())?;
 
         Ok(Self {
             inner: Arc::new(Inner {
@@ -275,6 +309,7 @@ impl Store {
                 data_dir: data_dir.to_path_buf(),
                 floor,
                 counters,
+                daily: Mutex::new(daily),
             }),
         })
     }
@@ -428,6 +463,18 @@ impl Store {
         Ok(())
     }
 
+    /// Records one page view: bumps the view counter and folds the client
+    /// address into the day's unique-visitor sketch.
+    ///
+    /// In memory only and off any disk -- the counter is an atomic and the
+    /// sketch update is a hash and a register write -- so it is safe to call
+    /// inline from a request handler. The address is used here and nowhere
+    /// else, is never stored, and cannot be recovered from the sketch.
+    pub fn record_view(&self, now: UnixTime, address: &[u8]) {
+        self.inner.counters.inc_views();
+        lock(&self.inner.daily).record(now, address);
+    }
+
     /// Deletes everything whose deadline has passed.
     ///
     /// Keys first: that is the deletion that actually destroys a note. If the
@@ -461,6 +508,11 @@ impl Store {
             tracing::error!(%error, "could not persist the usage counters");
         }
 
+        // The daily rollup rides the same cadence, for the same reason.
+        if let Err(error) = self.flush_daily(now, snapshot).await {
+            tracing::error!(%error, "could not persist the daily stats");
+        }
+
         Ok(SweepReport { notes, keys })
     }
 
@@ -481,8 +533,38 @@ impl Store {
             read: snapshot.read,
             expired: snapshot.expired,
             reported: snapshot.reported,
+            views: snapshot.views,
             pending,
         })
+    }
+
+    /// The most recent `days` of daily aggregate stats, newest first.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreError::Sqlite`] if the query fails.
+    pub async fn daily_stats(&self, days: u32) -> Result<Vec<DailyStat>, StoreError> {
+        self.with_notes(move |conn| stats::recent(conn, days)).await
+    }
+
+    /// Persists the daily aggregate stats, on the sweep's cadence.
+    ///
+    /// Locks the note connection and then the daily state, the one order in
+    /// which both are ever taken together; `record_view` only ever takes the
+    /// daily lock, so there is no cycle.
+    async fn flush_daily(
+        &self,
+        now: UnixTime,
+        current: counters::Snapshot,
+    ) -> Result<(), StoreError> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            let mut notes = lock(&inner.notes);
+            let mut daily = lock(&inner.daily);
+            daily.flush(&mut notes, now, current)
+        })
+        .await
+        .map_err(|_| StoreError::Panicked)?
     }
 
     /// Runs a closure against the note file, off the async runtime.
