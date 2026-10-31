@@ -19,7 +19,12 @@ not need a working exploit; a clear description of the class of problem is enoug
   [`README.md`](./README.md) and [`verify.sh`](./verify.sh). This is the guarantee that makes
   a dishonest operator *detectable*.
 - Missing, expired, and already-read notes are indistinguishable from the outside. Note ids
-  and request bodies are never logged.
+  and request bodies are never logged — there is no access log at all. The only things the
+  server records are **anonymous aggregate counters**: totals and per-day counts of page views
+  and note activity, plus an approximate daily distinct-visitor estimate from a salted,
+  daily-rotating sketch. A visitor's IP address is used **in memory only** — to rate-limit and
+  to update that sketch — and is never written to disk; the sketch cannot be reversed to an
+  address.
 
 ## What BlindNote does **not** protect against
 
