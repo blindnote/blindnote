@@ -56,9 +56,7 @@ test('system removes the override and follows the OS again', async ({ page }) =>
   expect(await bodyBackground(page)).toBe(NIGHT)
 })
 
-test('the inline bootstrap restores a stored choice on reload, with no CSP violation', async ({
-  page,
-}) => {
+test('the inline bootstrap restores a stored choice on reload, with no CSP violation', async ({ page }) => {
   const cspErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error' && /content security policy/i.test(message.text())) {
