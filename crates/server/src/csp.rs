@@ -24,7 +24,7 @@ use std::sync::LazyLock;
 
 use axum::http::HeaderValue;
 
-use crate::assets::SCRIPT_HASHES;
+use crate::assets::{INLINE_SCRIPT_HASHES, SCRIPT_HASHES};
 
 /// The policy, built once from the embedded bundle's hashes.
 static POLICY: LazyLock<String> = LazyLock::new(build);
@@ -47,10 +47,16 @@ fn build() -> String {
     // Deny by default, then name what the application actually needs.
     directive(&mut policy, "default-src", "'none'");
 
-    // Scripts are pinned by hash: a browser matches an external script against a
-    // script-src hash when the element repeats it in `integrity`. With nothing
-    // embedded there is nothing to allow, and 'none' says so.
-    directive(&mut policy, "script-src", &sources(SCRIPT_HASHES));
+    // Scripts are pinned by hash. An external script matches a script-src hash
+    // when the element repeats it in `integrity`; an inline script (the theme
+    // bootstrap) matches by the hash of its text directly. Both lists are the
+    // build's, from the bytes it embedded. With nothing embedded there is
+    // nothing to allow, and 'none' says so.
+    let mut scripts: Vec<&str> =
+        Vec::with_capacity(SCRIPT_HASHES.len() + INLINE_SCRIPT_HASHES.len());
+    scripts.extend_from_slice(SCRIPT_HASHES);
+    scripts.extend_from_slice(INLINE_SCRIPT_HASHES);
+    directive(&mut policy, "script-src", &sources(&scripts));
 
     // Styles cannot be pinned the same way: browsers do not match an external
     // stylesheet against a style-src hash (only inline styles), so a hash here
