@@ -86,6 +86,11 @@ async fn the_token_shows_the_counts() {
         "the created total should be 1: {}",
         answer.body
     );
+    assert!(
+        answer.body.contains("<dt>Read rate</dt><dd>—</dd>"),
+        "with nothing read or expired yet, the read rate is undefined: {}",
+        answer.body
+    );
 }
 
 /// The page carries its own strict policy: the inline style is pinned by hash,
