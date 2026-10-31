@@ -17,8 +17,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use axum::extract::ConnectInfo;
-use axum::http::Request;
 use axum::http::header::HeaderName;
+use axum::http::{HeaderMap, Request};
 use tower_governor::errors::GovernorError;
 use tower_governor::governor::{GovernorConfig, GovernorConfigBuilder};
 use tower_governor::key_extractor::KeyExtractor;
@@ -73,15 +73,11 @@ impl KeyExtractor for ClientAddress {
             .map(|ConnectInfo(address)| address.ip())
             .ok_or(GovernorError::UnableToExtractKey)?;
 
-        // Not the configured proxy, or no proxy configured: whatever the
-        // client put in a forwarding header is ignored outright. An
-        // application that believes a client-supplied `X-Forwarded-For` has a
-        // rate limiter that is bypassed by setting one header.
-        if self.trusted_proxy != Some(peer) {
-            return Ok(peer);
-        }
-
-        Ok(last_forwarded_for(request).unwrap_or(peer))
+        Ok(resolve_client_ip(
+            peer,
+            request.headers(),
+            self.trusted_proxy,
+        ))
     }
 }
 
@@ -98,9 +94,8 @@ impl KeyExtractor for ClientAddress {
 /// 1.2.3.4, and a new value per request means no limit at all. Taking the last
 /// entry is correct whether the proxy appends to a client's header or replaces
 /// it.
-fn last_forwarded_for<T>(request: &Request<T>) -> Option<IpAddr> {
-    request
-        .headers()
+fn last_forwarded_for(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
         .get(&X_FORWARDED_FOR)?
         .to_str()
         .ok()?
@@ -109,6 +104,25 @@ fn last_forwarded_for<T>(request: &Request<T>) -> Option<IpAddr> {
         .trim()
         .parse()
         .ok()
+}
+
+/// The client address, trusting `X-Forwarded-For` only from the configured
+/// proxy, with the peer address as the fallback.
+///
+/// Shared by the rate limiter and the page-view counter so a request is
+/// attributed to the same address by both. Not the configured proxy, or none
+/// configured, and the forwarding header is ignored outright: an application
+/// that believes a client-supplied `X-Forwarded-For` has a rate limiter -- and
+/// here a view count -- that anyone can skew by setting one header.
+pub(crate) fn resolve_client_ip(
+    peer: IpAddr,
+    headers: &HeaderMap,
+    trusted_proxy: Option<IpAddr>,
+) -> IpAddr {
+    if trusted_proxy != Some(peer) {
+        return peer;
+    }
+    last_forwarded_for(headers).unwrap_or(peer)
 }
 
 /// The two limiters: a burst limit, and an hourly create quota.
@@ -278,6 +292,6 @@ mod tests {
 
     #[test]
     fn an_empty_forwarding_header_yields_nothing() {
-        assert!(last_forwarded_for(&request(PROXY, Some(""))).is_none());
+        assert!(last_forwarded_for(request(PROXY, Some("")).headers()).is_none());
     }
 }
