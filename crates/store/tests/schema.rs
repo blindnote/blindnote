@@ -38,13 +38,18 @@ async fn the_data_directory_is_created_if_missing() {
 async fn both_files_record_their_schema_version() {
     let f = Fixture::new().await;
 
-    for name in ["notes.db", "keys.db"] {
+    // notes.db gained a second migration (the anonymous counters table); keys.db
+    // is still at its first.
+    for (name, expected) in [("notes.db", 2), ("keys.db", 1)] {
         let conn = Connection::open(f.path(name)).expect("the file opens");
         let version: i32 = conn
             .query_row("PRAGMA user_version", [], |row| row.get(0))
             .expect("a version");
 
-        assert_eq!(version, 1, "{name} should be at schema version 1");
+        assert_eq!(
+            version, expected,
+            "{name} should be at schema version {expected}"
+        );
     }
 }
 
@@ -75,7 +80,7 @@ async fn a_newer_schema_is_refused_rather_than_used() {
     };
     assert_eq!(database, "notes");
     assert_eq!(found, 99);
-    assert_eq!(known, 1);
+    assert_eq!(known, 2);
 }
 
 /// The settings the project's guarantees rest on are read back, not assumed.
