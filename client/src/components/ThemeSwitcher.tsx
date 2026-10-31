@@ -5,6 +5,8 @@ import { cx } from './cx'
 type ThemeSwitcherProps = {
   /** light: on the page. dark: on the ink footer. */
   tone?: 'light' | 'dark'
+  /** md is a touch larger; sm (default) elsewhere. */
+  size?: 'sm' | 'md'
   className?: string
 }
 
@@ -18,6 +20,7 @@ export function ThemeSwitcher(props: ThemeSwitcherProps) {
   const t = useCopy()
   const { theme, setTheme } = useTheme()
   const dark = props.tone === 'dark'
+  const big = props.size === 'md'
   const label: Record<Theme, string> = {
     system: t.theme.system,
     light: t.theme.light,
@@ -42,7 +45,8 @@ export function ThemeSwitcher(props: ThemeSwitcherProps) {
             onClick={() => setTheme(option)}
             aria-pressed={active}
             className={cx(
-              'rounded-full px-2.5 py-0.5 text-xs font-semibold outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent',
+              'rounded-full font-semibold outline-none transition-colors focus-visible:ring-4 focus-visible:ring-accent',
+              big ? 'px-3 py-1 text-sm' : 'px-2.5 py-0.5 text-xs',
               active
                 ? dark
                   ? 'bg-white text-ink'
