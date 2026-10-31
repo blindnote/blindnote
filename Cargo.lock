@@ -182,8 +182,10 @@ name = "blindnote-store"
 version = "0.1.9"
 dependencies = [
  "blindnote-crypto",
+ "getrandom 0.4.3",
  "rusqlite",
  "rustix",
+ "sha2",
  "tempfile",
  "thiserror 2.0.21",
  "tokio",
