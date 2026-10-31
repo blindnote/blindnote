@@ -2,6 +2,7 @@ import { useCopy } from '../lib/i18n'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { Logo } from './Logo'
 import type { SiteLink } from './siteLinks'
+import { ThemeSwitcher } from './ThemeSwitcher'
 
 type SiteFooterProps = {
   links: ReadonlyArray<SiteLink>
@@ -35,8 +36,9 @@ export function SiteFooter(props: SiteFooterProps) {
             ))}
           </ul>
         </nav>
-        <div className="flex justify-center">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <LanguageSwitcher tone="dark" />
+          <ThemeSwitcher tone="dark" />
         </div>
       </div>
     </footer>
