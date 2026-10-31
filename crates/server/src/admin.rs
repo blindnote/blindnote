@@ -160,6 +160,16 @@ fn challenge() -> Response {
         .into_response()
 }
 
+/// The read rate as a display string: read / (read + expired), or an em dash
+/// when no note has ended yet. Derived from the counters, with no per-note data
+/// behind it; integer arithmetic, so no float and no rounding surprises.
+fn read_rate(read: u64, expired: u64) -> String {
+    match read.saturating_mul(100).checked_div(read + expired) {
+        None => "—".to_owned(),
+        Some(percent) => format!("{percent}%"),
+    }
+}
+
 /// Renders the stats page.
 fn page(stats: &Stats) -> Response {
     let Stats {
@@ -169,6 +179,8 @@ fn page(stats: &Stats) -> Response {
         reported,
         pending,
     } = *stats;
+
+    let rate = read_rate(read, expired);
 
     let body = format!(
         "<!doctype html>\n\
@@ -190,8 +202,10 @@ fn page(stats: &Stats) -> Response {
 <div><dt>Read</dt><dd>{read}</dd></div>\n\
 <div><dt>Expired unread</dt><dd>{expired}</dd></div>\n\
 <div><dt>Reported</dt><dd>{reported}</dd></div>\n\
+<div><dt>Read rate</dt><dd>{rate}</dd></div>\n\
 </dl>\n\
-<p class=\"note\">Pending is a live count. Created, read, expired and reported are \
+<p class=\"note\">Read rate is read / (read + expired unread): of the notes that ended, the \
+share that were read. Pending is a live count. Created, read, expired and reported are \
 cumulative totals, persisted on each sweep, so they are approximate across a restart.</p>\n\
 </main>\n\
 </body>\n\
