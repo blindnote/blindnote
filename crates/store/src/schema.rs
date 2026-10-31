@@ -30,9 +30,10 @@ struct Migration {
 /// `expires_at` stayed precise bought nothing -- the TTL menu is public, so
 /// `expires_at` minus the TTL recovers the exact moment -- and no code path
 /// needs it.
-const NOTES_MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    sql: "CREATE TABLE notes (
+const NOTES_MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        sql: "CREATE TABLE notes (
               id         BLOB    NOT NULL PRIMARY KEY,
               key_id     BLOB    NOT NULL,
               blob       BLOB    NOT NULL,
@@ -42,7 +43,23 @@ const NOTES_MIGRATIONS: &[Migration] = &[Migration {
           ) STRICT;
 
           CREATE INDEX notes_expires_at ON notes (expires_at);",
-}];
+    },
+    // Anonymous aggregate counters -- totals only, no per-note data. There is
+    // no row here that could be joined back to a note (notes carry no creation
+    // time), so this holds exactly four integers and nothing that identifies
+    // anyone. `WITHOUT ROWID` for the same reason as the key table: the whole
+    // row is its key.
+    Migration {
+        version: 2,
+        sql: "CREATE TABLE counters (
+                  name  TEXT    NOT NULL PRIMARY KEY,
+                  value INTEGER NOT NULL
+              ) STRICT, WITHOUT ROWID;
+
+              INSERT INTO counters (name, value) VALUES
+                  ('created', 0), ('read', 0), ('expired', 0), ('reported', 0);",
+    },
+];
 
 /// Schema of the key file.
 ///

@@ -44,6 +44,7 @@
 //! the caller is given no way to tell them apart, so no caller can leak the
 //! difference.
 
+mod counters;
 mod db;
 mod disk;
 mod keys;
@@ -83,6 +84,25 @@ pub struct SweepReport {
     pub notes: usize,
     /// Key rows destroyed.
     pub keys: usize,
+}
+
+/// Anonymous aggregate usage counts.
+///
+/// Cumulative totals with no per-note data behind them -- there is no creation
+/// time to correlate against -- plus `pending`, the exact number of notes
+/// stored right now. See the `counters` module.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct Stats {
+    /// Notes created since the counters began.
+    pub created: u64,
+    /// Notes read (burned on the last view).
+    pub read: u64,
+    /// Notes that expired unread and were swept.
+    pub expired: u64,
+    /// Notes destroyed by an abuse report.
+    pub reported: u64,
+    /// Notes stored right now. Exact, from a live `COUNT`.
+    pub pending: u64,
 }
 
 /// Why a storage operation failed.
@@ -206,6 +226,8 @@ struct Inner {
     keys: Mutex<Connection>,
     data_dir: PathBuf,
     floor: FreeSpaceFloor,
+    /// Anonymous aggregate counters, held in memory and persisted on sweep.
+    counters: counters::Counters,
 }
 
 impl Store {
@@ -244,12 +266,15 @@ impl Store {
         schema::migrate_notes(&mut notes)?;
         schema::migrate_keys(&mut keys)?;
 
+        let counters = counters::Counters::load(&notes)?;
+
         Ok(Self {
             inner: Arc::new(Inner {
                 notes: Mutex::new(notes),
                 keys: Mutex::new(keys),
                 data_dir: data_dir.to_path_buf(),
                 floor,
+                counters,
             }),
         })
     }
@@ -341,6 +366,8 @@ impl Store {
         }
         stored?;
 
+        self.inner.counters.inc_created();
+
         Ok(note_id)
     }
 
@@ -356,6 +383,10 @@ impl Store {
             .with_notes(move |conn| notes::take(conn, &id, now))
             .await?;
         let key_id = taken.key_id;
+
+        if taken.was_final {
+            self.inner.counters.inc_read();
+        }
 
         let key = if taken.was_final {
             self.with_keys(move |conn| keys::take(conn, &key_id))
@@ -391,6 +422,7 @@ impl Store {
         if let Some(key_id) = key_id {
             self.with_keys(move |conn| keys::delete(conn, &key_id))
                 .await?;
+            self.inner.counters.inc_reported();
         }
 
         Ok(())
@@ -413,7 +445,44 @@ impl Store {
             .with_notes(move |conn| notes::delete_expired(conn, now))
             .await?;
 
+        self.inner
+            .counters
+            .add_expired(u64::try_from(notes).unwrap_or(u64::MAX));
+
+        // Persist the counters on the sweep's cadence. The increments here and
+        // in create/burn/report are free in-memory atomics; this is the one
+        // write that makes them durable, and a crash loses at most this
+        // interval's counts.
+        let snapshot = self.inner.counters.snapshot();
+        if let Err(error) = self
+            .with_notes(move |conn| counters::persist(conn, snapshot))
+            .await
+        {
+            tracing::error!(%error, "could not persist the usage counters");
+        }
+
         Ok(SweepReport { notes, keys })
+    }
+
+    /// The current anonymous usage counts.
+    ///
+    /// Cumulative totals from the in-memory counters, plus a live count of the
+    /// notes stored right now. No per-note data is read or returned.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreError::Sqlite`] if the pending count cannot be read.
+    pub async fn stats(&self) -> Result<Stats, StoreError> {
+        let snapshot = self.inner.counters.snapshot();
+        let pending = self.with_notes(|conn| counters::pending(conn)).await?;
+
+        Ok(Stats {
+            created: snapshot.created,
+            read: snapshot.read,
+            expired: snapshot.expired,
+            reported: snapshot.reported,
+            pending,
+        })
     }
 
     /// Runs a closure against the note file, off the async runtime.
