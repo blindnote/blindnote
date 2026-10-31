@@ -37,8 +37,8 @@ export function SiteFooter(props: SiteFooterProps) {
           </ul>
         </nav>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <LanguageSwitcher tone="dark" />
-          <ThemeSwitcher tone="dark" />
+          <LanguageSwitcher tone="dark" size="md" />
+          <ThemeSwitcher tone="dark" size="md" />
         </div>
       </div>
     </footer>
