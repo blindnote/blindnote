@@ -21,7 +21,7 @@ export function Tagline(props: TaglineProps) {
       {items.map((item) => (
         <li
           key={item.text}
-          className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-cream px-2.5 py-1 text-xs leading-4 font-semibold whitespace-nowrap text-ink dark:border-accent/25 dark:bg-night-raised dark:text-sand"
+          className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-cream px-2.5 py-1 text-[13px] leading-5 font-semibold whitespace-nowrap text-ink dark:border-accent/25 dark:bg-night-raised dark:text-sand"
         >
           <Icon name={item.icon} className="size-3.5 text-fur dark:text-accent" />
           {item.text}
