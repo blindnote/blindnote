@@ -27,6 +27,7 @@ use tower_governor::GovernorLayer;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::timeout::TimeoutLayer;
 
+use crate::admin;
 use crate::api::{self, ApiState};
 use crate::assets;
 use crate::headers;
@@ -54,7 +55,13 @@ pub(crate) struct Layers {
 /// throttled health probe makes an orchestrator believe the service is down,
 /// and restarting a healthy process is a worse outcome than answering one
 /// extra probe.
-pub(crate) fn router(state: ApiState, limiters: &Limiters, layers: Layers) -> Router {
+pub(crate) fn router(
+    state: ApiState,
+    limiters: &Limiters,
+    layers: Layers,
+    admin_token: Option<String>,
+) -> Router {
+    let store = state.store.clone();
     let api = api::router(state, limiters).layer(
         ServiceBuilder::new()
             // Outside the concurrency limit, so a client being throttled does
@@ -64,9 +71,16 @@ pub(crate) fn router(state: ApiState, limiters: &Limiters, layers: Layers) -> Ro
             .layer(DefaultBodyLimit::max(MAX_BODY_BYTES)),
     );
 
-    Router::new()
-        .route("/healthz", get(healthz))
-        .merge(api)
+    let mut app = Router::new().route("/healthz", get(healthz)).merge(api);
+
+    // Mounted only when a token is configured; otherwise /admin is not a route
+    // at all and a request for it is an ordinary 404, the same as any other
+    // unknown path -- the admin surface is absent, not hidden behind a 401.
+    if let Some(admin) = admin::router(store, admin_token, limiters) {
+        app = app.merge(admin);
+    }
+
+    app
         // Last, so that its catch-all cannot shadow a route above it. Axum
         // prefers the more specific match, and a test holds that.
         .merge(assets::router())

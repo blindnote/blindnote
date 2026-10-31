@@ -21,6 +21,8 @@ base64 = { workspace = true }
 blindnote-store = { workspace = true }
 governor = { workspace = true }
 serde = { workspace = true }
+sha2 = { workspace = true }
+subtle = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tower = { workspace = true }
