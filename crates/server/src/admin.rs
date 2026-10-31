@@ -227,7 +227,7 @@ cumulative totals, persisted on each sweep, so they are approximate across a res
 
 #[cfg(test)]
 mod tests {
-    use super::{STYLE, authorized, csp_header};
+    use super::{STYLE, authorized, csp_header, read_rate};
     use axum::http::HeaderMap;
     use axum::http::header::AUTHORIZATION;
     use base64::Engine as _;
@@ -261,6 +261,14 @@ mod tests {
         // The digest comparison must not accept a shorter password that happens
         // to be a prefix: both sides are hashed to a fixed width first.
         assert!(!authorized(&basic("admin", "s3cre"), "s3cret"));
+    }
+
+    #[test]
+    fn the_read_rate_is_the_share_of_ended_notes_read() {
+        assert_eq!(read_rate(0, 0), "—");
+        assert_eq!(read_rate(0, 5), "0%");
+        assert_eq!(read_rate(1, 1), "50%");
+        assert_eq!(read_rate(3, 1), "75%");
     }
 
     #[test]
