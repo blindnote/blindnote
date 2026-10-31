@@ -7,6 +7,17 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fef8f2" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1a120d" media="(prefers-color-scheme: dark)" />
+    <script>
+      // Theme bootstrap: apply a stored light/dark choice before first paint, so
+      // an override does not flash the system theme first. 'system' (or nothing
+      // stored) is left to the prefers-color-scheme media query in the CSS. This
+      // inline script is pinned in the CSP by the hash of its text (build.rs), so
+      // the policy stays strict -- no 'unsafe-inline'.
+      try {
+        var t = localStorage.getItem('blindnote-theme')
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
