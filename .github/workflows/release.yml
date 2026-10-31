@@ -11,6 +11,9 @@ on:
   push:
     tags:
       - 'v*'
+  # Dispatched by autotag.yml on a freshly created tag so a merge to master
+  # deploys. Running on the tag ref keeps the cosign identity tag-pinned.
+  workflow_dispatch:
 
 permissions:
   contents: read
