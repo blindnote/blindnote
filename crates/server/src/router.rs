@@ -12,6 +12,7 @@
 //! * **No `NormalizePathLayer`.** Two spellings of one route are two cache
 //!   keys and two chances for a header set to diverge.
 
+use std::net::IpAddr;
 use std::time::Duration;
 
 use axum::Router;
@@ -60,6 +61,7 @@ pub(crate) fn router(
     limiters: &Limiters,
     layers: Layers,
     admin_token: Option<String>,
+    trusted_proxy: Option<IpAddr>,
 ) -> Router {
     let store = state.store.clone();
     let api = api::router(state, limiters).layer(
@@ -76,14 +78,14 @@ pub(crate) fn router(
     // Mounted only when a token is configured; otherwise /admin is not a route
     // at all and a request for it is an ordinary 404, the same as any other
     // unknown path -- the admin surface is absent, not hidden behind a 401.
-    if let Some(admin) = admin::router(store, admin_token, limiters) {
+    if let Some(admin) = admin::router(store.clone(), admin_token, limiters) {
         app = app.merge(admin);
     }
 
     app
         // Last, so that its catch-all cannot shadow a route above it. Axum
         // prefers the more specific match, and a test holds that.
-        .merge(assets::router())
+        .merge(assets::router(store, trusted_proxy))
         .layer(
             ServiceBuilder::new()
                 // Outermost, so that even the 500 produced by a caught panic

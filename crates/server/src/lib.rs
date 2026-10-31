@@ -165,6 +165,7 @@ pub async fn serve(config: Config, listener: TcpListener) -> Result<(), RunError
             max_concurrent_requests: config.max_concurrent_requests,
         },
         config.admin_token.clone(),
+        config.trusted_proxy,
     );
 
     match listener.local_addr() {
