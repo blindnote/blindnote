@@ -1102,3 +1102,42 @@ override paints light under a dark OS scheme and vice versa, `system` clears the
 stored choice survives a reload with no CSP violation logged, which is the end-to-end proof that the
 strict policy actually allows the one inline script. Biome, knip, and the read path at **88,024 B
 brotli** against the 92,160 B budget.
+
+## 2026-10-31 — the switchers, and a mobile pass
+
+Once the theme toggle existed, the two small segmented controls (language and theme) drove a round
+of responsive and touch work, measured in a real browser at 320/375/1280px rather than guessed.
+
+### Placement and behaviour
+
+The language switcher in the header is a top-of-page affordance, so it now hides once the header
+elevates on scroll, and on a phone it yields to the create button when both would compete for the
+narrow header. The end state for mobile: the header carries only the logo, the create button and
+the menu toggle, and the hamburger menu gained a labelled Language and Theme section — the menu has
+the room for comfortable controls that the header does not. Both switchers are also in the footer on
+every screen. The two controls share one responsive size: a 44px tap target below `lg`, shrinking to
+a compact pill on wide screens where a mouse points. On phones the footer stacks them vertically so
+they do not cram onto one line or collide with the back-to-top button.
+
+### Touch targets and type, to the guidance
+
+A full-flow audit (compose → link → reveal → read, plus not-found) turned up a few gaps against the
+44px touch-target guidance (Apple HIG, WCAG 2.5.5) and the 16px mobile body-text baseline:
+
+- The compact header create button was 36px → now 44px; the opened note's copy button 40px → 44px.
+- The logo link's hit area was 26px → ~46px, via padding, with no change to how the logo looks.
+- The decrypted message — the text a reader is actually there for — was 15px on phones → 16px.
+- The trust badges and the link-ready key hint went from 12px to 13px.
+
+What was left alone, on purpose: the link-anatomy diagram's small uppercase labels (tight layout,
+stylistic) and the footer EN/TR pill at 43px wide (clears AA, one pixel under AAA).
+
+### Verified
+
+The inline theme bootstrap is pinned in the CSP by the hash of its text (`build.rs` emits a separate
+`INLINE_SCRIPT_HASHES` table; `csp.rs` adds both lists to `script-src`), so the strict policy gains
+exactly that one inline script and no `'unsafe-inline'`. Everything green: 140 Rust tests (the new
+CSP test included), 42 Vitest unit tests, 23 Playwright E2E tests — new mobile guards cover the menu
+switchers, a 44px footer tap target, the 44px header create button, the theme overrides and the
+bootstrap running with no CSP violation. Biome, knip, and the read path at **88,079 B brotli**
+against the 92,160 B budget.
