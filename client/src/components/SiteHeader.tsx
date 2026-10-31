@@ -44,7 +44,7 @@ export function SiteHeader(props: SiteHeaderProps) {
         <a
           href={props.homeHref}
           aria-label={t.header.home}
-          className="rounded-md text-ink outline-none focus-visible:ring-4 focus-visible:ring-accent dark:text-sand"
+          className="inline-flex items-center rounded-md py-2.5 text-ink outline-none focus-visible:ring-4 focus-visible:ring-accent dark:text-sand"
         >
           <Logo className="h-[26px] md:h-8 lg:h-7 xl:h-8" />
         </a>
@@ -90,7 +90,7 @@ export function SiteHeader(props: SiteHeaderProps) {
             <button
               type="button"
               onClick={props.cta.onClick}
-              className="inline-flex h-9 items-center gap-1.5 rounded-2xl bg-ink px-3.5 text-[13px] font-semibold text-white outline-none hover:bg-ink-hover focus-visible:ring-4 focus-visible:ring-accent dark:bg-accent dark:text-ink"
+              className="inline-flex h-11 items-center gap-1.5 rounded-2xl bg-ink px-3.5 text-[13px] font-semibold text-white outline-none hover:bg-ink-hover focus-visible:ring-4 focus-visible:ring-accent dark:bg-accent dark:text-ink"
             >
               <Icon name="message-plus" className="size-[18px]" />
               <span className="leading-none [text-box:trim-both_cap_alphabetic]">{t.header.create}</span>
