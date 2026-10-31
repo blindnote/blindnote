@@ -7,8 +7,10 @@
 //! the binary, which is the point: nothing is fetched from a CDN at runtime,
 //! and the bytes a visitor runs are the bytes that were published.
 
+use std::net::{IpAddr, SocketAddr};
+
 use axum::Router;
-use axum::extract::Path as UrlPath;
+use axum::extract::{ConnectInfo, Path as UrlPath, State};
 use axum::http::StatusCode;
 use axum::http::header::{
     ACCEPT_ENCODING, CACHE_CONTROL, CONTENT_ENCODING, CONTENT_TYPE, ETAG, HeaderMap, HeaderName,
@@ -16,6 +18,9 @@ use axum::http::header::{
 };
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
+use blindnote_store::{Store, UnixTime};
+
+use crate::rate_limit::resolve_client_ip;
 
 /// How long a file may be kept, in the terms the build script decides.
 #[derive(Clone, Copy, Debug)]
@@ -64,14 +69,54 @@ include!(concat!(env!("OUT_DIR"), "/assets.rs"));
 /// cannot be shadowed by a file and an unknown path is a plain 404 instead of
 /// the page. There is no single-page fallback because the application has no
 /// paths: everything it needs is in the fragment.
-pub(crate) fn router() -> Router {
+pub(crate) fn router(store: Store, trusted_proxy: Option<IpAddr>) -> Router {
     Router::new()
         .route("/", get(index))
         .route("/{*path}", get(file))
+        .with_state(PageViews {
+            store,
+            trusted_proxy,
+        })
 }
 
-/// Serves `index.html`.
-async fn index(headers: HeaderMap) -> Response {
+/// What the entry-point route needs to count a page view.
+#[derive(Clone)]
+struct PageViews {
+    store: Store,
+    trusted_proxy: Option<IpAddr>,
+}
+
+impl PageViews {
+    /// Counts one view of the interface.
+    ///
+    /// The client address is resolved the same way the rate limiter resolves
+    /// it, used in memory only, and folded into an aggregate sketch -- it is
+    /// never stored and cannot be recovered from the sketch. See
+    /// [`Store::record_view`].
+    fn record(&self, peer: SocketAddr, headers: &HeaderMap) {
+        let address = resolve_client_ip(peer.ip(), headers, self.trusted_proxy);
+        self.store.record_view(UnixTime::now(), &ip_bytes(address));
+    }
+}
+
+/// An address's canonical bytes: four for IPv4, sixteen for IPv6.
+fn ip_bytes(address: IpAddr) -> Vec<u8> {
+    match address {
+        IpAddr::V4(v4) => v4.octets().to_vec(),
+        IpAddr::V6(v6) => v6.octets().to_vec(),
+    }
+}
+
+/// Serves `index.html`, counting the view first.
+///
+/// The one route with state; every other asset is static. `file` shares the
+/// router's state type but does not extract it.
+async fn index(
+    State(views): State<PageViews>,
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+) -> Response {
+    views.record(peer, &headers);
     serve("index.html", &headers)
 }
 
