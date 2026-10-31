@@ -302,7 +302,7 @@ const en: Strings = {
       {
         question: 'Can you (or anyone else) read my note?',
         answer:
-          'No. Because the key never reaches us, all we hold is encrypted text we cannot open. We keep no access logs; your IP address is used only momentarily to limit abuse, and is never written anywhere.',
+          'No. Because the key never reaches us, all we hold is encrypted text we cannot open. We keep no access logs and store nothing tied to you — only anonymous totals, like how many notes are made and read and how many visits the site gets. Your IP address is used in memory only, to limit abuse and to estimate visitor numbers, and is never written anywhere.',
       },
       {
         question: 'Can a deleted note be recovered? Do you keep backups?',
@@ -502,7 +502,7 @@ const tr: Strings = {
       {
         question: 'Notumu siz (ya da bir başkası) okuyabilir misiniz?',
         answer:
-          'Hayır. Anahtar bize hiç ulaşmadığı için elimizde yalnızca açamadığımız şifreli bir metin var. Erişim kaydı (log) tutmuyoruz; IP adresiniz yalnızca kötüye kullanımı sınırlamak için anlık kullanılır, hiçbir yere yazılmaz.',
+          'Hayır. Anahtar bize hiç ulaşmadığı için elimizde yalnızca açamadığımız şifreli bir metin var. Erişim kaydı (log) tutmuyoruz ve size bağlı hiçbir şey saklamıyoruz — yalnızca anonim toplamlar: kaç not oluşturulup okunduğu, siteye kaç ziyaret geldiği gibi. IP adresiniz yalnızca bellekte, kötüye kullanımı sınırlamak ve ziyaretçi sayısını tahmin etmek için kullanılır, hiçbir yere yazılmaz.',
       },
       {
         question: 'Silinen not geri gelir mi? Yedek tutuyor musunuz?',
