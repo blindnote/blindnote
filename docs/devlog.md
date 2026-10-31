@@ -1141,3 +1141,48 @@ CSP test included), 42 Vitest unit tests, 23 Playwright E2E tests — new mobile
 switchers, a 44px footer tap target, the 44px header create button, the theme overrides and the
 bootstrap running with no CSP violation. Biome, knip, and the read path at **88,079 B brotli**
 against the 92,160 B budget.
+
+## 2026-10-31 — an operator stats page, and a peeking-monkey fix
+
+Two unrelated bits of work on a local branch (not deployed): a fix for the composer monkey in dark
+mode, and an anonymous operator statistics page.
+
+### The monkey behind the card border
+
+In dark mode a line cut across the "peek" monkey over the composer: the card's top border. The
+monkey sat behind the card (`-z-10`) so the border drew over it. In light mode the border is
+`ink/7` and invisible, so it never showed; in dark mode it is `night-line` and clearly did. The
+monkey now sits in front (`z-10`, `pointer-events-none` for the textarea beneath), so the border is
+behind it in both themes -- which is what "peek over the card" should look like anyway.
+
+### /admin: anonymous aggregate counters
+
+A single authed, read-only page showing totals: notes created, read (burned), expired unread,
+reported, and -- the one exact number -- how many are pending right now. It fits §8.5 ("aggregate
+counters only") and §9.9 ("aggregate and identity-free"), and it is bounded by what the server can
+know, which is nothing about any individual note. So the page can only ever show a handful of
+integers; even leaked, it leaks no note.
+
+- **Counters (store).** A `counters` table in `notes.db` (migration v2) holding four integers and
+  no per-note data -- there is no creation time to correlate against. They live in memory as
+  atomics (a free increment on create/burn/report/sweep, never touching the delicate burn SQL),
+  are loaded at startup, and are written back on each sweep. So the cumulative totals are
+  approximate across a restart; `pending` is never a counter but a live `COUNT(*)`, which cannot
+  drift. The burn/create transactions are unchanged.
+- **The page (server).** Mounted only when `BLINDNOTE_ADMIN_TOKEN` is set; without it the route does
+  not exist and `/admin` is an ordinary 404 -- absent, not hidden behind a 401. Auth is HTTP Basic,
+  compared constant-time over SHA-256 digests so neither the token nor its length leaks through
+  timing. The page carries its own strict CSP: a small inline stylesheet **pinned by its hash** (the
+  same trick as the theme bootstrap -- no `'unsafe-inline'`), no script at all. `headers::apply`
+  serves that policy on the admin path and the application policy everywhere else.
+
+Verified end to end in a real browser: 404 without a token, 401 without/with the wrong credential,
+200 with it showing the right counts, and the hashed inline style applied with no CSP violation.
+Tests: the store counters (4, including that the totals survive a restart and that a report which
+deletes nothing is not counted) and the admin page (5, including that it is absent without a token
+and that its policy pins the style and forbids scripts). Full gate green -- fmt, clippy, 149 Rust
+tests, 42 Vitest, 25 Playwright, biome, knip, read path 88,105 B brotli.
+
+Still the user's call: whether to expose `/admin` publicly (behind the token) or keep it internal,
+and the separate, larger question of a membership/payments system -- which, if it happens, stays in
+its own service, out of the zero-knowledge note core.
