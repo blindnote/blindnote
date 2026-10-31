@@ -59,6 +59,33 @@ const NOTES_MIGRATIONS: &[Migration] = &[
               INSERT INTO counters (name, value) VALUES
                   ('created', 0), ('read', 0), ('expired', 0), ('reported', 0);",
     },
+    // Daily aggregate stats, and the working state for an approximate daily
+    // unique-visitor count. `stats_daily` is one row per UTC day of totals.
+    // `stats_uniques` holds a salted HyperLogLog sketch per day (see the `hll`
+    // module): the salt is random and rotates daily, the raw address is never
+    // stored, and the sketch cannot be enumerated back to anyone -- so this is
+    // still only counts, with nothing that identifies a visitor. The 'views'
+    // counter row is the cumulative total that mirrors these per-day rows.
+    Migration {
+        version: 3,
+        sql: "CREATE TABLE stats_daily (
+                  day      TEXT    NOT NULL PRIMARY KEY,
+                  views    INTEGER NOT NULL DEFAULT 0,
+                  created  INTEGER NOT NULL DEFAULT 0,
+                  read     INTEGER NOT NULL DEFAULT 0,
+                  expired  INTEGER NOT NULL DEFAULT 0,
+                  reported INTEGER NOT NULL DEFAULT 0,
+                  uniques  INTEGER NOT NULL DEFAULT 0
+              ) STRICT, WITHOUT ROWID;
+
+              CREATE TABLE stats_uniques (
+                  day       TEXT NOT NULL PRIMARY KEY,
+                  salt      BLOB NOT NULL,
+                  registers BLOB NOT NULL
+              ) STRICT, WITHOUT ROWID;
+
+              INSERT INTO counters (name, value) VALUES ('views', 0);",
+    },
 ];
 
 /// Schema of the key file.
