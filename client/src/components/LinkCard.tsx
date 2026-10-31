@@ -71,7 +71,7 @@ export function LinkCard(props: LinkCardProps) {
             )}
           </p>
         </div>
-        <p className="mt-3 text-center text-xs text-muted md:text-sm">{t.linkCard.keyHint}</p>
+        <p className="mt-3 text-center text-[13px] text-muted md:text-sm">{t.linkCard.keyHint}</p>
         <div className="mt-4 flex justify-center">
           <Button onClick={props.onCopy}>
             <Icon name={props.copied ? 'check' : 'copy'} className="size-4 md:size-5" />
