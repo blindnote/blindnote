@@ -36,7 +36,7 @@ export function SiteFooter(props: SiteFooterProps) {
             ))}
           </ul>
         </nav>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
           <LanguageSwitcher tone="dark" size="md" />
           <ThemeSwitcher tone="dark" size="md" />
         </div>
