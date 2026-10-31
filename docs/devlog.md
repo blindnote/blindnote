@@ -1186,3 +1186,52 @@ tests, 42 Vitest, 25 Playwright, biome, knip, read path 88,105 B brotli.
 Still the user's call: whether to expose `/admin` publicly (behind the token) or keep it internal,
 and the separate, larger question of a membership/payments system -- which, if it happens, stays in
 its own service, out of the zero-knowledge note core.
+
+
+## 2026-10-31 — v0.1.10: anonymous daily site stats
+
+The operator asked to track how many people visit the site, with per-day history. The constraint is
+the whole product: no third-party analytics (the CSP forbids it and it would break the privacy
+pitch), no access log (hard rule), only **aggregate, identity-free counters** (§8.5/§9.9).
+
+### Built
+
+- **Store.** `notes.db` migration **v3** adds `stats_daily` (one row per UTC day: views, created,
+  read, expired, reported, uniques) and `stats_uniques` (the working sketch). A `views` counter
+  joined the in-memory atomics. `crates/store/src/hll.rs` is a small HyperLogLog (p=12, 4096
+  registers, ~1.6% error); `crates/store/src/stats.rs` owns the daily rollup — on the sweep cadence
+  it writes each day's delta and the sketch's estimate, rotating a random salt at midnight. New API:
+  `Store::record_view(now, addr)` (in memory only, no disk) and `Store::daily_stats(days)`; `Stats`
+  gained `views`; new public `DailyStat`. Core burn/create SQL untouched.
+- **Uniques = salted-IP HyperLogLog**, the option the operator chose over page-views-only. The
+  client IP is used **in memory only** — to rate-limit and to fold one register into the day's
+  sketch — and is **never written to disk**. The salt is random and rotates daily; the sketch
+  cannot be reversed to an address.
+- **Server.** The entry-point route counts a view, resolving the client address through a shared
+  `rate_limit::resolve_client_ip` (trusted-proxy aware, so it matches the limiter). `/admin` grew a
+  "By day (UTC)" table and a Total-views tile; its strict, script-free CSP is unchanged (the style
+  hash is recomputed from the stylesheet).
+- **Honesty.** The old FAQ answer ("your IP is used only to limit abuse, and is never written
+  anywhere") became an over-claim the moment we count visitors, so the FAQ (EN + TR) and
+  `SECURITY.md` now disclose the anonymous aggregate counting and the in-memory-only IP use. For a
+  project whose pitch is "we don't lie to you", that correction is load-bearing, not cosmetic.
+
+### Measured / verified
+
+- HyperLogLog accuracy is a unit test (within 10% across 0–100k distinct, generous against ~1.6%
+  standard error); four store integration tests cover per-day bucketing, day rollover, repeat
+  suppression and restart survival.
+- Verified end-to-end against the real binary: `/admin` is 401 without auth, Total views increments
+  live, and the daily row's delta telescopes to the cumulative total across sweeps.
+- Full gate green: fmt, clippy `-D warnings`, Rust tests (incl. HLL + UTC-day + store stats),
+  `cargo deny`, `cargo machete`, Biome, knip, 42 Vitest, 25 Playwright. Read path 88,228 B brotli
+  against the 92,160 budget.
+
+### Decisions
+
+- **Approximate, not exact, uniques.** A HyperLogLog is a pure aggregate — it cannot be enumerated —
+  which fits "identity-free" better than storing per-visitor tokens, even salted ones. The ~1.6%
+  error is itself a small privacy margin.
+- **Daily rows are approximate across a crash**, like the existing counters: they are written on the
+  60 s sweep, so a crash loses at most that interval and the current day lags by up to one sweep.
+  Acceptable for a visitor count; it is not note data.
