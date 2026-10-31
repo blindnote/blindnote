@@ -128,7 +128,7 @@ fn directive(policy: &mut String, name: &str, value: &str) {
 #[cfg(test)]
 mod tests {
     use super::{build, header, sources};
-    use crate::assets::{ASSETS, SCRIPT_HASHES};
+    use crate::assets::{ASSETS, INLINE_SCRIPT_HASHES, SCRIPT_HASHES};
 
     #[test]
     fn the_policy_denies_everything_it_does_not_name() {
@@ -182,6 +182,28 @@ mod tests {
             assert!(
                 ASSETS.iter().any(|asset| asset.etag == quoted),
                 "the policy pins {hash}, which is not any served file's hash"
+            );
+        }
+    }
+
+    /// The page's inline bootstrap script is pinned by hash, never allowed by
+    /// `'unsafe-inline'`. When an interface is embedded there is exactly one
+    /// inline script, and the policy carries its hash.
+    #[test]
+    fn the_inline_script_is_pinned_by_hash() {
+        if ASSETS.is_empty() {
+            return;
+        }
+
+        assert!(
+            !INLINE_SCRIPT_HASHES.is_empty(),
+            "the page has no inline script hash, so the theme bootstrap is unpinned"
+        );
+        let policy = build();
+        for hash in INLINE_SCRIPT_HASHES {
+            assert!(
+                policy.contains(&format!("'sha256-{hash}'")),
+                "the policy does not pin the inline script hash {hash}"
             );
         }
     }
