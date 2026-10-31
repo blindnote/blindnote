@@ -53,6 +53,7 @@ export interface Strings {
     language: string
   }
   footer: { footerMenu: string }
+  theme: { label: string; system: string; light: string; dark: string }
   compose: { title: string; subtitle: string }
   composer: {
     button: string
@@ -156,6 +157,7 @@ const en: Strings = {
     language: 'Language',
   },
   footer: { footerMenu: 'Footer menu' },
+  theme: { label: 'Theme', system: 'System', light: 'Light', dark: 'Dark' },
   compose: {
     title: 'Share Freely',
     subtitle: "Create a link that destroys itself once it's opened.",
@@ -356,6 +358,7 @@ const tr: Strings = {
     language: 'Dil',
   },
   footer: { footerMenu: 'Alt menü' },
+  theme: { label: 'Tema', system: 'Sistem', light: 'Açık', dark: 'Koyu' },
   compose: {
     title: 'Özgürce Paylaş',
     subtitle: 'Açıldığında kendini yok edecek bağlantı oluşturun.',
