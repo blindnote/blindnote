@@ -27,3 +27,18 @@ test('nothing overflows horizontally at 320px', async ({ page }) => {
   )
   expect(overflow, 'horizontal overflow at 320px').toBeLessThanOrEqual(1)
 })
+
+// The footer's language and theme switchers are the main touch surface for
+// those preferences on a phone, so each segment is a comfortable tap target
+// (Apple HIG 44pt) at mobile width, shrinking to a compact pill only on wide
+// screens where a mouse points.
+test('the footer switcher controls are a comfortable tap target', async ({ page }) => {
+  await page.goto('/')
+  const buttons = page.locator('footer [role="group"] button')
+  const count = await buttons.count()
+  expect(count, 'EN/TR plus system/light/dark').toBeGreaterThanOrEqual(5)
+  for (let i = 0; i < count; i++) {
+    const box = await buttons.nth(i).boundingBox()
+    expect(box?.height ?? 0, `footer control ${i} tap height`).toBeGreaterThanOrEqual(44)
+  }
+})
