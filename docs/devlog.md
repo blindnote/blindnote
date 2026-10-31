@@ -1060,3 +1060,45 @@ broke; tests now live in their own `tsconfig.test.json`. Everything green — `t
 build, 139 Rust tests (interface/CSP included), 42 Vitest unit tests (25 the new contrast
 assertions), 16 Playwright E2E tests (3 new, guarding the dark wiring end-to-end against the shipped
 binary), Biome, knip, and the read path at **87,764 B brotli** against the 92,160 B budget.
+
+## 2026-10-31 — the theme toggle, with its inline script pinned
+
+The toggle deferred earlier today is now built. The decision that held it up — a no-flash toggle
+needs an inline `<head>` script, and the CSP forbids inline scripts — went the strict way: rather
+than relaxing the policy, the one inline script is pinned in the CSP by the hash of its text, the
+same trust chain the external bundle already rides.
+
+### The inline script, and how it is pinned
+
+`index.html` carries a small bootstrap in `<head>` that reads the stored `light`/`dark` choice and
+sets `data-theme` before first paint, so an override never flashes the system theme first;
+`system` (or nothing stored) is left to the `prefers-color-scheme` media query. A browser matches an
+inline script against a `script-src` hash by hashing its text directly — there is no `integrity`
+attribute as there is for an external script — so `build.rs` now walks the built page, hashes every
+`<script>` that has no `src`, and emits them as a separate `INLINE_SCRIPT_HASHES` table. `csp.rs`
+adds both lists to `script-src`. The policy stays strict: no `'unsafe-inline'`, and the test that
+forbids it still passes. Keeping the inline hashes separate from the external `SCRIPT_HASHES`
+preserves the existing invariant — every external hash belongs to a served file — which a new test
+still asserts, beside one asserting the inline hash is present and pinned.
+
+Vite leaves a classic inline script untouched in the output, so the bytes `build.rs` hashes are the
+bytes served; and because the hash is derived from the served page either way, it cannot drift from
+what the browser enforces.
+
+### The control
+
+A segmented system/light/dark toggle in the footer, mirroring the language switcher (same pill
+shape, `aria-pressed` on the active choice, `tone="dark"` for the ink footer). The footer was the
+agreed home — appearance is a low-frequency preference, not a header action. The choice is
+remembered in `localStorage` under `blindnote-theme`, read back by both the React control and the
+bootstrap. `lib/theme.ts` holds the small state: `system` clears the `data-theme` override so the
+media query takes over, `light`/`dark` set it.
+
+### Verified
+
+Everything green. 140 Rust tests (the new CSP test for the pinned inline script included), 42 Vitest
+unit tests, 20 Playwright E2E tests — 4 new, driving the toggle against the shipped binary: a light
+override paints light under a dark OS scheme and vice versa, `system` clears the override, and a
+stored choice survives a reload with no CSP violation logged, which is the end-to-end proof that the
+strict policy actually allows the one inline script. Biome, knip, and the read path at **88,024 B
+brotli** against the 92,160 B budget.
