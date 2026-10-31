@@ -25,6 +25,7 @@ pub(crate) struct Counters {
     read: AtomicU64,
     expired: AtomicU64,
     reported: AtomicU64,
+    views: AtomicU64,
 }
 
 /// A point-in-time copy of the counters, cheap to pass across threads.
@@ -34,17 +35,35 @@ pub(crate) struct Snapshot {
     pub(crate) read: u64,
     pub(crate) expired: u64,
     pub(crate) reported: u64,
+    pub(crate) views: u64,
 }
 
 impl Snapshot {
     /// The counters as `(column, value)` pairs, for persisting.
-    fn named(self) -> [(&'static str, u64); 4] {
+    fn named(self) -> [(&'static str, u64); 5] {
         [
             ("created", self.created),
             ("read", self.read),
             ("expired", self.expired),
             ("reported", self.reported),
+            ("views", self.views),
         ]
+    }
+
+    /// The field-by-field difference from an earlier snapshot, floored at zero.
+    ///
+    /// Used to turn the cumulative counters into a day's delta for the daily
+    /// table. Floored because a restart reloads the persisted totals, so a
+    /// later snapshot is never actually smaller -- but saturating keeps a
+    /// clock or counter oddity from writing a negative.
+    pub(crate) fn saturating_sub(self, earlier: Self) -> Self {
+        Self {
+            created: self.created.saturating_sub(earlier.created),
+            read: self.read.saturating_sub(earlier.read),
+            expired: self.expired.saturating_sub(earlier.expired),
+            reported: self.reported.saturating_sub(earlier.reported),
+            views: self.views.saturating_sub(earlier.views),
+        }
     }
 }
 
@@ -78,6 +97,7 @@ impl Counters {
             "read" => Some(&self.read),
             "expired" => Some(&self.expired),
             "reported" => Some(&self.reported),
+            "views" => Some(&self.views),
             _ => None,
         }
     }
@@ -102,6 +122,11 @@ impl Counters {
         self.expired.fetch_add(count, Ordering::Relaxed);
     }
 
+    /// One more page view (a serve of the interface's entry point).
+    pub(crate) fn inc_views(&self) {
+        self.views.fetch_add(1, Ordering::Relaxed);
+    }
+
     /// A copy of the current totals.
     pub(crate) fn snapshot(&self) -> Snapshot {
         Snapshot {
@@ -109,6 +134,7 @@ impl Counters {
             read: self.read.load(Ordering::Relaxed),
             expired: self.expired.load(Ordering::Relaxed),
             reported: self.reported.load(Ordering::Relaxed),
+            views: self.views.load(Ordering::Relaxed),
         }
     }
 }
