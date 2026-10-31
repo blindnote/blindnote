@@ -79,6 +79,14 @@ pub struct Config {
     /// useful ceiling is set by the disk rather than by the CPU. This bound
     /// exists so that a flood queues rather than allocating without limit.
     pub max_concurrent_requests: usize,
+
+    /// Secret that unlocks the operator stats page at `/admin`.
+    ///
+    /// Unset by default, and unset means the page does not exist: the route is
+    /// not mounted, so a request for it is an ordinary 404. The page only ever
+    /// shows anonymous aggregate counts, so this guards a mild information leak
+    /// rather than anything a note depends on.
+    pub admin_token: Option<String>,
 }
 
 impl Default for Config {
@@ -104,6 +112,7 @@ impl Default for Config {
             sweep_interval: Duration::from_secs(60),
             request_timeout: Duration::from_secs(15),
             max_concurrent_requests: 256,
+            admin_token: None,
         }
     }
 }
@@ -156,6 +165,7 @@ impl Config {
                 "positive integer",
                 defaults.max_concurrent_requests,
             )?,
+            admin_token: from_env_raw("ADMIN_TOKEN")?,
         })
     }
 }

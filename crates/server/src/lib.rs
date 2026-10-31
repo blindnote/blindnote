@@ -17,6 +17,7 @@
 //! root. Where a function looks like it is missing something obvious, the
 //! comment above it says which rule asked for the omission.
 
+mod admin;
 mod api;
 mod assets;
 mod config;
@@ -163,6 +164,7 @@ pub async fn serve(config: Config, listener: TcpListener) -> Result<(), RunError
             request_timeout: config.request_timeout,
             max_concurrent_requests: config.max_concurrent_requests,
         },
+        config.admin_token.clone(),
     );
 
     match listener.local_addr() {

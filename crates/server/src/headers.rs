@@ -83,13 +83,26 @@ static SECURITY_HEADERS: LazyLock<[(HeaderName, HeaderValue); 7]> = LazyLock::ne
 /// Existing values are overwritten rather than appended to: a handler has no
 /// business weakening the policy, and `insert` makes that structural.
 pub(crate) async fn apply(request: Request, next: Next) -> Response {
+    // The operator stats page carries a little inline CSS and no script, so it
+    // gets its own policy, pinned to that style's hash; every other response
+    // gets the application policy. The path is read before the handler consumes
+    // the request.
+    let admin = request.uri().path() == crate::admin::PATH;
+
     let mut response = next.run(request).await;
     let headers = response.headers_mut();
 
     for (name, value) in SECURITY_HEADERS.iter() {
         headers.insert(name, value.clone());
     }
-    headers.insert(CONTENT_SECURITY_POLICY, csp::header());
+    headers.insert(
+        CONTENT_SECURITY_POLICY,
+        if admin {
+            crate::admin::csp_header()
+        } else {
+            csp::header()
+        },
+    );
 
     response
 }
