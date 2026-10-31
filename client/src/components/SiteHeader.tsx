@@ -4,6 +4,7 @@ import { cx } from './cx'
 import { Icon } from './Icon'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { Logo } from './Logo'
+import { ThemeSwitcher } from './ThemeSwitcher'
 import type { SiteLink } from './siteLinks'
 
 type SiteHeaderProps = {
@@ -83,10 +84,8 @@ export function SiteHeader(props: SiteHeaderProps) {
 
         {/* Mobil: kaydırınca menünün yanında kompakt create butonu (Figma'da yok — türetildi) */}
         <div className="ml-auto flex items-center gap-1.5 lg:hidden">
-          {/* Dil seçici mobilde header'da, hamburgerin solunda. Kaydırınca
-              (header yükselince) ve dar ekranda create butonuyla yer paylaşınca
-              gizlenir; dil footer'da her zaman erişilebilir. */}
-          {!props.elevated && !(props.cta && props.ctaOnMobile) && <LanguageSwitcher tone="light" />}
+          {/* Dil ve tema seçicileri mobilde menünün içinde (aşağıda) -- header'da
+              yalnız logo, create ve menü düğmesi kalır, böylece dar ekranda sıkışmaz. */}
           {props.cta && props.ctaOnMobile && (
             <button
               type="button"
@@ -129,6 +128,20 @@ export function SiteHeader(props: SiteHeaderProps) {
               </li>
             ))}
           </ul>
+          <div className="mt-6 flex flex-col gap-5 border-t border-ink/10 px-4 pt-6 dark:border-night-line">
+            <div className="flex flex-col items-start gap-2">
+              <span className="font-display text-sm font-semibold text-muted dark:text-sand-muted">
+                {t.header.language}
+              </span>
+              <LanguageSwitcher tone="light" size="md" />
+            </div>
+            <div className="flex flex-col items-start gap-2">
+              <span className="font-display text-sm font-semibold text-muted dark:text-sand-muted">
+                {t.theme.label}
+              </span>
+              <ThemeSwitcher tone="light" size="md" />
+            </div>
+          </div>
         </nav>
       )}
     </header>
