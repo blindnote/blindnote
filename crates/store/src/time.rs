@@ -106,4 +106,14 @@ mod tests {
     fn times_order_by_their_seconds() {
         assert!(UnixTime::from_seconds(10) < UnixTime::from_seconds(11));
     }
+
+    #[test]
+    fn day_is_the_utc_calendar_date() {
+        assert_eq!(UnixTime::from_seconds(0).day(), "1970-01-01");
+        // 2026-01-01T00:00:00Z, and the second before it is still 2025.
+        assert_eq!(UnixTime::from_seconds(1_767_225_600).day(), "2026-01-01");
+        assert_eq!(UnixTime::from_seconds(1_767_225_599).day(), "2025-12-31");
+        // 2026-10-31T00:00:00Z.
+        assert_eq!(UnixTime::from_seconds(1_793_404_800).day(), "2026-10-31");
+    }
 }
