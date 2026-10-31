@@ -13,10 +13,14 @@ test('the composer text is at least 16px so iOS does not auto-zoom', async ({ pa
   expect(size).toBeGreaterThanOrEqual(16)
 })
 
-// M-01: the language switcher is in the mobile header, not only the menu.
-test('the language switcher is reachable from the mobile header', async ({ page }) => {
+// M-01: the language and theme switchers live in the mobile menu, which has
+// room for comfortable controls instead of cramming them into the header.
+test('the language and theme switchers are reachable from the mobile menu', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('header').getByRole('group', { name: 'Language' })).toBeVisible()
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  const menu = page.locator('#mobil-menu')
+  await expect(menu.getByRole('group', { name: 'Language' })).toBeVisible()
+  await expect(menu.getByRole('group', { name: 'Theme' })).toBeVisible()
 })
 
 test('nothing overflows horizontally at 320px', async ({ page }) => {
