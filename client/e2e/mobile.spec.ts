@@ -46,3 +46,14 @@ test('the footer switcher controls are a comfortable tap target', async ({ page 
     expect(box?.height ?? 0, `footer control ${i} tap height`).toBeGreaterThanOrEqual(44)
   }
 })
+
+// The compact create button that appears in the mobile header is a primary
+// action, so it is a full 44px tap target like the rest, not the 36px it once
+// was.
+test('the mobile header create button is a comfortable tap target', async ({ page }) => {
+  await page.goto('/#missing/missing')
+  const create = page.locator('header').getByRole('button', { name: /create/i })
+  await expect(create).toBeVisible()
+  const box = await create.boundingBox()
+  expect(box?.height ?? 0, 'header create button tap height').toBeGreaterThanOrEqual(44)
+})
