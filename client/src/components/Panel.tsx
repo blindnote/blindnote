@@ -18,7 +18,7 @@ export function Panel(props: PanelProps) {
   return (
     <div
       className={cx(
-        'w-full rounded-2xl border p-[3px] shadow-composer md:rounded-card md:border-2 md:p-1.5',
+        'w-full rounded-2xl border bg-page p-[3px] shadow-composer md:rounded-card md:border-2 md:p-1.5 dark:bg-night',
         props.tone === 'danger' ? 'border-danger/40 dark:border-danger-dark/50' : 'border-ink/7 dark:border-night-line',
         props.className,
       )}
