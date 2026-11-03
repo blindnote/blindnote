@@ -33,7 +33,7 @@ pub use crate::config::{Config, ConfigError};
 use std::io;
 use std::net::SocketAddr;
 
-use blindnote_store::{FreeSpaceFloor, Store, StoreError};
+use blindnote_store::{FreeSpaceFloor, Store, StoreError, UnixTime};
 use tokio::net::TcpListener;
 use tokio::signal::unix::{SignalKind, signal};
 
@@ -131,7 +131,12 @@ pub async fn serve(config: Config, listener: TcpListener) -> Result<(), RunError
         source,
     })?;
 
-    let store = Store::open(&config.data_dir, FreeSpaceFloor(config.min_free_bytes)).await?;
+    let store = Store::open(
+        &config.data_dir,
+        FreeSpaceFloor(config.min_free_bytes),
+        UnixTime::now(),
+    )
+    .await?;
     let limiters = Limiters::new(&config).map_err(|setting| RunError::Limiter { setting })?;
 
     if config.trusted_proxy.is_none() {

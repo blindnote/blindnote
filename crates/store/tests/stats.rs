@@ -113,7 +113,7 @@ async fn the_daily_rows_survive_a_restart() {
     f.store.record_view(now, &[7, 7, 7, 2]);
     f.store.sweep(now).await.expect("swept");
 
-    let reopened = f.reopen().await;
+    let reopened = f.reopen(now).await;
     // Another view on the same day after the restart should add to the row, and
     // to the day's existing sketch rather than starting a new one.
     reopened.record_view(now, &[7, 7, 7, 3]);

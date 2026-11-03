@@ -45,7 +45,7 @@ async fn main() {
             .to_path_buf()
     });
 
-    let store = Store::open(&directory, FreeSpaceFloor::NONE)
+    let store = Store::open(&directory, FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect("the store opens");
     let payload = vec![0xAB; PAYLOAD_BYTES];

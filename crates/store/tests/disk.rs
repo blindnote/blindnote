@@ -16,7 +16,7 @@ const IMPOSSIBLE_FLOOR: FreeSpaceFloor = FreeSpaceFloor(u64::MAX);
 
 /// A store that believes it has no room.
 async fn cramped(directory: &TempDir) -> Store {
-    Store::open(directory.path(), IMPOSSIBLE_FLOOR)
+    Store::open(directory.path(), IMPOSSIBLE_FLOOR, UnixTime::now())
         .await
         .expect("the store still opens: a full disk is not a broken one")
 }
@@ -53,7 +53,7 @@ async fn a_note_stored_before_the_disk_filled_is_still_readable() {
     let now = UnixTime::now();
 
     // Stored while there was room.
-    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE)
+    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect("the store opens");
     let id = roomy.create(note(now)).await.expect("stored");
@@ -74,7 +74,7 @@ async fn a_nearly_full_disk_still_accepts_a_report() {
     let directory = tempfile::tempdir().expect("a temporary directory");
     let now = UnixTime::now();
 
-    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE)
+    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect("the store opens");
     let id = roomy.create(note(now)).await.expect("stored");
@@ -91,7 +91,7 @@ async fn a_nearly_full_disk_still_sweeps() {
     let directory = tempfile::tempdir().expect("a temporary directory");
     let now = UnixTime::now();
 
-    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE)
+    let roomy = Store::open(directory.path(), FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect("the store opens");
     roomy.create(expired_note(now)).await.expect("stored");

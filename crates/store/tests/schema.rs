@@ -12,7 +12,7 @@ async fn opening_twice_is_idempotent() {
     let f = Fixture::new().await;
     let now = UnixTime::now();
 
-    let again = f.reopen().await;
+    let again = f.reopen(now).await;
 
     let id = again.create(note(now)).await.expect("stored");
     assert_eq!(again.burn(id, now).await.expect("burned"), CIPHERTEXT);
@@ -23,7 +23,7 @@ async fn the_data_directory_is_created_if_missing() {
     let parent = tempfile::tempdir().expect("a temporary directory");
     let nested = parent.path().join("does").join("not").join("exist");
 
-    let store = Store::open(&nested, FreeSpaceFloor::NONE)
+    let store = Store::open(&nested, FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect("the store creates it");
 
@@ -66,7 +66,7 @@ async fn a_newer_schema_is_refused_rather_than_used() {
         .expect("bumped");
     drop(conn);
 
-    let error = Store::open(f.directory(), FreeSpaceFloor::NONE)
+    let error = Store::open(f.directory(), FreeSpaceFloor::NONE, UnixTime::now())
         .await
         .expect_err("refused");
 

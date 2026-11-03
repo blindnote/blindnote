@@ -31,7 +31,7 @@ impl Fixture {
     /// Opens a fresh store in a new temporary directory.
     pub async fn new() -> Self {
         let directory = tempfile::tempdir().expect("a temporary directory");
-        let store = Store::open(directory.path(), FreeSpaceFloor::NONE)
+        let store = Store::open(directory.path(), FreeSpaceFloor::NONE, UnixTime::now())
             .await
             .expect("the store opens");
 
@@ -39,8 +39,11 @@ impl Fixture {
     }
 
     /// Re-opens the same directory with a new store, as a restart would.
-    pub async fn reopen(&self) -> Store {
-        Store::open(self.directory.path(), FreeSpaceFloor::NONE)
+    ///
+    /// `now` is the instant the restart happens, so the day's unique-visitor
+    /// sketch resumes under the right day rather than the wall clock's.
+    pub async fn reopen(&self, now: UnixTime) -> Store {
+        Store::open(self.directory.path(), FreeSpaceFloor::NONE, now)
             .await
             .expect("the store re-opens")
     }

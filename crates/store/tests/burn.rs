@@ -134,7 +134,7 @@ async fn notes_survive_a_restart() {
     let now = UnixTime::now();
     let id = f.store.create(note(now)).await.expect("stored");
 
-    let after_restart = f.reopen().await;
+    let after_restart = f.reopen(now).await;
 
     assert_eq!(
         after_restart.burn(id, now).await.expect("burned"),

@@ -72,7 +72,7 @@ async fn the_counters_survive_a_restart() {
     // The sweep is what persists the counters to disk.
     f.store.sweep(now).await.expect("swept");
 
-    let stats = f.reopen().await.stats().await.expect("stats");
+    let stats = f.reopen(now).await.stats().await.expect("stats");
     assert_eq!(stats.created, 2, "cumulative totals survive a restart");
     assert_eq!(stats.read, 1);
     assert_eq!(stats.pending, 1, "the unburned note is still stored");

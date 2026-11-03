@@ -271,22 +271,35 @@ impl Store {
     /// the process umask, which is why the directory mode is the protection
     /// that matters rather than the file modes.
     ///
+    /// `now` seeds the day the unique-visitor sketch resumes on open: the
+    /// production caller passes the wall clock, and a test passes a fixed
+    /// instant so the stats are deterministic rather than coupled to the day
+    /// the suite happens to run.
+    ///
     /// # Errors
     ///
     /// Returns [`StoreError::DataDir`] if the directory cannot be prepared,
     /// [`StoreError::Pragma`] if a required setting did not take effect,
     /// [`StoreError::SchemaTooNew`] if a file came from a newer build, and
     /// [`StoreError::Sqlite`] for anything else SQLite refuses.
-    pub async fn open(data_dir: &Path, floor: FreeSpaceFloor) -> Result<Self, StoreError> {
+    pub async fn open(
+        data_dir: &Path,
+        floor: FreeSpaceFloor,
+        now: UnixTime,
+    ) -> Result<Self, StoreError> {
         let data_dir = data_dir.to_path_buf();
 
-        tokio::task::spawn_blocking(move || Self::open_blocking(&data_dir, floor))
+        tokio::task::spawn_blocking(move || Self::open_blocking(&data_dir, floor, now))
             .await
             .map_err(|_| StoreError::Panicked)?
     }
 
     /// The file work behind [`Store::open`].
-    fn open_blocking(data_dir: &Path, floor: FreeSpaceFloor) -> Result<Self, StoreError> {
+    fn open_blocking(
+        data_dir: &Path,
+        floor: FreeSpaceFloor,
+        now: UnixTime,
+    ) -> Result<Self, StoreError> {
         prepare_directory(data_dir)?;
 
         let notes_path = data_dir.join("notes.db");
@@ -300,7 +313,7 @@ impl Store {
         schema::migrate_keys(&mut keys)?;
 
         let counters = counters::Counters::load(&notes)?;
-        let daily = stats::Daily::load(&notes, UnixTime::now(), counters.snapshot())?;
+        let daily = stats::Daily::load(&notes, now, counters.snapshot())?;
 
         Ok(Self {
             inner: Arc::new(Inner {
