@@ -35,11 +35,11 @@ const BACKDROP = [
   'md:dark:bg-[radial-gradient(60%_70%_at_8%_10%,color-mix(in_srgb,var(--color-accent)_10%,transparent)_0%,transparent_70%),radial-gradient(55%_65%_at_95%_25%,color-mix(in_srgb,var(--color-accent)_7%,transparent)_0%,transparent_70%)]',
 ].join(' ')
 
-/** Kartın arkasından bakan maymunun boyutu ve karta binme miktarı (Figma ölçüleri) */
+/** Size of the monkey peeking from behind the card, and how much of it the card hides (same ratio as StepCard) */
 const PEEK = {
-  eyes: { gap: 'mt-[72px] md:mt-[100px]', monkey: 'w-14 translate-y-[18px] md:w-[90px] md:translate-y-[27px]' },
-  ears: { gap: 'mt-[76px] md:mt-[67px]', monkey: 'w-[72px] translate-y-2 md:w-[106px] md:translate-y-3' },
-  mouth: { gap: 'mt-[72px] md:mt-[100px]', monkey: 'w-14 translate-y-[18px] md:w-20 md:translate-y-7' },
+  eyes: { gap: 'mt-[72px] md:mt-[100px]', monkey: 'w-14 translate-y-1.5 md:w-[90px] md:translate-y-2' },
+  ears: { gap: 'mt-[76px] md:mt-[67px]', monkey: 'w-[72px] translate-y-1.5 md:w-[106px] md:translate-y-[9px]' },
+  mouth: { gap: 'mt-[72px] md:mt-[100px]', monkey: 'w-14 translate-y-3.5 md:w-20 md:translate-y-5' },
 } as const
 
 /**
@@ -91,7 +91,7 @@ export function Hero(props: HeroProps) {
             {peek && props.monkey && (
               <Monkey
                 pose={props.monkey.pose}
-                className={cx('pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2', peek.monkey)}
+                className={cx('pointer-events-none absolute bottom-full left-1/2 -z-10 -translate-x-1/2', peek.monkey)}
               />
             )}
             {props.card}
