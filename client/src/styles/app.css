@@ -86,6 +86,76 @@
     from { opacity: 0; transform: translateY(6px) scale(0.9); }
     to { opacity: 1; transform: none; }
   }
+
+  /* Mühür (Figma'da yok — türetildi): okuma ekranında mührü kırma ve oluşturma
+     sonrası mühürleme anları. Hepsi SVG grupları üzerinde döner (bkz. Seal.tsx);
+     hareketli eleman transform-box: fill-box taşır. prefers-reduced-motion
+     altında aşağıdaki base katman bu süreleri ~0'a indirir, çağıran ekranlar da
+     geçişi anında yapar — an sessizce atlanır. */
+
+  /* Mührü kır: balmumu iki yarıya ayrılıp savrulur (önce ufak bir "çıt" geri
+     tepmesi), yüz silinir, içeriden ışık açılır, zarf hafifçe seğirir. */
+  --animate-bn-crack-l: bn-crack-l 0.6s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+  @keyframes bn-crack-l {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    16% { transform: translate(1.5px, -1.5px) rotate(2.5deg); opacity: 1; }
+    100% { transform: translate(-16px, 12px) rotate(-22deg); opacity: 0; }
+  }
+  --animate-bn-crack-r: bn-crack-r 0.6s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+  @keyframes bn-crack-r {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    16% { transform: translate(-1.5px, -1.5px) rotate(-2.5deg); opacity: 1; }
+    100% { transform: translate(16px, 12px) rotate(22deg); opacity: 0; }
+  }
+  --animate-bn-seal-off: bn-seal-off 0.26s ease both;
+  @keyframes bn-seal-off {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.25); }
+  }
+  --animate-bn-glow: bn-glow 0.62s ease-out both;
+  @keyframes bn-glow {
+    0% { opacity: 0; transform: scale(0.35); }
+    45% { opacity: 0.85; }
+    100% { opacity: 0; transform: scale(1.9); }
+  }
+  --animate-bn-lift: bn-lift 0.6s ease both;
+  @keyframes bn-lift {
+    0% { transform: translateY(0); }
+    16% { transform: translateY(-2px); }
+    100% { transform: translateY(1.5px); }
+  }
+
+  /* Mühürle: iki yarı yanlardan gelip birleşir, mühür bir kez bastırır
+     (overshoot), halka dalgası yayılır, tik belirir. Gecikmeler Seal.tsx'te. */
+  --animate-bn-seal-in-l: bn-seal-in-l 0.44s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  @keyframes bn-seal-in-l {
+    0% { transform: translate(-26px, -16px) rotate(-26deg); opacity: 0; }
+    55% { opacity: 1; }
+    100% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  }
+  --animate-bn-seal-in-r: bn-seal-in-r 0.44s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  @keyframes bn-seal-in-r {
+    0% { transform: translate(26px, -16px) rotate(26deg); opacity: 0; }
+    55% { opacity: 1; }
+    100% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  }
+  --animate-bn-stamp: bn-stamp 0.34s cubic-bezier(0.34, 1.2, 0.5, 1) both;
+  @keyframes bn-stamp {
+    0% { transform: scale(1.16); }
+    55% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+  --animate-bn-ring: bn-ring 0.6s ease-out both;
+  @keyframes bn-ring {
+    0% { opacity: 0; transform: scale(0.55); }
+    30% { opacity: 0.65; }
+    100% { opacity: 0; transform: scale(1.75); }
+  }
+  --animate-bn-draw: bn-draw 0.3s ease both;
+  @keyframes bn-draw {
+    0% { opacity: 0; transform: scale(0.4); }
+    100% { opacity: 1; transform: scale(1); }
+  }
 }
 
 /* Muted, metin olarak iki arka planda da AA okunur kalsın diye şemaya göre ton
