@@ -1,17 +1,25 @@
+import { useEffect, useState } from 'react'
 import { useCopy } from '../lib/i18n'
+import { prefersReducedMotion } from '../lib/motion'
 import { Button } from './Button'
 import { Panel } from './Panel'
+import { Seal } from './Seal'
 
 type RevealCardProps = {
   /**
-   * "Mesajı Görüntüle" tıklandı. Güvenlik gereği içerik tıklamadan açılmaz:
-   * sohbet uygulamalarının link önizlemesi notu yakmasın.
+   * "Mührü Kır" tıklandı. Güvenlik gereği içerik tıklamadan açılmaz: sohbet
+   * uygulamalarının link önizlemesi notu yakmasın.
    */
   onReveal: () => void
   /** opening: not çekiliyor + çözülüyor */
   status: 'idle' | 'opening'
   error?: string
 }
+
+// Mührün kırılma animasyonu bitmeden ağ isteğini (ve notu yakmayı) başlatmayız,
+// yoksa hızlı/yerel sunucuda an görünmeden ekran değişir. Hareketi azalt
+// tercihinde beklemeden açarız.
+const BREAK_MS = 620
 
 function ErrorText(props: { error?: string }) {
   if (!props.error) return null
@@ -25,68 +33,51 @@ function ErrorText(props: { error?: string }) {
   )
 }
 
-/** Mühürlü zarf illüstrasyonu (dekoratif) */
-function Envelope() {
-  return (
-    <svg viewBox="0 0 220 140" fill="none" aria-hidden="true" className="block w-[180px] md:w-[220px]">
-      <rect
-        x="6"
-        y="10"
-        width="208"
-        height="124"
-        rx="14"
-        className="fill-cream stroke-ink dark:fill-night-raised dark:stroke-accent"
-        strokeWidth="3"
-      />
-      <path d="M8 22L110 86L212 22" className="stroke-ink dark:stroke-accent" strokeWidth="3" strokeLinejoin="round" />
-      <path
-        d="M8 130L86 72M212 130L134 72"
-        className="stroke-ink/30 dark:stroke-accent/40"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle cx="110" cy="86" r="22" className="fill-ink dark:fill-accent" />
-      <circle
-        cx="110"
-        cy="86"
-        r="15"
-        className="fill-none stroke-accent dark:stroke-ink"
-        strokeWidth="2"
-        strokeDasharray="3 3"
-      />
-      <path
-        d="M103 86L108 91L118 80"
-        className="stroke-accent dark:stroke-ink"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 /**
- * Figma: Mesaj Aç → note-composer -- "Mühürlü zarf": "sana özel" duygusu, mühürü kırmak = tek seferlik açmak.
+ * Figma: Mesaj Aç → note-composer -- "Mühürlü zarf": "sana özel" duygusu, mührü
+ * kırmak = tek seferlik açmak. Tıklayınca balmumu mühür iki yarıya ayrılır
+ * (Seal state="breaking"); animasyon bitince App'teki asıl açma başlar.
  */
 export function RevealCard(props: RevealCardProps) {
   const t = useCopy()
+  const [breaking, setBreaking] = useState(false)
   const opening = props.status === 'opening'
+  const busy = breaking || opening
+
+  // Açma başarısız olup bu ekranda kalındıysa (ör. ağ hatası), mühür geri
+  // toparlanır ki kullanıcı yeniden deneyebilsin.
+  useEffect(() => {
+    if (props.error) setBreaking(false)
+  }, [props.error])
+
+  const breakSeal = () => {
+    // App'teki ref koruması da çift tetiklemeyi engeller; bu yerel koruma ikinci
+    // tıkta animasyonu baştan başlatmamak için.
+    if (busy) return
+    if (prefersReducedMotion()) {
+      props.onReveal()
+      return
+    }
+    setBreaking(true)
+    window.setTimeout(props.onReveal, BREAK_MS)
+  }
+
   return (
     <Panel tone={props.error ? 'danger' : 'default'}>
       <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
-        {/* The envelope opens the note too -- same action as the button. A real
-            <button> gives keyboard access for free; the ref guard in App keeps
-            a double trigger from firing two burns. */}
+        {/* Zarf da notu açar -- butonla aynı eylem. Gerçek bir <button> klavye
+            erişimini bedavaya verir; App'teki ref koruması çift yanmayı önler.
+            Kırılırken soluklaşmasın diye disabled'da opaklık korunur. */}
         <button
           type="button"
-          onClick={props.onReveal}
-          disabled={opening}
+          onClick={breakSeal}
+          disabled={busy}
           aria-label={t.revealCard.breakSeal}
-          className="group rounded-3xl outline-none transition-transform duration-150 focus-visible:ring-4 focus-visible:ring-accent enabled:cursor-pointer enabled:hover:scale-[1.03] enabled:active:scale-[0.98] disabled:opacity-60 motion-reduce:transition-none motion-reduce:enabled:hover:scale-100"
+          className="group rounded-3xl outline-none transition-transform duration-150 focus-visible:ring-4 focus-visible:ring-accent enabled:cursor-pointer enabled:hover:scale-[1.03] enabled:active:scale-[0.98] disabled:cursor-default motion-reduce:transition-none motion-reduce:enabled:hover:scale-100"
         >
-          <Envelope />
+          <Seal state={breaking ? 'breaking' : 'idle'} className="w-[180px] md:w-[220px]" />
         </button>
-        <Button onClick={props.onReveal} loading={opening} loadingLabel={t.revealCard.breakingSeal}>
+        <Button onClick={breakSeal} loading={busy} loadingLabel={t.revealCard.breakingSeal}>
           {t.revealCard.breakSeal}
         </Button>
         <ErrorText error={props.error} />
