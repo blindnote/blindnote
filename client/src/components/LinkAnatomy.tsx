@@ -2,8 +2,8 @@ import { useCopy } from '../lib/i18n'
 import { Logo } from './Logo'
 
 /**
- * Link anatomisi · "Yırtılan bilet": büyük parça kutu numarası (sunucuda),
- * koparılan küçük parça yalnızca alıcıdaki anahtar.
+ * Link anatomy · "Torn ticket": the large piece is the box number (on the server),
+ * the small torn-off piece is the key, held only by the recipient.
  */
 export function LinkAnatomy() {
   const t = useCopy()

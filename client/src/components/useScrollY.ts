@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-/** Sayfa belirli bir eşiğin altına kaydırıldı mı? (yalnızca görünüm kararı için; durum taşımaz) */
+/** Has the page scrolled below a given threshold? (only for a view decision; holds no state) */
 export function useScrolledPast(threshold: number) {
   const [past, setPast] = useState(false)
   useEffect(() => {

@@ -11,19 +11,19 @@ import { useActiveSection } from './useActiveSection'
 import { useScrolledPast } from './useScrollY'
 
 type PageLayoutProps = {
-  /** Ekrana özel hero (ComposeScreen, LinkReadyScreen, …) */
+  /** Screen-specific hero (ComposeScreen, LinkReadyScreen, …) */
   children: ReactNode
   homeHref: string
-  /** Header'daki create butonu. Anasayfa'nın en üstünde verilmez (Figma). */
+  /** The create button in the header. Not given at the top of the home page (Figma). */
   onCreateNote?: () => void
   /**
-   * Yaz ekranı: header'daki create butonu yalnız mesaj kutusu ekrandan çıkınca görünür
-   * (Figma: Anasayfa en üstte yok, Anasayfa_Scroll'da var).
+   * Compose screen: the create button in the header appears only once the message box scrolls off screen
+   * (Figma: not at the top of Anasayfa, present in Anasayfa_Scroll).
    */
   ctaAfterScroll?: boolean
-  /** Mobilde header'daki kompakt create butonu kaydırmadan da görünsün (Yaz dışındaki tüm ekranlar) */
+  /** Show the compact create button in the header on mobile even without scrolling (all screens except Compose) */
   ctaOnMobileAlways?: boolean
-  /** Header create butonunun varyantı: anasayfada dolu (primary), diğerlerinde çerçeveli. */
+  /** The header create button's variant: filled on the home page (primary), outlined elsewhere. */
   ctaVariant?: 'primary' | 'secondary'
   menuOpen: boolean
   onMenuToggle: () => void
@@ -32,7 +32,7 @@ type PageLayoutProps = {
 /** The header's section links point at these; scroll-spy watches them in document order. */
 const SECTION_IDS = ['nedir', 'sifreleme', 'sss'] as const
 
-/** Tüm ekranlarda ortak iskelet: header → hero → 3 bilgi bölümü → footer (Figma'daki 5 ekranın hepsi). */
+/** The common skeleton for all screens: header → hero → 3 info sections → footer (all 5 Figma screens). */
 export function PageLayout(props: PageLayoutProps) {
   const t = useCopy()
   const scrolled = useScrolledPast(8)

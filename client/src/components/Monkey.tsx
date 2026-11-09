@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
 /*
- * Üç maymun illüstrasyonu (gözler / kulaklar / ağız) — Figma'daki maymunların yeniden çizilmiş, temizlenmiş hâli.
- * Oranlar Figma ile aynı (90×76, 106×69, 80×88), bu yüzden yerleşim ölçüleri değişmedi.
- * Renkler illüstrasyona ait sabit palet (kürk #7A573F, yüz #FABE82, kontur #4F2000); temayla değişmez.
+ * Three monkey illustrations (eyes / ears / mouth) — a redrawn, cleaned-up version of the monkeys in Figma.
+ * The proportions are the same as Figma (90×76, 106×69, 80×88), so the layout dimensions did not change.
+ * Colors are a fixed palette belonging to the illustration (fur #7A573F, face #FABE82, outline #4F2000); they do not change with the theme.
  */
 const MONKEY_POSES = {
   eyes: {
@@ -207,13 +207,13 @@ const MONKEY_POSES = {
 export type MonkeyPose = keyof typeof MONKEY_POSES
 
 type MonkeyProps = {
-  /** eyes: gözlerini kapatan (Yaz, hero), ears: kulaklarını kapatan (Bağlantı, Mesaj Açıldı), mouth: ağzını kapatan (Paylaş, Bulunamadı) */
+  /** eyes: covering its eyes (Compose, hero), ears: covering its ears (Link, Message Opened), mouth: covering its mouth (Share, Not Found) */
   pose: MonkeyPose
-  /** Boyut için Tailwind sınıfları, ör. "w-[90px]". Yükseklik oranla gelir. */
+  /** Tailwind classes for size, e.g. "w-[90px]". Height follows from the ratio. */
   className?: string
 }
 
-/** Dekoratif maymun illüstrasyonu. Ekran okuyuculardan gizlidir. */
+/** Decorative monkey illustration. Hidden from screen readers. */
 export function Monkey(props: MonkeyProps) {
   const pose = MONKEY_POSES[props.pose]
   return (

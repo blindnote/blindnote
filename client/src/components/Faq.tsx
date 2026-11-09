@@ -3,9 +3,9 @@ import { Logo } from './Logo'
 import { Monkey } from './Monkey'
 
 /**
- * Figma: faq -- iki sütun: solda sabit başlık ve kısa giriş, sağda soru-cevap listesi.
- * Cevaplar açık (akordiyon yok): "hiçbir şey saklamayız" duruşuna uygun, dürüstlük
- * cevapları da dahil göz gezdirince okunur.
+ * Figma: faq -- two columns: a fixed heading and short intro on the left, the question-answer list on the right.
+ * The answers are open (no accordion): fitting the "we hide nothing" stance, so the honesty of
+ * the answers too is readable at a glance.
  */
 export function Faq() {
   const t = useCopy()

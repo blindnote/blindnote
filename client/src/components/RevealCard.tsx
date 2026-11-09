@@ -7,18 +7,18 @@ import { Seal } from './Seal'
 
 type RevealCardProps = {
   /**
-   * "Mührü Kır" tıklandı. Güvenlik gereği içerik tıklamadan açılmaz: sohbet
-   * uygulamalarının link önizlemesi notu yakmasın.
+   * "Break the seal" was clicked. For security the content never opens without a
+   * click, so that chat apps' link previews cannot burn the note.
    */
   onReveal: () => void
-  /** opening: not çekiliyor + çözülüyor */
+  /** opening: the note is being fetched + decrypted */
   status: 'idle' | 'opening'
   error?: string
 }
 
-// Mührün kırılma animasyonu bitmeden ağ isteğini (ve notu yakmayı) başlatmayız,
-// yoksa hızlı/yerel sunucuda an görünmeden ekran değişir. Hareketi azalt
-// tercihinde beklemeden açarız.
+// We do not start the network request (and the burn) before the break animation
+// finishes, or on a fast/local server the screen would change before the moment
+// is seen. Under reduced motion we open without waiting.
 const BREAK_MS = 620
 
 function ErrorText(props: { error?: string }) {
@@ -34,9 +34,10 @@ function ErrorText(props: { error?: string }) {
 }
 
 /**
- * Figma: Mesaj Aç → note-composer -- "Mühürlü zarf": "sana özel" duygusu, mührü
- * kırmak = tek seferlik açmak. Tıklayınca balmumu mühür iki yarıya ayrılır
- * (Seal state="breaking"); animasyon bitince App'teki asıl açma başlar.
+ * Figma: Open Message → note-composer -- "Sealed envelope": a "just for you"
+ * feeling, where breaking the seal = the one-time open. On click the wax seal
+ * splits into two halves (Seal state="breaking"); when the animation ends the
+ * real open in App begins.
  */
 export function RevealCard(props: RevealCardProps) {
   const t = useCopy()
@@ -44,15 +45,15 @@ export function RevealCard(props: RevealCardProps) {
   const opening = props.status === 'opening'
   const busy = breaking || opening
 
-  // Açma başarısız olup bu ekranda kalındıysa (ör. ağ hatası), mühür geri
-  // toparlanır ki kullanıcı yeniden deneyebilsin.
+  // If the open failed and we stayed on this screen (e.g. a network error), the
+  // seal reassembles so the user can try again.
   useEffect(() => {
     if (props.error) setBreaking(false)
   }, [props.error])
 
   const breakSeal = () => {
-    // App'teki ref koruması da çift tetiklemeyi engeller; bu yerel koruma ikinci
-    // tıkta animasyonu baştan başlatmamak için.
+    // The ref guard in App also prevents a double trigger; this local guard is to
+    // avoid restarting the animation on a second click.
     if (busy) return
     if (prefersReducedMotion()) {
       props.onReveal()
@@ -65,9 +66,9 @@ export function RevealCard(props: RevealCardProps) {
   return (
     <Panel tone={props.error ? 'danger' : 'default'}>
       <div className="flex flex-col items-center gap-3 py-4 md:gap-4 md:py-2">
-        {/* Zarf da notu açar -- butonla aynı eylem. Gerçek bir <button> klavye
-            erişimini bedavaya verir; App'teki ref koruması çift yanmayı önler.
-            Kırılırken soluklaşmasın diye disabled'da opaklık korunur. */}
+        {/* The envelope opens the note too -- the same action as the button. A real
+            <button> gives keyboard access for free; the ref guard in App prevents a
+            double burn. Opacity is kept while disabled so it does not fade when breaking. */}
         <button
           type="button"
           onClick={breakSeal}

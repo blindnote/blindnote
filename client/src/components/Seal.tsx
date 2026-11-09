@@ -2,22 +2,23 @@ import { useId } from 'react'
 import { cx } from './cx'
 
 /**
- * idle: dingin, mühürlü zarf.
- * sealing: iki balmumu yarısı yanlardan gelip birleşir, mühür bir kez bastırır,
- *   halka dalgası yayılır, tik belirir (not oluşturulduktan sonra).
- * breaking: mühür iki yarıya ayrılıp savrulur, yüz silinir, içeriden yumuşak bir
- *   ışık açılır, zarf hafifçe seğirir (okuma anı).
+ * idle: a calm, sealed envelope.
+ * sealing: the two wax halves come in from the sides and meet, the seal presses
+ *   down once, a ring ripples out, the check appears (after a note is created).
+ * breaking: the seal splits into two halves and flings apart, the face wipes
+ *   away, a soft light opens from within, the envelope twitches (the read moment).
  */
 type SealState = 'idle' | 'sealing' | 'breaking'
 
 /**
- * Mühürlü zarf illüstrasyonu (dekoratif) -- Oku ekranındaki kart ve oluşturma
- * sonrası mühürleme anı aynı çizimi paylaşır: mühür basılır, sonra kırılır.
+ * The sealed-envelope illustration (decorative) -- the card on the read screen
+ * and the sealing moment after creation share one drawing: the seal is pressed,
+ * then broken.
  *
- * Animasyonların tümü SVG grupları üzerinde döner; her hareketli eleman
- * `transform-box: fill-box` taşır ki ölçek/döndürme kendi kutusuna göre olsun.
- * Hareketi azalt tercihinde `app.css` süreleri ~0'a indirir ve çağıran ekranlar
- * geçişi anında yapar, böylece bu anlar sessizce atlanır.
+ * Every animation runs on SVG groups; each moving element carries
+ * `transform-box: fill-box` so scaling/rotation is relative to its own box.
+ * Under reduced motion `app.css` collapses the durations to ~0 and the calling
+ * screens make the transition instant, so these moments are silently skipped.
  */
 export function Seal(props: { state: SealState; className?: string }) {
   const id = useId()
@@ -25,7 +26,7 @@ export function Seal(props: { state: SealState; className?: string }) {
   const breaking = props.state === 'breaking'
   const sealing = props.state === 'sealing'
 
-  // Her hareketli elemanda: dönüşümler elemanın kendi kutusuna ve merkezine göre.
+  // On every moving element: transforms are relative to the element's own box and center.
   const box = '[transform-box:fill-box] [transform-origin:center]'
 
   return (
@@ -37,7 +38,7 @@ export function Seal(props: { state: SealState; className?: string }) {
         </radialGradient>
       </defs>
 
-      {/* Zarf gövdesi, kapak ve iç gölge (dingin; kırılırken hafif seğirir). */}
+      {/* Envelope body, flap and inner shadow (calm; twitches slightly while breaking). */}
       <g className={cx(box, breaking && 'animate-bn-lift')}>
         <rect
           x="6"
@@ -62,7 +63,7 @@ export function Seal(props: { state: SealState; className?: string }) {
         />
       </g>
 
-      {/* İçeriden açılan ışık (yalnız kırılırken görünür). */}
+      {/* Light opening from within (only visible while breaking). */}
       <circle
         cx="110"
         cy="86"
@@ -71,7 +72,7 @@ export function Seal(props: { state: SealState; className?: string }) {
         className={cx(box, 'opacity-0', breaking && 'animate-bn-glow')}
       />
 
-      {/* Mühürlemede baskı anında yayılan halka dalgası. */}
+      {/* Ring ripple that spreads at the moment of pressing, while sealing. */}
       {sealing && (
         <circle
           cx="110"
@@ -84,7 +85,7 @@ export function Seal(props: { state: SealState; className?: string }) {
         />
       )}
 
-      {/* Balmumu mühür: iki yarı (birlikte tam daire) + yüz (kesik halka + tik). */}
+      {/* Wax seal: two halves (a full circle together) + face (dashed ring + check). */}
       <g className={cx(box, sealing && 'animate-bn-stamp')} style={sealing ? { animationDelay: '0.3s' } : undefined}>
         <path
           d="M110 64 A22 22 0 0 0 110 108 Z"

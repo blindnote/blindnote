@@ -5,24 +5,24 @@ import { Hero } from './Hero'
 import { Panel } from './Panel'
 import { Seal } from './Seal'
 
-// Mühürleme animasyonunun toplam süresi (yarıların birleşmesi + baskı + tik).
-// Seal.tsx'teki gecikmelerle (0.3-0.36s) uyumlu; bu süre dolunca bağlantı gösterilir.
+// Total duration of the sealing animation (halves meeting + press + check).
+// Matches the delays in Seal.tsx (0.3-0.36s); when it elapses, the link is shown.
 const SEAL_MS = 900
 
 type SealingScreenProps = {
-  /** Not zaten oluşturuldu; mühürleme anı bitince bağlantı ekranına geç. */
+  /** The note is already created; move to the link screen once the sealing moment ends. */
   onDone: () => void
 }
 
 /**
- * Ekran (a→b arası) Mühürleme -- Figma'da yok (türetildi). Not oluşturulduktan
- * sonra, bağlantı gösterilmeden önceki kısa an: balmumu mühür basılır. Yalnızca
- * görseldir; not çoktan sunucuda, bu bekleme güvenliği etkilemez. Hareketi azalt
- * tercihinde an atlanır ve bağlantı anında gelir.
+ * Screen (between a and b) Sealing -- not in Figma (derived). The short moment
+ * after a note is created and before the link is shown: the wax seal is pressed.
+ * Purely visual; the note is already on the server, so this wait does not affect
+ * security. Under reduced motion the moment is skipped and the link appears at once.
  */
 export function SealingScreen(props: SealingScreenProps) {
   const t = useCopy()
-  // onDone her render'da yeni kapanış olabilir; süreci bir kez kurup ref'ten çağır.
+  // onDone may be a fresh closure on every render; arm the timer once and call it through the ref.
   const onDone = useRef(props.onDone)
   onDone.current = props.onDone
 

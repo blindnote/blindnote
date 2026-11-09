@@ -7,22 +7,22 @@ import { Tagline } from './Tagline'
 type NoteComposerProps = {
   value: string
   onChange: (value: string) => void
-  /** Form gönderildi (Enter değil, buton ya da Ctrl/Cmd+Enter). Şifreleme/ağ işi çağıranda. */
+  /** The form was submitted (not Enter, but the button or Ctrl/Cmd+Enter). Encryption/network work is in the caller. */
   onSubmit: () => void
-  /** submitting: şifreleme + yükleme sürüyor */
+  /** submitting: encryption + upload is in progress */
   status: 'idle' | 'submitting'
-  /** Gösterilecek hata metni (boş mesaj, ağ hatası vb.). Metni çağıran belirler. */
+  /** Error text to show (empty message, network error, etc.). The caller sets the text. */
   error?: string
-  /** Gönder butonunu kapatmak için. Boş metinde buton açık kalır; basılınca uyarı çıkar. */
+  /** To disable the submit button. On empty text the button stays enabled; pressing it shows a warning. */
   canSubmit?: boolean
-  /** Boş gönderimde gösterilecek uyarı */
+  /** Warning shown on an empty submission */
   emptyMessage?: string
   maxLength?: number
 }
 
 /**
- * Figma: note-composer (Anasayfa). Masaüstünde buton kutunun içinde sağ altta,
- * mobilde kutunun altında tam genişlikte.
+ * Figma: note-composer (home page). On desktop the button sits inside the box at the bottom right,
+ * on mobile it is full width below the box.
  */
 export function NoteComposer(props: NoteComposerProps) {
   const t = useCopy()
@@ -32,9 +32,9 @@ export function NoteComposer(props: NoteComposerProps) {
   const canSubmit = props.canSubmit ?? true
   const isEmpty = props.value.trim().length === 0
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  // Boş gönderim uyarısı (Figma'da yok — türetildi). Yazmaya başlayınca kaybolur.
+  // Empty-submission warning (not in Figma — derived). It disappears once typing starts.
   const [emptyTried, setEmptyTried] = useState(false)
-  // Her başarısız denemede balon yeniden "patlar" (key ile yeniden çizilir)
+  // On every failed attempt the bubble "pops" again (redrawn via key)
   const [attempt, setAttempt] = useState(0)
   const showEmpty = emptyTried && isEmpty
   const error = props.error ?? (showEmpty ? (props.emptyMessage ?? t.composer.empty) : undefined)
@@ -72,8 +72,8 @@ export function NoteComposer(props: NoteComposerProps) {
       className="relative w-full"
     >
       {/*
-        Hata: klasik kırmızı satır yerine, kartın arkasından bakan maymunun konuşma balonu
-        (Figma'da yok — türetildi). Ekran okuyucular role="alert" ile duyar.
+        Error: instead of the classic red line, the speech bubble of the monkey peeking
+        from behind the card (not in Figma — derived). Screen readers announce it via role="alert".
       */}
       {error && (
         <p

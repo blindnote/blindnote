@@ -7,14 +7,14 @@ type StepCardProps = {
   text: string
 }
 
-/** Kartın üst kenarına binme miktarı (ağzını kapatan maymunun elleri görünsün diye Figma'dakinden az) */
+/** How much it overlaps the card's top edge (less than Figma's, so the hands of the mouth-covering monkey stay visible) */
 const OVERLAP: Record<MonkeyPose, string> = {
   eyes: '-mb-1.5 md:-mb-[7px] w-14 md:w-20',
   ears: '-mb-1.5 md:-mb-[9px] w-[72px] md:w-[106px]',
   mouth: '-mb-3.5 md:-mb-5 w-14 md:w-20',
 }
 
-/** Figma: step-card (+ üstünden bakan maymun). Maymun kartın arkasında kalır. */
+/** Figma: step-card (+ the monkey peeking over it). The monkey stays behind the card. */
 export function StepCard(props: StepCardProps) {
   return (
     <li className="isolate flex w-full max-w-[343px] flex-col items-center md:max-w-[560px] lg:max-w-none">

@@ -7,7 +7,7 @@ type NoteNotFoundScreenProps = {
   onCreate: () => void
 }
 
-/** Ekran (d) Yandı / bulunamadı -- "Puf!": büyük oyunbaz tipografi, maymun dumanın içinden bakar. */
+/** Screen (d) Burned / not found -- "Poof!": large playful typography, the monkey peeks through the smoke. */
 export function NoteNotFoundScreen(props: NoteNotFoundScreenProps) {
   const t = useCopy()
   const look = useContext(NotFoundCtaContext)

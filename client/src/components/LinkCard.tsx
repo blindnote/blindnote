@@ -4,13 +4,13 @@ import { Icon } from './Icon'
 import { Panel } from './Panel'
 
 type LinkCardProps = {
-  /** Oluşturulan tek kullanımlık bağlantı (anahtar # sonrasında, sunucuya gitmez) */
+  /** The generated one-time link (the key is after the #, never sent to the server) */
   url: string
-  /** Kopyala butonuna basıldı. Panoya yazma işi çağıranda. */
+  /** The copy button was pressed. Writing to the clipboard is the caller's job. */
   onCopy: () => void
-  /** Kopyalandı geri bildirimi. Ekrandan ayrılana kadar açık kalması önerilir. */
+  /** The "copied" feedback. It is recommended to keep it on until the screen is left. */
   copied: boolean
-  /** Panoya yazılamadıysa gösterilecek metin */
+  /** Text to show if writing to the clipboard failed */
   copyError?: string
 }
 
@@ -44,9 +44,9 @@ function splitNoteUrl(url: string): { prefix: string; id: string; key: string } 
 }
 
 /**
- * Figma: Bağlantı Oluşturuldu → note-composer. Linkin TAMAMI görünür (kısaltma yok);
- * anahtar parçası vurgulanır -- asıl değerli kısım o. Kopyala her hâlükârda tüm URL'yi
- * (props.url) yazar; segmentlere ayırmak yalnızca görsel, select-all yine tam URL'yi verir.
+ * Figma: Link Ready → note-composer. The WHOLE link is shown (no truncation);
+ * the key part is highlighted -- that is the truly valuable part. Copy writes the whole URL
+ * (props.url) in any case; splitting into segments is purely visual, select-all still gives the full URL.
  */
 export function LinkCard(props: LinkCardProps) {
   const t = useCopy()

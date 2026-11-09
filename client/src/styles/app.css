@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Fonts: self-hosted woff2 (public/fonts). Google Fonts CDN bilerek kullanılmıyor:
-   gizlilik odaklı üründe ziyaretçiyi üçüncü tarafa bildirmemek için.
+   Fonts: self-hosted woff2 (public/fonts). The Google Fonts CDN is deliberately
+   not used: in a privacy-focused product, to not announce the visitor to a third party.
    Turkish glyphs (ğ ş ı İ) live in latin-ext, so both subsets are declared.
 --------------------------------------------------------------------------- */
 @font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/baloo-2-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
@@ -18,12 +18,12 @@
 @font-face { font-family: "Raleway"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/raleway-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 @font-face { font-family: "Raleway"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/raleway-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 
-/* Karanlık mod AÇIK: varsayılan olarak sistem tercihi (prefers-color-scheme)
-   izlenir -- JS gerekmez, ilk boyamada doğru tema gelir. <html data-theme="dark">
-   ya da data-theme="light" sistemi geçersiz kılar (footer'daki tema düğmesi ve
-   index.html'deki bootstrap script'i bunu ayarlar).
-   Böylece dark: sınıfları iki durumda tetiklenir: (1) açıkça data-theme="dark",
-   (2) sistem karanlık VE data-theme="light" değil. */
+/* Dark mode ON: by default the system preference (prefers-color-scheme) is
+   followed -- no JS needed, the right theme arrives on first paint. <html data-theme="dark">
+   or data-theme="light" overrides the system (the theme toggle in the footer and
+   the bootstrap script in index.html set this).
+   So dark: classes trigger in two cases: (1) explicitly data-theme="dark",
+   (2) the system is dark AND data-theme is not "light". */
 @custom-variant dark {
   &:where([data-theme="dark"], [data-theme="dark"] *) {
     @slot;
@@ -36,65 +36,66 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Tasarım değişkenleri (Figma "Blindnote" bölümünden okundu)
-   Açık tema = Figma değerleri. Karanlık tema = önerilen palet (Figma'da yok).
+   Design variables (read from the Figma "Blindnote" section)
+   Light theme = Figma values. Dark theme = suggested palette (not in Figma).
 --------------------------------------------------------------------------- */
 @theme {
-  /* Yazı tipleri */
+  /* Typefaces */
   --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
   --font-sans: "Raleway", ui-sans-serif, system-ui, sans-serif;
 
-  /* Renkler — açık tema (Figma) */
-  --color-ink: #4f2000;          /* başlık, ana buton, footer, ana metin */
-  --color-ink-strong: #3f2c22;   /* Neutral/900 — not içeriği, link metni, menü */
-  --color-fur: #7a573f;          /* maymun kürkü, ikincil kahve */
-  --color-muted: #8f6650;        /* AA-tuned (eski #b0846d 3.3:1 idi; şimdi beyaz/krem üzerinde ~5:1). Placeholder, caption, link anatomisi. Karanlıkta aşağıda #a98d79'a çevrilir. */
-  --color-accent: #fabe82;       /* turuncu vurgu (kart zemini %5, kenar %40) */
-  --color-cream: #fef8f2;        /* krem bölüm zemini */
+  /* Colors — light theme (Figma) */
+  --color-ink: #4f2000;          /* heading, main button, footer, body text */
+  --color-ink-strong: #3f2c22;   /* Neutral/900 — note content, link text, menu */
+  --color-fur: #7a573f;          /* monkey fur, secondary brown */
+  --color-muted: #8f6650;        /* AA-tuned (was #b0846d 3.3:1; now ~5:1 on white/cream). Placeholder, caption, link anatomy. Turned to #a98d79 in the dark below. */
+  --color-accent: #fabe82;       /* orange accent (card background 5%, border 40%) */
+  --color-cream: #fef8f2;        /* cream section background */
   --color-page: #ffffff;         /* Base/White */
-  --color-blush: #f3cbbd;        /* hero arka planındaki sıcak şeftali parıltısı (eski candy-pembe #ffd7e9 paletten değildi) */
+  --color-blush: #f3cbbd;        /* the warm peach glow in the hero background (the old candy-pink #ffd7e9 was not from the palette) */
 
-  /* Renkler — karanlık tema (öneri) */
-  --color-night: #1a120d;        /* sayfa zemini */
-  --color-night-raised: #241912; /* krem bölümün karşılığı */
-  --color-night-card: #2e2018;   /* kart / composer zemini */
-  --color-night-line: #3f2c22;   /* kenarlık */
+  /* Colors — dark theme (suggested) */
+  --color-night: #1a120d;        /* page background */
+  --color-night-raised: #241912; /* the counterpart of the cream section */
+  --color-night-card: #2e2018;   /* card / composer background */
+  --color-night-line: #3f2c22;   /* border */
   --color-night-footer: #120c08; /* footer */
-  --color-sand: #fef8f2;         /* başlık metni */
-  --color-sand-muted: #d9c2b0;   /* gövde metni */
+  --color-sand: #fef8f2;         /* heading text */
+  --color-sand-muted: #d9c2b0;   /* body text */
 
-  /* Durum renkleri (Figma'da yok — türetildi) */
+  /* Status colors (not in Figma — derived) */
   --color-danger: #b42318;
   --color-danger-soft: #fef3f2;
   --color-danger-dark: #fda29b;
-  --color-ink-hover: #6b2c00;    /* ana buton hover */
-  --color-accent-hover: #fcd0a3; /* karanlık mod ana buton hover */
+  --color-ink-hover: #6b2c00;    /* main button hover */
+  --color-accent-hover: #fcd0a3; /* dark mode main button hover */
 
-  /* Köşe yarıçapları */
-  --radius-card: 2rem;   /* 32 — composer dış kabı, adım kartı, SSS satırı */
-  --radius-inner: 1.5rem;/* 24 — composer iç kutusu */
-  --radius-button: 1.25rem; /* 20 — buton, link anatomisi */
+  /* Corner radii */
+  --radius-card: 2rem;   /* 32 — composer outer shell, step card, FAQ row */
+  --radius-inner: 1.5rem;/* 24 — composer inner box */
+  --radius-button: 1.25rem; /* 20 — button, link anatomy */
 
-  /* Gölgeler */
+  /* Shadows */
   --shadow-composer: 0 4px 5px 0 rgb(16 24 40 / 0.10);
   --shadow-step: 0 3px 1px 0 rgb(250 190 130 / 0.04), 0 3px 8px 0 rgb(250 190 130 / 0.12);
   --shadow-link: 0 3px 1px 0 rgb(0 0 0 / 0.04);
 
-  /* Hareket (Figma'da yok — türetildi): maymunun konuşma balonu */
+  /* Motion (not in Figma — derived): the monkey's speech bubble */
   --animate-bn-pop: bn-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
   @keyframes bn-pop {
     from { opacity: 0; transform: translateY(6px) scale(0.9); }
     to { opacity: 1; transform: none; }
   }
 
-  /* Mühür (Figma'da yok — türetildi): okuma ekranında mührü kırma ve oluşturma
-     sonrası mühürleme anları. Hepsi SVG grupları üzerinde döner (bkz. Seal.tsx);
-     hareketli eleman transform-box: fill-box taşır. prefers-reduced-motion
-     altında aşağıdaki base katman bu süreleri ~0'a indirir, çağıran ekranlar da
-     geçişi anında yapar — an sessizce atlanır. */
+  /* Seal (not in Figma — derived): the break-the-seal moment on the read screen
+     and the sealing moment after creation. All run on SVG groups (see Seal.tsx);
+     a moving element carries transform-box: fill-box. Under prefers-reduced-motion
+     the base layer below collapses these durations to ~0, and the calling screens
+     make the transition instant — the moment is silently skipped. */
 
-  /* Mührü kır: balmumu iki yarıya ayrılıp savrulur (önce ufak bir "çıt" geri
-     tepmesi), yüz silinir, içeriden ışık açılır, zarf hafifçe seğirir. */
+  /* Break the seal: the wax splits into two halves and flings apart (first a
+     small "click" recoil), the face wipes away, light opens from within, the
+     envelope twitches slightly. */
   --animate-bn-crack-l: bn-crack-l 0.6s cubic-bezier(0.3, 0.6, 0.2, 1) both;
   @keyframes bn-crack-l {
     0% { transform: translate(0, 0) rotate(0); opacity: 1; }
@@ -125,8 +126,8 @@
     100% { transform: translateY(1.5px); }
   }
 
-  /* Mühürle: iki yarı yanlardan gelip birleşir, mühür bir kez bastırır
-     (overshoot), halka dalgası yayılır, tik belirir. Gecikmeler Seal.tsx'te. */
+  /* Seal: the two halves come in from the sides and meet, the seal presses once
+     (overshoot), a ring ripples out, the check appears. Delays are in Seal.tsx. */
   --animate-bn-seal-in-l: bn-seal-in-l 0.44s cubic-bezier(0.3, 0.7, 0.3, 1) both;
   @keyframes bn-seal-in-l {
     0% { transform: translate(-26px, -16px) rotate(-26deg); opacity: 0; }
@@ -158,10 +159,10 @@
   }
 }
 
-/* Muted, metin olarak iki arka planda da AA okunur kalsın diye şemaya göre ton
-   değiştirir: açıkta koyu kahve (@theme'de), karanlıkta soluk kum. Her kullanıma
-   dark: eklemek yerine token'ı şema bazında override ederek -- böylece text-muted,
-   placeholder:text-muted vb. kendiliğinden döner. */
+/* Muted changes tone per scheme so that, as text, it stays AA-readable on both
+   backgrounds: dark brown in light (in @theme), pale sand in dark. By overriding
+   the token per scheme instead of adding dark: to every use -- so text-muted,
+   placeholder:text-muted etc. turn over on their own. */
 :root[data-theme="dark"] {
   --color-muted: #a98d79;
 }
@@ -179,17 +180,17 @@
     @apply bg-page font-sans text-ink antialiased dark:bg-night dark:text-sand-muted;
   }
 
-  /* Seçili metin (özellikle görüntülenen not ve kopyalanan link) iki temada da
-     okunur kalsın: şeftali zemin + koyu ink metin (ink/accent ~8.3:1). Metin
-     rengini set etmek şart -- karanlıkta açık metin peach üstünde düşük zıtlık
-     verirdi. */
+  /* Selected text (especially the revealed note and the copied link) stays
+     readable in both themes: peach background + dark ink text (ink/accent ~8.3:1).
+     Setting the text color is required -- in dark, light text on peach would give
+     low contrast. */
   ::selection {
     background-color: var(--color-accent);
     color: var(--color-ink);
   }
 
-  /* Hareketi azalt: kullanıcı prefers-reduced-motion derse animasyon (maymunun
-     bn-pop balonu dâhil), geçişler ve yumuşak kaydırma pratikte durur. */
+  /* Reduce motion: if the user says prefers-reduced-motion, animation (including
+     the monkey's bn-pop bubble), transitions and smooth scrolling effectively stop. */
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,

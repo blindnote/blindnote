@@ -1,4 +1,4 @@
-/* Logodaki maymun işareti — Figma logosundan; marka işareti olduğu için illüstrasyon setinden ayrı tutulur. */
+/* The monkey mark in the logo — from the Figma logo; kept separate from the illustration set because it is a brand mark. */
 const LOGO_MONKEY: ReadonlyArray<readonly [string, string]> = [
   [
     'M54.2 58.6H35.3C35.8 59.2 36.5 68.1 44.3 68.1C53.1 68.1 53.9 59.1 54.2 58.6H54.2ZM45.0 0.6C55.8 0.6 65.5 4.7 72.3 11.7C75.7 11.2 82.6 11.0 86.5 18.2C91.0 26.7 88.7 35.4 82.6 39.7C81.5 59.9 65.1 75.9 45.0 75.9C25.0 75.9 8.4 59.6 7.4 39.2C1.6 35.7 -1.5 26.3 2.7 17.9C6.9 9.7 15.1 10.5 18.3 11.1C25.1 4.5 34.6 0.6 45.0 0.6Z',
@@ -50,16 +50,16 @@ const LOGO_MONKEY: ReadonlyArray<readonly [string, string]> = [
   ],
 ]
 
-/* "BlindNote" yazısı — Figma logosundan dışa aktarıldı. Renk currentColor'dan gelir. */
+/* The "BlindNote" wordmark — exported from the Figma logo. Color comes from currentColor. */
 const WORDMARK =
   'M138.6 12.3H134.2C134.3 11.5 134.9 10.5 136.4 10.5C138.0 10.5 138.5 11.6 138.6 12.3H138.6ZM136.5 19.2C138.2 19.2 140.0 18.7 141.1 17.8L139.6 15.6C139.0 16.2 137.7 16.5 136.9 16.5C135.3 16.5 134.4 15.6 134.2 14.6H142V13.8C142 10.1 139.6 7.8 136.4 7.8C133.0 7.8 130.6 10.3 130.6 13.5C130.6 17.0 133.2 19.2 136.5 19.2V19.2ZM127.3 19.2C128.6 19.2 129.5 18.9 129.9 18.5L129.2 15.9C129.1 16.0 128.7 16.1 128.3 16.1C127.7 16.1 127.4 15.7 127.4 15.0V11.1H129.6V8.0H127.4V5.1H123.9V8.0H122.1V11.1H123.9V16.0C123.9 18.1 125.1 19.2 127.3 19.2H127.3ZM115.4 16.1C113.9 16.1 113.1 14.9 113.1 13.5C113.1 12.0 113.9 10.8 115.4 10.8C116.9 10.8 117.8 12.0 117.8 13.5C117.8 14.9 117.0 16.1 115.4 16.1ZM115.4 19.2C119.2 19.2 121.4 16.5 121.4 13.5C121.4 10.4 119.2 7.8 115.4 7.8C111.7 7.8 109.5 10.4 109.5 13.5C109.5 16.5 111.7 19.2 115.4 19.2ZM107.6 18.9V3.9H103.7V12.2L97.6 3.9H93.6V18.9H97.5V10.2L103.9 18.9H107.6ZM85.4 16.1C84.1 16.1 83.1 15.1 83.1 13.5C83.1 11.8 84.1 10.8 85.4 10.8C86.2 10.8 87.1 11.2 87.5 11.8V15.1C87.1 15.7 86.2 16.1 85.4 16.1ZM91.0 18.9V3.9H87.5V9.3C86.7 8.2 85.5 7.8 84.3 7.8C81.6 7.8 79.5 9.9 79.5 13.5C79.5 17.0 81.6 19.2 84.3 19.2C85.5 19.2 86.6 18.7 87.5 17.7V18.9H91.0V18.9ZM77.7 18.9V11.2C77.7 9.2 76.6 7.8 74.1 7.8C72.3 7.8 71.0 8.6 70.3 9.4V8.0H66.9V18.9H70.3V11.9C70.7 11.4 71.4 10.8 72.4 10.8C73.5 10.8 74.2 11.3 74.2 12.6V18.9H77.7V18.9ZM64.3 18.9V8.0H60.9V18.9H64.3ZM62.6 7.1C63.7 7.1 64.6 6.2 64.6 5.1C64.6 4.0 63.7 3.1 62.6 3.1C61.5 3.1 60.6 4.0 60.6 5.1C60.6 6.2 61.5 7.1 62.6 7.1ZM58.3 18.9V3.9H54.9V18.9H58.3ZM47.4 15.7H43.5V13.0H47.4C48.4 13.0 48.9 13.6 48.9 14.3C48.9 15.1 48.3 15.7 47.4 15.7V15.7ZM47.3 9.7H43.5V7.2H47.3C48.1 7.2 48.6 7.7 48.6 8.4C48.6 9.1 48.1 9.7 47.3 9.7V9.7ZM48.4 18.9C51.4 18.9 52.8 17.0 52.8 14.8C52.8 13.0 51.6 11.4 50.0 11.2C51.4 10.9 52.5 9.6 52.5 7.7C52.5 5.9 51.1 3.9 48.1 3.9H39.6V18.9H48.4Z'
 
 type LogoProps = {
-  /** full: maymun + yazı (header, footer). wordmark: yalnız yazı (bölüm üst başlığı). */
+  /** full: monkey + wordmark (header, footer). wordmark: text only (section heading). */
   variant?: 'full' | 'wordmark'
-  /** Boyut ve renk için Tailwind sınıfları, ör. "h-[22px] text-ink". */
+  /** Tailwind classes for size and color, e.g. "h-[22px] text-ink". */
   className?: string
-  /** Logo bir bağlantının içindeyse erişilebilir ad orada verilir; burada verilirse role="img" olur. */
+  /** If the logo is inside a link, the accessible name is given there; if given here it becomes role="img". */
   label?: string
 }
 

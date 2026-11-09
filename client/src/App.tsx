@@ -76,7 +76,7 @@ function messageFor(error: unknown, errors: Strings['errors']): string {
 
 export function App() {
   // Read once, on the first render. The fragment is deliberately not watched:
-  // clicking "Sıkça Sorulan Sorular" replaces it, and that must not throw away
+  // clicking a nav anchor (e.g. the FAQ link) replaces it, and that must not throw away
   // a note the reader has not opened yet.
   const t = useCopy()
 

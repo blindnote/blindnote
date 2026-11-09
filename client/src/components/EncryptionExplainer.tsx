@@ -2,7 +2,7 @@ import { useCopy } from '../lib/i18n'
 import { LinkAnatomy } from './LinkAnatomy'
 import { SectionHeading } from './SectionHeading'
 
-/** Figma: encryption-explainer — krem zemin, açıklama + bağlantı anatomisi. Statik içerik. */
+/** Figma: encryption-explainer — cream background, explanation + link anatomy. Static content. */
 export function EncryptionExplainer() {
   const t = useCopy()
   return (
@@ -11,7 +11,7 @@ export function EncryptionExplainer() {
       aria-labelledby="sifreleme-baslik"
       className="relative scroll-mt-20 bg-cream py-14 md:py-24 dark:bg-night-raised"
     >
-      {/* Figma "section-fade": üst ve alt kenarda beyaza yumuşak geçiş */}
+      {/* Figma "section-fade": a soft fade to white at the top and bottom edges */}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-[13px] bg-gradient-to-b from-page to-transparent md:h-12 dark:from-night"
