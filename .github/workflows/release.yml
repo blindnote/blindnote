@@ -8,11 +8,13 @@
 name: release
 
 on:
-  push:
-    tags:
-      - 'v*'
-  # Dispatched by autotag.yml on a freshly created tag so a merge to master
-  # deploys. Running on the tag ref keeps the cosign identity tag-pinned.
+  # Publishing a GitHub Release is the deliberate deploy gate. The event runs on
+  # the release's tag ref (refs/tags/vX), so cosign still signs as
+  # release.yml@refs/tags/vX -- the identity the server's verify policy pins
+  # (CLAUDE.md section 9) is unchanged. A bare tag push no longer deploys.
+  release:
+    types: [published]
+  # Manual re-run from a tag ref, for testing the pipeline.
   workflow_dispatch:
 
 permissions:
