@@ -1,4 +1,25 @@
-# BlindNote
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.png">
+  <img src="docs/logo-light.png" alt="BlindNote" width="104">
+</picture>
+
+<h1>BlindNote</h1>
+
+<strong>One-time-read, end-to-end encrypted, self-destructing notes — that you can actually verify.</strong>
+
+<p>
+  <a href="https://blindnote.com"><strong>blindnote.com</strong></a>
+  ·
+  <a href="SECURITY.md">Security</a>
+  ·
+  <a href="verify.sh">Verify a release</a>
+  ·
+  <a href="LICENSE.md">License</a>
+</p>
+
+</div>
 
 One-time-read, end-to-end encrypted, self-destructing notes. One Rust binary, a React
 client baked into it, one dedicated server.
