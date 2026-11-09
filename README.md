@@ -1,9 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.png">
-  <img src="docs/logo-light.png" alt="BlindNote" width="104">
-</picture>
+<img src="docs/logo.png" alt="BlindNote" width="104">
 
 <h1>BlindNote</h1>
 
