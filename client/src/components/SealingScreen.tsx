@@ -7,7 +7,9 @@ import { Seal } from './Seal'
 
 // Total duration of the sealing animation (halves meeting + press + check).
 // Matches the delays in Seal.tsx (0.3-0.36s); when it elapses, the link is shown.
-const SEAL_MS = 900
+// 1200ms so the ring wave (ends ~0.96s) completes and the finished seal reads as
+// "sealed" (~0.56s visible) rather than flashing past; reduced motion still skips it.
+const SEAL_MS = 1200
 
 type SealingScreenProps = {
   /** The note is already created; move to the link screen once the sealing moment ends. */
@@ -37,7 +39,6 @@ export function SealingScreen(props: SealingScreenProps) {
   return (
     <Hero
       title={t.sealing.title}
-      subtitle={t.sealing.subtitle}
       card={
         <Panel>
           <div className="flex justify-center py-5 md:py-7">
