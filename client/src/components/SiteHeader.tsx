@@ -100,7 +100,7 @@ export function SiteHeader(props: SiteHeaderProps) {
             type="button"
             onClick={props.onMenuToggle}
             aria-expanded={props.menuOpen}
-            aria-controls="mobil-menu"
+            aria-controls="mobile-menu"
             aria-label={props.menuOpen ? t.header.closeMenu : t.header.openMenu}
             className="grid size-11 place-items-center rounded-lg text-ink-strong outline-none hover:bg-accent/15 focus-visible:ring-4 focus-visible:ring-accent lg:hidden dark:text-sand"
           >
@@ -111,7 +111,7 @@ export function SiteHeader(props: SiteHeaderProps) {
 
       {props.menuOpen && (
         <nav
-          id="mobil-menu"
+          id="mobile-menu"
           aria-label={t.header.mobileMenu}
           className="absolute inset-x-0 top-full h-[calc(100dvh-72px)] overflow-y-auto bg-page py-6 md:h-[calc(100dvh-88px)] lg:hidden dark:bg-night"
         >

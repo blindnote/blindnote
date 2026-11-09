@@ -18,7 +18,7 @@ test('the composer text is at least 16px so iOS does not auto-zoom', async ({ pa
 test('the language and theme switchers are reachable from the mobile menu', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Open menu' }).click()
-  const menu = page.locator('#mobil-menu')
+  const menu = page.locator('#mobile-menu')
   await expect(menu.getByRole('group', { name: 'Language' })).toBeVisible()
   await expect(menu.getByRole('group', { name: 'Theme' })).toBeVisible()
 })
