@@ -39,7 +39,6 @@ export function SealingScreen(props: SealingScreenProps) {
   return (
     <Hero
       title={t.sealing.title}
-      subtitle={t.sealing.subtitle}
       card={
         <Panel>
           <div className="flex justify-center py-5 md:py-7">
