@@ -3,9 +3,9 @@ import { cx } from './cx'
 import { Icon } from './Icon'
 
 type NoteViewerProps = {
-  /** Çözülmüş not. Düz metin olarak basılır (HTML yorumlanmaz). */
+  /** The decrypted note. Printed as plain text (no HTML is interpreted). */
   text: string
-  /** Not metnini kopyala. Panoya yazma işi çağıranda. */
+  /** Copy the note text. Writing to the clipboard is the caller's job. */
   onCopy?: () => void
   copied?: boolean
 }
@@ -31,8 +31,8 @@ function CopyButton(props: { onCopy?: () => void; copied?: boolean }) {
 }
 
 /**
- * Figma: Mesaj Açıldı → note-composer -- "Açılmış mühür": üstte durum şeridi, altta not,
- * sağ altta kopyala. Satır sonları korunur, uzun kelimeler kırılır; uzun notlarda kutu kendi içinde kayar.
+ * Figma: Message Opened → note-composer -- "Opened seal": a status strip on top, the note below,
+ * copy at the bottom right. Line breaks are preserved, long words wrap; for long notes the box scrolls within itself.
  */
 export function NoteViewer(props: NoteViewerProps) {
   const t = useCopy()

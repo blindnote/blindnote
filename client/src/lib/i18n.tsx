@@ -63,6 +63,7 @@ export interface Strings {
     empty: string
   }
   linkReady: { title: string; subtitle: string }
+  sealing: { title: string; subtitle: string }
   linkCard: { yourLink: string; copy: string; copied: string; copiedAnnounce: string; keyHint: string }
   reveal: { title: string; subtitle: string; envelopeExtra: string }
   revealCard: {
@@ -172,6 +173,10 @@ const en: Strings = {
   linkReady: {
     title: 'Your Link Is Ready!',
     subtitle: 'The message in this link can be opened only once.',
+  },
+  sealing: {
+    title: 'Sealing…',
+    subtitle: 'Pressing the wax onto your one-time link.',
   },
   linkCard: {
     yourLink: 'Your link: ',
@@ -373,6 +378,10 @@ const tr: Strings = {
   linkReady: {
     title: 'Bağlantı Oluşturuldu!',
     subtitle: 'Bağlantıda yer alan mesaj sadece bir kez açılabilir.',
+  },
+  sealing: {
+    title: 'Mühürleniyor…',
+    subtitle: 'Mesajın tek kullanımlık bağlantıya mühürleniyor.',
   },
   linkCard: {
     yourLink: 'Bağlantın: ',

@@ -5,30 +5,30 @@ import { Icon } from './Icon'
 type ButtonProps = {
   children: ReactNode
   onClick?: () => void
-  /** form içinde gönderim butonuysa "submit" */
+  /** "submit" if it is the submit button inside a form */
   type?: 'button' | 'submit'
-  /** md: 44px (masaüstü hero). sm: 40px (header). Mobilde her ikisi de 38px. */
+  /** md: 44px (desktop hero). sm: 40px (header). On mobile both are 38px. */
   size?: 'md' | 'sm'
   /**
-   * primary: dolu kahve (sayfanın ana eylemi — her ekranda bir tane).
-   * secondary: çerçeveli (header'daki "Gizli Mesaj Oluştur" gibi ikincil eylemler). Figma'da yok — türetildi.
+   * primary: solid brown (the page's main action — one per screen).
+   * secondary: outlined (secondary actions like the header's create button). Not in Figma — derived.
    */
   variant?: 'primary' | 'secondary'
-  /** Mobilde tam genişlik (Figma mobil hero'da buton 343px). */
+  /** Full width on mobile (in the Figma mobile hero the button is 343px). */
   blockOnMobile?: boolean
   disabled?: boolean
-  /** Bekleme durumu: spinner gösterir, tıklamayı kapatır, aria-busy verir. */
+  /** Waiting state: shows a spinner, disables clicking, sets aria-busy. */
   loading?: boolean
-  /** Loading sırasında gösterilecek metin, ör. "Şifreleniyor…" */
+  /** Text to show while loading, e.g. "Encrypting…" */
   loadingLabel?: string
-  /** Metin dışında açıklama gerekiyorsa */
+  /** If a description beyond the text is needed */
   ariaLabel?: string
   className?: string
 }
 
 /**
  * Ana buton — Figma "primary-button" / "header-cta".
- * Hover, focus, disabled ve loading durumları Figma'da yok; ana kahvenin tonlarından türetildi.
+ * Hover, focus, disabled and loading states are not in Figma; derived from the main brown's tones.
  */
 export function Button(props: ButtonProps) {
   const size = props.size ?? 'md'
@@ -59,7 +59,7 @@ export function Button(props: ButtonProps) {
       )}
     >
       {props.loading && <Icon name="spinner" className="size-4" />}
-      {/* text-box: yazı tipinin üst/alt boşluğunu kırpar; metin ve ikon optik olarak ortalanır */}
+      {/* text-box: trims the font's top/bottom spacing; text and icon are optically centered */}
       <span className="inline-flex items-center gap-1.5 leading-none [text-box:trim-both_cap_alphabetic]">
         {props.loading && props.loadingLabel ? props.loadingLabel : props.children}
       </span>

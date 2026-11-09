@@ -3,7 +3,7 @@ import { cx } from './cx'
 import { Icon } from './Icon'
 import { useScrolledPast } from './useScrollY'
 
-/** Yukarı çık butonu (Figma'da yok — türetildi). Bir ekran boyu kaydırınca sağ altta belirir. */
+/** Back-to-top button (not in Figma — derived). Appears at the bottom right after scrolling one screen height. */
 export function BackToTop() {
   const t = useCopy()
   const visible = useScrolledPast(600)

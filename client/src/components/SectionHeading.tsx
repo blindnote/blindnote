@@ -5,13 +5,13 @@ import { Monkey } from './Monkey'
 type SectionHeadingProps = {
   title: string
   description?: ReactNode
-  /** SSS başlığının üstünde maymun var */
+  /** There is a monkey above the FAQ heading */
   withMonkey?: boolean
-  /** h2 için id (aria-labelledby) */
+  /** id for the h2 (aria-labelledby) */
   id?: string
 }
 
-/** Figma: "Heading and supporting text" — BlindNote yazısı (üst başlık) + h2 + açıklama. */
+/** Figma: "Heading and supporting text" — the BlindNote wordmark (eyebrow) + h2 + description. */
 export function SectionHeading(props: SectionHeadingProps) {
   return (
     <div className="mx-auto flex max-w-[768px] flex-col items-center gap-3 px-3 text-center md:gap-4 md:px-0">

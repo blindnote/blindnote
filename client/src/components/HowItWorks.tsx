@@ -6,7 +6,7 @@ import { StepCard } from './StepCard'
 /** Step illustrations, paired with the translated steps by position. */
 const POSES: readonly MonkeyPose[] = ['eyes', 'ears', 'mouth']
 
-/** Figma: how-it-works -- "Tek Kullanımlık Güvenli Notlar" + 3 adım kartı. Statik içerik. */
+/** Figma: how-it-works -- the section heading + 3 step cards. Static content. */
 export function HowItWorks() {
   const t = useCopy()
   return (

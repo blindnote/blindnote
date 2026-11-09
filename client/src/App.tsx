@@ -18,6 +18,7 @@ import { NoteNotFoundScreen } from './components/NoteNotFoundScreen'
 import { NoteOpenedScreen } from './components/NoteOpenedScreen'
 import { PageLayout } from './components/PageLayout'
 import { RevealScreen } from './components/RevealScreen'
+import { SealingScreen } from './components/SealingScreen'
 import { ApiError, createNote, revealNote } from './lib/api'
 import { decryptNote, encryptNote, exportKey, generateKey, importKey } from './lib/crypto'
 import { useCopy, type Strings } from './lib/i18n'
@@ -28,6 +29,7 @@ const MAX_NOTE_CHARACTERS = 10_000
 
 type Screen =
   | { name: 'compose' }
+  | { name: 'sealing'; url: string }
   | { name: 'link'; url: string }
   | { name: 'reveal'; link: NoteLink }
   | { name: 'opened'; text: string }
@@ -74,7 +76,7 @@ function messageFor(error: unknown, errors: Strings['errors']): string {
 
 export function App() {
   // Read once, on the first render. The fragment is deliberately not watched:
-  // clicking "Sıkça Sorulan Sorular" replaces it, and that must not throw away
+  // clicking a nav anchor (e.g. the FAQ link) replaces it, and that must not throw away
   // a note the reader has not opened yet.
   const t = useCopy()
 
@@ -149,7 +151,9 @@ export function App() {
       // Drop focus before the screen changes; iOS Safari otherwise keeps the
       // on-screen keyboard up over the link-ready screen.
       ;(document.activeElement as HTMLElement | null)?.blur()
-      go({ name: 'link', url })
+      // The note is stored; the sealing beat is a short, decorative pause before
+      // the link is shown (it advances itself, or skips under reduced motion).
+      go({ name: 'sealing', url })
     } catch (error) {
       setComposeError(messageFor(error, t.errors))
     } finally {
@@ -240,6 +244,8 @@ export function App() {
           maxLength={MAX_NOTE_CHARACTERS}
         />
       )}
+
+      {screen.name === 'sealing' && <SealingScreen onDone={() => go({ name: 'link', url: screen.url })} />}
 
       {screen.name === 'link' && (
         <LinkReadyScreen

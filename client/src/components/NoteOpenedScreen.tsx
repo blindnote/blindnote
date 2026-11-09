@@ -6,16 +6,16 @@ import { NoteViewer } from './NoteViewer'
 
 type NoteOpenedScreenProps = {
   text: string
-  /** Not metnini kopyala (yalnız alternatif not görünümlerinde gösterilir) */
+  /** Copy the note text (shown only in the alternative note views) */
   onCopyText?: () => void
   textCopied?: boolean
-  /** "Cevap Gönder" → Anasayfa'daki yazma ekranı */
+  /** "Send Reply" → the compose screen on the home page */
   onReply: () => void
-  /** Cevabı bu sayfada yazmaya başlayıp yazma ekranına taşı (yalnız "Hemen yanıtla" görünümünde) */
+  /** Start writing the reply on this page and carry it to the compose screen (only in the "Reply now" view) */
   onReplyWithText?: (text: string) => void
 }
 
-/** Ekran (c-2) Oku, içerik — Figma: Mesaj Açıldı. */
+/** Screen (c-2) Read, content — Figma: Message Opened. */
 export function NoteOpenedScreen(props: NoteOpenedScreenProps) {
   const t = useCopy()
   const look = useContext(ReplyCtaContext)

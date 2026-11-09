@@ -9,7 +9,7 @@ type SiteFooterProps = {
   homeHref: string
 }
 
-/** Figma: site-footer — koyu kahve zemin, beyaz logo + bağlantılar. */
+/** Figma: site-footer — dark brown background, white logo + links. */
 export function SiteFooter(props: SiteFooterProps) {
   const t = useCopy()
   return (

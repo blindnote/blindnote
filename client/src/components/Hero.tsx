@@ -6,17 +6,17 @@ type HeroProps = {
   title: ReactNode
   subtitle?: ReactNode
   /**
-   * peek: maymun kartın arkasından bakar (Yaz, Bağlantı Oluşturuldu, Mesaj Aç, Mesaj Açıldı).
-   * top: maymun başlığın üstünde durur (Mesaj Bulunamadı).
+   * peek: the monkey peeks from behind the card (Compose, Link Ready, Open Message, Message Opened).
+   * top: the monkey stands above the title (Message Not Found).
    */
   monkey?: { pose: MonkeyPose; placement: 'peek' | 'top' }
-  /** Başlığın altındaki ana kart (composer, link kartı, görüntüle kartı, not) */
+  /** The main card below the title (composer, link card, reveal card, note) */
   card?: ReactNode
-  /** Kartın altındaki içerik (Cevap Gönder, CTA) */
+  /** Content below the card (Send Reply, CTA) */
   footer?: ReactNode
   /**
-   * Masaüstünde başlığın üst boşluğu (Figma): default 128px (Yaz, Link, Mesaj Aç),
-   * compact 88px (Mesaj Açıldı), roomy 167px (Bulunamadı). Mobilde hepsi 24px.
+   * The title's top spacing on desktop (Figma): default 128px (Compose, Link, Open Message),
+   * compact 88px (Message Opened), roomy 167px (Not Found). On mobile all are 24px.
    */
   space?: 'default' | 'compact' | 'roomy'
 }
@@ -24,9 +24,10 @@ type HeroProps = {
 const TOP_SPACE = { default: 'md:pt-32', compact: 'md:pt-[88px]', roomy: 'md:pt-[167px]' } as const
 
 /**
- * Hero arka planı: soldan sıcak şeftali parıltısı, sağda hafif karamel, en altta sayfa
- * rengine söner. Arka plan header'ın arkasına kadar yukarı uzanır (-top-24, aşağıda) ki
- * üstteki şeffaf header'la kesintisiz aksın -- beyaz şerit olmaz.
+ * Hero background: a warm peach glow from the left, a faint caramel on the right,
+ * fading to the page color at the bottom. The background extends up behind the
+ * header (-top-24, below) so it flows seamlessly with the transparent header on
+ * top -- no white band.
  */
 const BACKDROP = [
   'bg-[radial-gradient(45%_110%_at_0%_45%,color-mix(in_srgb,var(--color-blush)_30%,var(--color-page))_0%,transparent_75%),radial-gradient(40%_110%_at_100%_55%,color-mix(in_srgb,var(--color-accent)_8%,var(--color-page))_0%,transparent_75%),linear-gradient(180deg,var(--color-page)_0%,color-mix(in_srgb,var(--color-blush)_8%,var(--color-page))_100%)]',
@@ -43,15 +44,15 @@ const PEEK = {
 } as const
 
 /**
- * Figma: hero (Frame 513516). Arka plan Figma'da raster görsel; burada aynı geçiş tema
- * renklerinden CSS gradyanıyla kuruldu.
+ * Figma: hero (Frame 513516). The background is a raster image in Figma; here the
+ * same transition is built with a CSS gradient from the theme colors.
  */
 export function Hero(props: HeroProps) {
   const peek = props.monkey?.placement === 'peek' ? PEEK[props.monkey.pose] : undefined
   return (
     <section className="relative isolate">
       <div aria-hidden="true" className={cx('absolute inset-x-0 -top-24 bottom-0 -z-10', BACKDROP)} />
-      {/* Figma "section-fade": en altta sayfa rengine yumuşak geçiş */}
+      {/* Figma "section-fade": a soft fade to the page color at the bottom */}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 -z-10 h-8 bg-gradient-to-b from-transparent to-page md:h-[51px] dark:to-night"

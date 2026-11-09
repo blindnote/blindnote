@@ -10,9 +10,9 @@ type LinkReadyScreenProps = {
 }
 
 /**
- * Ekran (b) Link hazır — Figma: Bağlantı Oluşturuldu.
- * Figma'daki mobil "Yeni Gizli Mesaj Oluştur" butonu kaldırıldı: yeni mesaj, mobilde de header'daki
- * kompakt create butonundan (PageLayout → ctaOnMobileAlways) açılır.
+ * Screen (b) Link ready — Figma: Link Ready.
+ * The mobile "new secret message" button from Figma was removed: a new message opens, on mobile too,
+ * from the compact create button in the header (PageLayout → ctaOnMobileAlways).
  */
 export function LinkReadyScreen(props: LinkReadyScreenProps) {
   const t = useCopy()

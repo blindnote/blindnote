@@ -3,16 +3,16 @@ import { cx } from './cx'
 
 type PanelProps = {
   children: ReactNode
-  /** Hata durumunda kenarlık kırmızılaşır (Figma'da yok — türetildi) */
+  /** On error the border turns red (not in Figma — derived) */
   tone?: 'default' | 'danger'
-  /** İç beyaz kutuya ek sınıflar (ör. ortalanmış dar kutu için "mx-auto w-fit") */
+  /** Extra classes for the inner white box (e.g. "mx-auto w-fit" for a centered narrow box) */
   innerClassName?: string
   className?: string
 }
 
 /**
- * Figma: note-composer (dış kap) + note-composer-box (iç beyaz kutu).
- * Masaüstü: dış 2px kenar, r32, p6 / iç r24, p24. Mobil: dış r16, p3 / iç r12, p12-8.
+ * Figma: note-composer (outer shell) + note-composer-box (inner white box).
+ * Desktop: outer 2px border, r32, p6 / inner r24, p24. Mobile: outer r16, p3 / inner r12, p12-8.
  */
 export function Panel(props: PanelProps) {
   return (

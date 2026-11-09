@@ -9,33 +9,33 @@ import type { SiteLink } from './siteLinks'
 
 type SiteHeaderProps = {
   links: ReadonlyArray<SiteLink>
-  /** Aktif bölümün href'i (scroll-spy); eşleşen link vurgulanır. */
+  /** The active section's href (scroll-spy); the matching link is highlighted. */
   activeHref?: string
-  /** Mobil menü maddeleri (Figma "Menü" frame'i) */
+  /** Mobile menu items (Figma "Menü" frame) */
   menuLinks: ReadonlyArray<SiteLink>
   homeHref: string
-  /** Sağdaki create butonu. Anasayfa'nın en üstünde Figma'da yok (Anasayfa_Scroll'da var). */
+  /** The create button on the right. Not in Figma at the top of the home page (present in Anasayfa_Scroll). */
   cta?: { label: string; onClick: () => void }
-  /** Create butonunun varyantı (anasayfada dolu, diğerlerinde çerçeveli). */
+  /** The create button's variant (filled on the home page, outlined elsewhere). */
   ctaVariant?: 'primary' | 'secondary'
-  /** Sayfa kaydırıldı: başlık altına ince gölge (Figma Anasayfa_Scroll) */
+  /** The page is scrolled: a thin shadow under the header (Figma Anasayfa_Scroll) */
   elevated?: boolean
-  /** Mobilde kompakt create butonu görünsün mü (kaydırınca) */
+  /** Whether the compact create button shows on mobile (when scrolled) */
   ctaOnMobile?: boolean
-  /** Mobil menü açık mı (yalnız < md) */
+  /** Whether the mobile menu is open (only < md) */
   menuOpen: boolean
   onMenuToggle: () => void
 }
 
-/** Figma: site-header (1440) ve site-header-mobile + Menü (375). */
+/** Figma: site-header (1440) and site-header-mobile + Menü (375). */
 export function SiteHeader(props: SiteHeaderProps) {
   const t = useCopy()
   return (
     <header
       className={cx(
         'sticky top-0 z-40 transition-[background-color,box-shadow] duration-200',
-        // En üstte şeffaf: gradient header'ın içinden akar, beyaz şerit olmaz.
-        // Kaydırınca (veya mobil menü açıkken) frosted zemin + gölge kazanır.
+        // Transparent at the very top: it flows through the gradient header, no white band.
+        // When scrolled (or when the mobile menu is open) it gains a frosted background + shadow.
         props.elevated || props.menuOpen ? 'bg-page/95 backdrop-blur dark:bg-night/95' : 'bg-transparent',
         props.elevated && 'shadow-[0_1px_0_rgb(79_32_0/0.08),0_6px_16px_-8px_rgb(79_32_0/0.18)]',
       )}
@@ -82,10 +82,10 @@ export function SiteHeader(props: SiteHeaderProps) {
           )}
         </div>
 
-        {/* Mobil: kaydırınca menünün yanında kompakt create butonu (Figma'da yok — türetildi) */}
+        {/* Mobile: a compact create button next to the menu when scrolled (not in Figma — derived) */}
         <div className="ml-auto flex items-center gap-1.5 lg:hidden">
-          {/* Dil ve tema seçicileri mobilde menünün içinde (aşağıda) -- header'da
-              yalnız logo, create ve menü düğmesi kalır, böylece dar ekranda sıkışmaz. */}
+          {/* The language and theme pickers are inside the menu on mobile (below) -- in the
+              header only the logo, create and menu button remain, so it does not cram on a narrow screen. */}
           {props.cta && props.ctaOnMobile && (
             <button
               type="button"
@@ -100,7 +100,7 @@ export function SiteHeader(props: SiteHeaderProps) {
             type="button"
             onClick={props.onMenuToggle}
             aria-expanded={props.menuOpen}
-            aria-controls="mobil-menu"
+            aria-controls="mobile-menu"
             aria-label={props.menuOpen ? t.header.closeMenu : t.header.openMenu}
             className="grid size-11 place-items-center rounded-lg text-ink-strong outline-none hover:bg-accent/15 focus-visible:ring-4 focus-visible:ring-accent lg:hidden dark:text-sand"
           >
@@ -111,7 +111,7 @@ export function SiteHeader(props: SiteHeaderProps) {
 
       {props.menuOpen && (
         <nav
-          id="mobil-menu"
+          id="mobile-menu"
           aria-label={t.header.mobileMenu}
           className="absolute inset-x-0 top-full h-[calc(100dvh-72px)] overflow-y-auto bg-page py-6 md:h-[calc(100dvh-88px)] lg:hidden dark:bg-night"
         >

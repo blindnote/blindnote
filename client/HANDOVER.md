@@ -1,52 +1,52 @@
-# BlindNote — arayüz (React bileşenleri)
+# BlindNote — interface (React components)
 
-Tek kullanımlık, uçtan uca şifreli not paylaşım sitesi BlindNote'un **arayüz katmanı**.
-Figma "Blindnote" dosyasındaki tasarımdan (node 2469:18109) aktarıldı ve tasarım incelemesinde
-birlikte geliştirildi. **Şifreleme, ağ çağrıları ve yönlendirme bu depoda yok**; bunlar yazılımcıya bırakıldı.
+The **interface layer** of BlindNote, the one-time, end-to-end encrypted note-sharing site.
+Ported from the design in the Figma "Blindnote" file (node 2469:18109) and developed together
+during design review. **Encryption, network calls and routing are not in this repo**; those are left to the engineer.
 
 - React 19 · TypeScript (strict) · Vite 8 · Tailwind CSS v4 (`@theme`)
-- Ek paket yok; fontlar self-host (`public/fonts`)
-- Okuma yolu (JS + CSS) brotli ile ~86 KB — hedef ≤ 90 KB
+- No extra packages; fonts are self-hosted (`public/fonts`)
+- Read path (JS + CSS) ~86 KB brotli — target ≤ 90 KB
 
-## Çalıştırma
+## Running
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173 — demo akışı + alttaki "Önizleme" paneli
-npm run build    # tip kontrolü + üretim derlemesi (dist/)
+npm run dev      # http://localhost:5173 — demo flow + the "Preview" panel at the bottom
+npm run build    # type check + production build (dist/)
 ```
 
-## Klasörler
+## Folders
 
-| Yol | Ne var |
+| Path | What's there |
 |---|---|
-| `src/components/` | Yalnızca **sunum bileşenleri**: veri props ile girer, olaylar callback ile çıkar. `fetch`, kripto, depolama yok. |
-| `src/styles/app.css` | `@theme` tasarım değişkenleri (renk, yarıçap, gölge, animasyon) ve font tanımları |
-| `src/demo/` | **GEÇİCİ.** Sahte durumla akışı gösteren demo (`DemoApp`) ve önizleme paneli. Üretimde silinir. |
-| `public/fonts/` | Baloo 2 ve Raleway woff2 (OFL lisansları yanında) |
+| `src/components/` | **Presentational components only**: data in via props, events out via callbacks. No `fetch`, crypto or storage. |
+| `src/styles/app.css` | `@theme` design variables (color, radius, shadow, animation) and font definitions |
+| `src/demo/` | **TEMPORARY.** The demo (`DemoApp`) that shows the flow with fake state, plus the preview panel. Deleted in production. |
+| `public/fonts/` | Baloo 2 and Raleway woff2 (with their OFL licenses alongside) |
 
-### Ekranlar (`src/components`)
+### Screens (`src/components`)
 
-| Bileşen | Figma | Ne zaman |
+| Component | Figma | When |
 |---|---|---|
-| `ComposeScreen` | Anasayfa | Mesaj yazma |
-| `LinkReadyScreen` | Bağlantı Oluşturuldu | Link üretildi, kopyala |
-| `RevealScreen` | Mesaj Aç | Alıcı linki açtı; içerik **butona basmadan çözülmez** (sohbet uygulamalarının link önizlemesi notu yakmasın) |
-| `NoteOpenedScreen` | Mesaj Açıldı | Not gösteriliyor |
-| `NoteNotFoundScreen` | Mesaj Bulunamadı | Link yanmış / geçersiz |
-| `PageLayout` | — | Ortak iskelet: header → ekran → 3 bilgi bölümü → footer → yukarı çık butonu |
+| `ComposeScreen` | Anasayfa | Writing a message |
+| `LinkReadyScreen` | Bağlantı Oluşturuldu | Link generated, copy |
+| `RevealScreen` | Mesaj Aç | The recipient opened the link; the content is **not decrypted until the button is pressed** (so chat apps' link previews do not burn the note) |
+| `NoteOpenedScreen` | Mesaj Açıldı | The note is shown |
+| `NoteNotFoundScreen` | Mesaj Bulunamadı | The link is burned / invalid |
+| `PageLayout` | — | The common skeleton: header → screen → 3 info sections → footer → back-to-top button |
 
-## Yazılımcının bağlaması gerekenler
+## What the engineer must wire
 
-Bileşenler durum tutmaz; aşağıdakiler çağıran tarafta (rota/sayfa katmanı) yapılmalı. Örnek akış `src/demo/DemoApp.tsx` içinde.
+The components hold no state; the following must be done on the calling side (the route/page layer). An example flow is in `src/demo/DemoApp.tsx`.
 
-| Bileşen prop'u | Beklenen iş |
+| Component prop | Expected work |
 |---|---|
-| `ComposeScreen.onSubmit`, `status`, `error` | Metni tarayıcıda şifrele → şifreli hâli sunucuya gönder → `#ID/ANAHTAR` linkini üret. Gönderim sürerken `status="submitting"`. Hata metni `error` ile (maymunun konuşma balonunda gösterilir). |
-| `LinkReadyScreen.onCopy`, `copied`, `copyError` | `navigator.clipboard.writeText(url)`. `copied` ekrandan ayrılana kadar `true` kalmalı (tasarım kararı). |
-| `RevealScreen.onReveal`, `status`, `error` | Linkteki ID ile şifreli notu çek ve sunucudan sil; anahtarla tarayıcıda çöz. |
-| `NoteOpenedScreen.text`, `onCopyText`, `onReply` | Çözülmüş metin düz metin olarak basılır (HTML yorumlanmaz). |
-| `PageLayout.onCreateNote`, `ctaAfterScroll`, `ctaOnMobileAlways` | Header'daki "Gizli Mesaj Oluştur / Oluştur" butonu. Yaz ekranında `ctaAfterScroll` (kutu ekrandan çıkınca görünür); diğer ekranlarda `ctaOnMobileAlways`. |
+| `ComposeScreen.onSubmit`, `status`, `error` | Encrypt the text in the browser → send the ciphertext to the server → build the `#ID/KEY` link. While submitting, `status="submitting"`. Error text via `error` (shown in the monkey's speech bubble). |
+| `LinkReadyScreen.onCopy`, `copied`, `copyError` | `navigator.clipboard.writeText(url)`. `copied` must stay `true` until the screen is left (design decision). |
+| `RevealScreen.onReveal`, `status`, `error` | Fetch the ciphertext by the ID in the link and delete it from the server; decrypt in the browser with the key. |
+| `NoteOpenedScreen.text`, `onCopyText`, `onReply` | The decrypted text is printed as plain text (no HTML is interpreted). |
+| `PageLayout.onCreateNote`, `ctaAfterScroll`, `ctaOnMobileAlways` | The header's create button ("Gizli Mesaj Oluştur / Oluştur"). On the compose screen `ctaAfterScroll` (visible once the box scrolls off); on other screens `ctaOnMobileAlways`. |
 
-> **Güvenlik notu:** Şifreleme anahtarı linkin `#` sonrasında durur ve sunucuya **hiç gönderilmemeli**.
-> Gizli ID de `#` sonrasında olduğu için ilk HTTP isteğinde gitmez; sayfa onu ayrıca göndermelidir.
+> **Security note:** The encryption key sits after the `#` in the link and must **never be sent to the server**.
+> The secret ID is also after the `#`, so it does not go in the first HTTP request; the page must send it separately.

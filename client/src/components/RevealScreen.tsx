@@ -8,7 +8,7 @@ type RevealScreenProps = {
   error?: string
 }
 
-/** Ekran (c-1) Oku, ilk adım -- Figma: Mesaj Aç. İçerik ancak butona basınca açılır. */
+/** Screen (c-1) Read, first step -- Figma: Open Message. The content opens only on a button press. */
 export function RevealScreen(props: RevealScreenProps) {
   const t = useCopy()
   return (

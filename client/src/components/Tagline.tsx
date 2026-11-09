@@ -7,7 +7,7 @@ type TaglineProps = {
   className?: string
 }
 
-/** Güvenlik özellikleri satırı -- rozetler (eye-off / server-off / lock). */
+/** The security-features line -- badges (eye-off / server-off / lock). */
 export function Tagline(props: TaglineProps) {
   const t = useCopy()
   const justify = props.align === 'right' ? 'justify-center md:justify-end' : 'justify-center'

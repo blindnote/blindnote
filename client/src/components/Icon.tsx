@@ -1,13 +1,13 @@
 import { cx } from './cx'
 
-/* Figma'daki ikon bileşenlerinden (chevron-down, solar:copy-bold, menu-01, x-close) dışa aktarıldı.
-   Spinner ve check: tasarımda yok, loading/kopyalandı durumları için türetildi. Renk currentColor. */
+/* Exported from the icon components in Figma (chevron-down, solar:copy-bold, menu-01, x-close).
+   Spinner and check: not in the design, derived for the loading/copied states. Color is currentColor. */
 const ICONS = {
   'chevron-down': { viewBox: '0 0 24 24', stroke: true, d: 'M6 9L12 15L18 9' },
   menu: { viewBox: '10 13 20 14', stroke: true, d: 'M11 20H29M11 14H29M11 26H29' },
   close: { viewBox: '13 13 14 14', stroke: true, d: 'M26 14L14 26M14 14L26 26' },
   check: { viewBox: '0 0 20 20', stroke: true, d: 'M4.5 10.5L8 14L15.5 6.5' },
-  // Güven satırı alternatifleri için (Figma'da yok — türetildi)
+  // For the trust-line alternatives (not in Figma — derived)
   'eye-off': {
     viewBox: '0 0 24 24',
     stroke: true,
@@ -44,11 +44,11 @@ export type IconName = keyof typeof ICONS | 'spinner'
 
 type IconProps = {
   name: IconName
-  /** Boyut ve renk, ör. "size-5 text-ink". */
+  /** Size and color, e.g. "size-5 text-ink". */
   className?: string
 }
 
-/** Dekoratif ikon. Anlamı her zaman çevreleyen buton/etiket taşır (aria-hidden). */
+/** Decorative icon. The meaning is always carried by the surrounding button/label (aria-hidden). */
 export function Icon(props: IconProps) {
   if (props.name === 'spinner') {
     return (

@@ -6,36 +6,36 @@ import { Monkey, type MonkeyPose } from './Monkey'
 import { Tagline } from './Tagline'
 
 /**
- * Alt eylem bloğunun görünümü (Mesaj Açıldı'da "Cevap Gönder", Bulunamadı'da create).
- * figma: Figma'daki başlık + tagline + buton.
- * composer / banner / paths: tasarım incelemesi için önerilen alternatifler (Figma'da yok).
+ * The look of the lower action block ("Send Reply" on Message Opened, create on Not Found).
+ * figma: the title + tagline + button from Figma.
+ * composer / banner / paths: suggested alternatives for design review (not in Figma).
  */
 export type CtaLook = 'figma' | 'composer' | 'banner' | 'paths'
-/** Mesaj Açıldı → "Cevap Gönder" bloğu */
+/** Message Opened → "Send Reply" block */
 export const ReplyCtaContext = createContext<CtaLook>('banner')
-/** Bulunamadı → create bloğu */
+/** Not Found → create block */
 export const NotFoundCtaContext = createContext<CtaLook>('banner')
 
 type CreateNoteCtaProps = {
   onCreate: () => void
-  /** Figma: Mesaj Açıldı'da başlık var; Bulunamadı'da yok. */
+  /** Figma: Message Opened has a title; Not Found does not. */
   heading?: string
   buttonLabel?: string
-  /** Yalnız mobilde göster (Bağlantı Oluşturuldu: masaüstünde header CTA'sı var) */
+  /** Show only on mobile (Link Ready: on desktop the header has the CTA) */
   mobileOnly?: boolean
   look?: CtaLook
-  /** composer görünümünde yazılan metinle devam (ör. yazma ekranına taşı) */
+  /** In the composer view, continue with the typed text (e.g. carry to the compose screen) */
   onCreateWithText?: (text: string) => void
-  /** paths görünümünde "Nasıl çalışır?" bağlantısı */
+  /** The "How does it work?" link in the paths view */
   learnHref?: string
-  /** banner görünümünün başlık/açıklaması */
+  /** The banner view's title/description */
   bannerTitle?: string
   bannerText?: string
-  /** banner görünümündeki maymun (varsayılan: kulaklarını kapatan) */
+  /** The monkey in the banner view (default: the one covering its ears) */
   bannerMonkey?: MonkeyPose
 }
 
-/** A · Hemen yanıtla: cevabı aynı sayfada yazmaya başlat */
+/** A · Reply now: start writing the reply on the same page */
 function ComposerLook(props: CreateNoteCtaProps) {
   const t = useCopy()
   const id = useId()
@@ -72,7 +72,7 @@ function ComposerLook(props: CreateNoteCtaProps) {
   )
 }
 
-/** B · Şerit: maymunlu, yatay davet bandı */
+/** B · Strip: a horizontal invitation band with the monkey */
 function BannerLook(props: CreateNoteCtaProps) {
   const t = useCopy()
   return (
@@ -96,7 +96,7 @@ function BannerLook(props: CreateNoteCtaProps) {
   )
 }
 
-/** Yollar: ana eylem + öğren bağlantısı, iki kart */
+/** Paths: main action + learn link, two cards */
 function PathsLook(props: CreateNoteCtaProps) {
   const t = useCopy()
   const card =
@@ -134,7 +134,7 @@ function PathsLook(props: CreateNoteCtaProps) {
   )
 }
 
-/** Figma: Frame 513521 — "Cevap Gönder" bloğu ve create butonu + tagline. */
+/** Figma: Frame 513521 — "Send Reply" block and create button + tagline. */
 export function CreateNoteCta(props: CreateNoteCtaProps) {
   const t = useCopy()
   const label = props.buttonLabel ?? t.cta.createButton
